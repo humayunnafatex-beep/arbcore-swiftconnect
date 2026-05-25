@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-inter: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 78% 4%, rgba(45, 125, 255, 0.12), transparent 28rem),
+    radial-gradient(circle at 12% 22%, rgba(37, 211, 102, 0.08), transparent 22rem),
+    linear-gradient(180deg, #fbfdff 0%, #f3f7ff 100%);
+  color: #081336;
+  font-family: var(--font-inter);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(25, 87, 255, 0.18);
+}
+
+.soft-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(25, 87, 255, 0.35) transparent;
+}
+
+.soft-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.soft-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(25, 87, 255, 0.35);
+  border-radius: 999px;
+}

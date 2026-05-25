@@ -1,0 +1,326 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum WhatsAppStatus {
+  CONNECTED
+  PENDING
+  DISCONNECTED
+}
+
+enum ContactStage {
+  NEW_LEAD
+  INTERESTED
+  FOLLOW_UP
+  WON
+  LOST
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  SENT
+  PAUSED
+  FAILED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  RECEIVED
+}
+
+enum CrmDealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum MessageTemplateCategory {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+  SUPPORT
+}
+
+enum MessageTemplateLanguage {
+  ENGLISH
+  BANGLA
+  BANGLISH
+}
+
+enum MessageTemplateStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("Enterprise")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users           User[]
+  whatsappAccounts WhatsAppAccount[]
+  contacts        Contact[]
+  campaigns       Campaign[]
+  conversations   Conversation[]
+  messageLogs     MessageLog[]
+  autoReplyRules  AutoReplyRule[]
+  crmDeals        CrmDeal[]
+  aiGenerations   AiGeneration[]
+  aiUsages        AIUsage[]
+  messageTemplates MessageTemplate[]
+  webhookEvents   WebhookEvent[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         UserRole @default(AGENT)
+  isActive     Boolean  @default(true)
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model WhatsAppAccount {
+  id              String         @id @default(cuid())
+  label           String
+  phoneNumber     String         @unique
+  businessName    String?
+  status          WhatsAppStatus @default(PENDING)
+  qualityRating   String         @default("UNKNOWN")
+  dailyLimit      Int            @default(10000)
+  messagesUsed24h Int            @default(0)
+  lastSyncedAt    DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  campaigns     Campaign[]
+  conversations Conversation[]
+  messageLogs   MessageLog[]
+}
+
+model Contact {
+  id        String       @id @default(cuid())
+  name      String
+  phone     String       @unique
+  email     String?
+  tags      String?
+  segment   String?
+  stage     ContactStage @default(NEW_LEAD)
+  optedIn   Boolean      @default(true)
+  doNotContact Boolean   @default(false)
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  conversations Conversation[]
+  crmDeals      CrmDeal[]
+  messageLogs   MessageLog[]
+}
+
+model Campaign {
+  id                String         @id @default(cuid())
+  name              String
+  templateName      String
+  templateVariables Json?
+  targetSegment     String?
+  status            CampaignStatus @default(DRAFT)
+  scheduledAt       DateTime?
+  sentAt            DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  companyId         String?
+  company           Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  whatsappAccountId String?
+  whatsappAccount   WhatsAppAccount? @relation(fields: [whatsappAccountId], references: [id], onDelete: SetNull)
+  messageLogs       MessageLog[]
+}
+
+model MessageTemplate {
+  id          String                  @id @default(cuid())
+  name        String
+  category    MessageTemplateCategory @default(MARKETING)
+  language    MessageTemplateLanguage @default(ENGLISH)
+  body        String
+  variables   String?
+  footerText  String?
+  buttonText  String?
+  buttonUrl   String?
+  status      MessageTemplateStatus   @default(DRAFT)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Conversation {
+  id                String    @id @default(cuid())
+  subject           String?
+  status            String    @default("OPEN")
+  priority          String    @default("NORMAL")
+  assignedTo        String?
+  lastMessageAt     DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  companyId         String?
+  company           Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contactId         String
+  contact           Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  whatsappAccountId String?
+  whatsappAccount   WhatsAppAccount? @relation(fields: [whatsappAccountId], references: [id], onDelete: SetNull)
+  messages          ConversationMessage[]
+}
+
+model ConversationMessage {
+  id             String           @id @default(cuid())
+  body           String
+  direction      MessageDirection
+  status         MessageStatus    @default(RECEIVED)
+  createdAt      DateTime         @default(now())
+
+  conversationId String
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model MessageLog {
+  id                String           @id @default(cuid())
+  body              String
+  direction         MessageDirection
+  status            MessageStatus    @default(QUEUED)
+  providerMessageId String?
+  errorMessage      String?
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  readAt            DateTime?
+  createdAt         DateTime         @default(now())
+
+  companyId         String?
+  company           Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contactId         String?
+  contact           Contact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  campaignId        String?
+  campaign          Campaign?        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  whatsappAccountId String?
+  whatsappAccount   WhatsAppAccount? @relation(fields: [whatsappAccountId], references: [id], onDelete: SetNull)
+}
+
+model WebhookEvent {
+  id        String   @id @default(cuid())
+  provider  String   @default("whatsapp")
+  eventType String?
+  payload   Json
+  createdAt DateTime @default(now())
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([provider])
+}
+
+model AutoReplyRule {
+  id          String   @id @default(cuid())
+  keyword     String
+  response    String
+  priority    Int      @default(100)
+  isActive    Boolean  @default(true)
+  matchMode   String   @default("CONTAINS")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model CrmDeal {
+  id          String        @id @default(cuid())
+  title       String
+  value       Float         @default(0)
+  stage       ContactStage  @default(NEW_LEAD)
+  status      CrmDealStatus @default(OPEN)
+  owner       String?
+  nextAction  String?
+  dueAt       DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  companyId   String?
+  company     Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contactId   String
+  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+}
+
+model AiGeneration {
+  id        String   @id @default(cuid())
+  prompt    String
+  context   String?
+  output    String
+  model     String   @default("mock-arbcore-ai")
+  createdAt DateTime @default(now())
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model AIUsage {
+  id               String   @id @default(cuid())
+  generationType   String
+  model            String
+  provider         String   @default("mock")
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  usedFallback     Boolean  @default(false)
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([generationType])
+}
