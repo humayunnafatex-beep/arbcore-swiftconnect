@@ -77,6 +77,7 @@ Create and deploy Prisma migrations:
 npx prisma migrate dev --name init_postgres
 npm run prisma:generate
 npx prisma migrate deploy
+npm run db:seed
 ```
 
 Do not point the current SQLite `schema.prisma` provider at a PostgreSQL URL. Switch the datasource provider first, then generate a fresh PostgreSQL migration history.
@@ -170,6 +171,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - Add all required environment variables in the Vercel Project Settings.
 - Use a managed PostgreSQL provider such as Supabase, Neon, or Railway PostgreSQL.
 - Run `npx prisma migrate deploy` as part of the production release flow after PostgreSQL migrations exist.
+- Run `npm run db:seed` after migrations so the demo owner login exists in PostgreSQL.
 
 ### Railway
 
@@ -179,6 +181,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - Add a Railway PostgreSQL service for production database hosting.
 - Set `DATABASE_URL` and `DIRECT_URL` from the production PostgreSQL service.
 - Run `npx prisma migrate deploy` during deployment or in a release command.
+- Run `npm run db:seed` after migrations so the demo owner login exists in PostgreSQL.
 
 ### Production Environment Checklist
 

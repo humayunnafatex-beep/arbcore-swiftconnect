@@ -7,6 +7,7 @@
     "build": "next build",
     "db:push": "prisma db push",
     "db:init-local": "node scripts/init-sqlite.mjs",
+    "db:seed": "node scripts/seed-production.mjs",
     "prisma:generate": "prisma generate",
     "start": "next start",
     "lint": "next lint"
