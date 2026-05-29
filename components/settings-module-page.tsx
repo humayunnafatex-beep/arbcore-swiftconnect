@@ -92,7 +92,7 @@ async function save(section: string) {
 
     if (shouldPersist) {
       const response = await fetch("/api/settings/company", {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
