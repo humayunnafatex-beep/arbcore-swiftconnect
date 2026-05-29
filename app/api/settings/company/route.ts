@@ -21,8 +21,8 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
-        businessName: company.name,
-        workspace: company.plan || "Enterprise Workspace",
+      businessName: company.businessName || company.name,
+      workspace: company.workspaceName || company.plan || "Enterprise Workspace",
         phone: company.phone || "",
         website: company.website || "",
         timezone: company.timezone || "Asia/Dhaka",
@@ -60,8 +60,8 @@ export async function PUT(request: NextRequest) {
     const company = await prisma.company.update({
       where: { id: existingCompany.id },
       data: {
-        name: body.businessName || existingCompany.name,
-        plan: body.workspace || existingCompany.plan || "Enterprise Workspace",
+        businessName: body.businessName || existingCompany.businessName || existingCompany.name,
+        workspaceName: body.workspace || existingCompany.workspaceName || existingCompany.plan || "Enterprise Workspace",
         phone: body.phone || "",
         website: body.website || "",
         timezone: body.timezone || "Asia/Dhaka",

@@ -84,6 +84,8 @@ model Company {
   name                   String
   slug                   String   @unique
   plan                   String   @default("Enterprise")
+  businessName           String  @default("ARBCore AI")
+  workspaceName          String  @default("Enterprise Workspace")
   phone                  String   @default("")
   website                String   @default("")
   timezone               String   @default("Asia/Dhaka")
