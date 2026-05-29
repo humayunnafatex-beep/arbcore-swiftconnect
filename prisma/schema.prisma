@@ -80,12 +80,20 @@ enum UserRole {
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  plan      String   @default("Enterprise")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  name                   String
+  slug                   String   @unique
+  plan                   String   @default("Enterprise")
+  phone                  String   @default("")
+  website                String   @default("")
+  timezone               String   @default("Asia/Dhaka")
+  language               String   @default("English")
+  notificationFailed     Boolean  @default(true)
+  notificationHotLead    Boolean  @default(true)
+  notificationBilling    Boolean  @default(true)
+  notificationWeekly     Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   users           User[]
   whatsappAccounts WhatsAppAccount[]

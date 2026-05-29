@@ -21,10 +21,10 @@ type TeamMember = {
 export function SettingsModulePage() {
   const { toast, showToast } = useToast();
   const [profile, setProfile] = useState({
-    businessName: "Acme Digital Solutions",
+    businessName: "Welzz Stride",
     workspace: "Enterprise Workspace",
-    phone: "01817030127",
-    website: "https://arbcore.ai",
+    phone: "01958474577",
+    website: "https://www.welzzstride.com",
     timezone: "Asia/Dhaka"
   });
   const [language, setLanguage] = useState("English");
@@ -48,15 +48,84 @@ export function SettingsModulePage() {
       setTeamLoading(false);
     }
   }
+async function loadCompanySettings() {
+  try {
+    const response = await fetch("/api/settings/company");
+    const result = await response.json();
 
-  useEffect(() => {
-    loadTeam();
-  }, []);
+    if (!response.ok || !result.success) {
+      return;
+    }
 
-  function save(section: string) {
-    showToast(`${section} settings saved locally.`);
+    setProfile({
+      businessName: result.data.businessName || profile.businessName,
+      workspace: result.data.workspace || profile.workspace,
+      phone: result.data.phone || profile.phone,
+      website: result.data.website || profile.website,
+      timezone: result.data.timezone || profile.timezone,
+    });
+
+    if (result.data.language) {
+      setLanguage(result.data.language);
+    }
+
+    if (result.data.notifications) {
+      setNotifications(result.data.notifications);
+    }
+  } catch (error) {
+    console.error("Unable to load company settings", error);
   }
+}
+useEffect(() => {
+  loadCompanySettings();
+  loadTeam();
+}, []);
+async function save(section: string) {
+  try {
+    const normalizedSection = section.toLowerCase();
 
+    const shouldPersist =
+      normalizedSection.includes("business") ||
+      normalizedSection.includes("profile") ||
+      normalizedSection.includes("notification") ||
+      normalizedSection.includes("language");
+
+    if (shouldPersist) {
+      const response = await fetch("/api/settings/company", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          businessName: profile.businessName,
+          workspace: profile.workspace,
+          phone: profile.phone,
+          website: profile.website,
+          timezone: profile.timezone,
+          language,
+          notifications,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Unable to save settings");
+      }
+
+      showToast(`${section} saved successfully.`);
+      return;
+    }
+
+    showToast(`${section} settings saved locally.`);
+  } catch (error) {
+    showToast(
+      error instanceof Error ? error.message : "Unable to save settings.",
+      "error"
+    );
+  }
+}
+  
   async function createTeamMember() {
     try {
       await apiRequest<TeamMember>("/api/team", {
