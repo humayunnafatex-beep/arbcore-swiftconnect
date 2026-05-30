@@ -9,7 +9,7 @@ export const userRoleSchema = z.enum(["OWNER", "ADMIN", "MANAGER", "AGENT"]);
 export const contactCreateSchema = z.object({
   name: z.string().trim().min(1).max(120),
   phone,
-  email: z.string().email().optional().nullable(),
+  email: z.string().trim().email().optional().nullable(),
   tags: z.union([z.string(), z.array(z.string())]).optional().nullable(),
   segment: optionalText,
   stage: contactStageSchema.optional(),
