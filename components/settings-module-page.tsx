@@ -126,18 +126,31 @@ async function save(section: string) {
   }
 }
   
-  async function createTeamMember() {
-    try {
-      await apiRequest<TeamMember>("/api/team", {
-        method: "POST",
-        body: JSON.stringify(newMember)
-      });
-      showToast("Demo team member created.");
-      await loadTeam();
-    } catch (error) {
-      showToast(getApiErrorMessage(error), "error");
+async function createTeamMember() {
+  try {
+    const response = await fetch("/api/team", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+     body: JSON.stringify(newMember),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || result.success === false) {
+      toast(result?.error || "Unable to create team member.", "error");
+      return;
     }
+
+    await loadTeam();
+    setTeamMember({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
+
+    toast("Team member created.");
+  } catch (error) {
+    toast("Unable to create team member.", "error");
   }
+}                         
 
   async function changeRole(member: TeamMember, role: UserRole) {
     try {
