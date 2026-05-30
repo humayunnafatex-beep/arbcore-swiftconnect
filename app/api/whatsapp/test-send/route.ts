@@ -13,6 +13,8 @@ const testSendSchema = z.object({
   body: z.string().trim().min(1).max(4000)
 });
 
+const WHATSAPP_REQUIRED_MESSAGE = "WhatsApp Cloud API is required to send real messages.";
+
 export async function GET() {
   try {
     const { company } = await getCurrentAuthContext();
@@ -20,7 +22,8 @@ export async function GET() {
       ...getWhatsAppConfigStatus(),
       savedSettingsConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),
       webhookUrl: company.whatsappWebhookUrl,
-      webhookStatus: process.env.WHATSAPP_VERIFY_TOKEN ? "Ready to verify" : "Verify token missing"
+      webhookStatus: process.env.WHATSAPP_VERIFY_TOKEN ? "Ready to verify" : "Verify token missing",
+      state: isWhatsAppConfigured() && company.whatsappPhoneNumberId && company.whatsappAccessToken ? "configured" : "not_configured"
     });
   } catch (error) {
     return handleApiError(error);
@@ -61,17 +64,26 @@ export async function POST(request: Request) {
     let errorMessage: string | undefined;
     const savedSettingsConfigured = Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken);
     const runtimeConfigured = isWhatsAppConfigured();
-    const provider = savedSettingsConfigured && runtimeConfigured ? "whatsapp_cloud_api" : "not_configured";
+    const hasRequiredFields = Boolean(savedSettingsConfigured && runtimeConfigured && normalizedPhone && messageBody);
+    const provider = hasRequiredFields ? "whatsapp_cloud_api" : "not_configured";
+    let state: "not_configured" | "validation_failed" | "provider_error" | "sent_successfully" = "not_configured";
 
-    if (!savedSettingsConfigured || !runtimeConfigured) {
-      errorMessage = "WhatsApp Cloud API is required to send real messages.";
+    if (!normalizedPhone || !messageBody) {
+      state = "validation_failed";
+      errorMessage = "Recipient phone and message body are required.";
+    } else if (!savedSettingsConfigured || !runtimeConfigured) {
+      state = "not_configured";
+      errorMessage = WHATSAPP_REQUIRED_MESSAGE;
     } else {
       try {
+        // TODO: Production launch should verify webhook health before enabling high-volume sends.
         const result = await sendTextMessage(normalizedPhone, messageBody);
         providerMessageId = result.messages?.[0]?.id;
         status = "SENT";
+        state = "sent_successfully";
       } catch (error) {
         status = "FAILED";
+        state = "provider_error";
         errorMessage = error instanceof WhatsAppServiceError ? "WhatsApp API request failed. Check credentials and recipient number." : "WhatsApp API error.";
       }
     }
@@ -92,9 +104,10 @@ export async function POST(request: Request) {
     return ok({
       sent: status === "SENT",
       provider,
+      state,
       providerMessageId,
       errorMessage,
-      message: status === "SENT" ? "Message sent through WhatsApp Cloud API." : "WhatsApp Cloud API is required to send real messages."
+      message: status === "SENT" ? "Message sent through WhatsApp Cloud API." : errorMessage ?? WHATSAPP_REQUIRED_MESSAGE
     });
   } catch (error) {
     return handleApiError(error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, CreditCard, Download, Gauge, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import { CheckCircle2, Gauge, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { primaryButtonClassName, secondaryButtonClassName } from "./saas-page-utils";
 
@@ -8,12 +8,6 @@ const usage = [
   { label: "Message usage", used: 28420, total: 100000, icon: Gauge },
   { label: "AI credit usage", used: 48500, total: 100000, icon: TrendingUp },
   { label: "Team member usage", used: 8, total: 25, icon: Users }
-];
-
-const invoices = [
-  ["INV-2026-005", "May 2026", "BDT 35,000", "Paid"],
-  ["INV-2026-004", "Apr 2026", "BDT 35,000", "Paid"],
-  ["INV-2026-003", "Mar 2026", "BDT 35,000", "Paid"]
 ];
 
 export function LicenseModulePage() {
@@ -31,7 +25,7 @@ export function LicenseModulePage() {
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Monitor plan, quotas, renewal, billing history, and operational status for the local MVP workspace.</p>
             </div>
           </div>
-          <button className={primaryButtonClassName}>Upgrade Plan</button>
+          <button className={primaryButtonClassName} disabled>Beta Workspace</button>
         </div>
       </section>
 
@@ -40,15 +34,15 @@ export function LicenseModulePage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase text-royal">Current Plan</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">Enterprise</h2>
+              <h2 className="mt-2 text-3xl font-black text-ink">Enterprise Beta</h2>
             </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">Active</span>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">Beta Active</span>
           </div>
-          <p className="mt-5 text-sm font-semibold leading-6 text-slate-500">Includes 100,000 monthly messages, 100,000 AI credits, 25 team seats, and priority local workspace support.</p>
+          <p className="mt-5 text-sm font-semibold leading-6 text-slate-500">Includes beta access to workspace modules while billing and license enforcement are prepared for launch.</p>
           <div className="mt-6 grid gap-3">
-            <Info label="Renewal date" value="30 Jun 2026" />
-            <Info label="Monthly billing" value="BDT 35,000" />
-            <Info label="Payment method" value="Manual invoice" />
+            <Info label="Workspace" value="ARBCore AI" />
+            <Info label="License status" value="Beta active" />
+            <Info label="Enforcement" value="Not active in beta" />
           </div>
         </article>
 
@@ -77,20 +71,18 @@ export function LicenseModulePage() {
         <section className="overflow-hidden rounded-[24px] border border-blue-100 bg-white/95 shadow-panel">
           <div className="flex items-center justify-between gap-3 border-b border-blue-100 p-5">
             <div className="flex items-center gap-3">
-              <CreditCard className="h-5 w-5 text-royal" />
-              <h2 className="text-lg font-black text-ink">Invoice & Payment History</h2>
+              <ShieldCheck className="h-5 w-5 text-royal" />
+              <h2 className="text-lg font-black text-ink">Launch License Status</h2>
             </div>
-            <button className={secondaryButtonClassName}><Download className="h-4 w-4" />Download</button>
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-royal ring-1 ring-blue-100">Beta</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-[680px] w-full text-left">
-              <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
-                <tr>{["Invoice", "Period", "Amount", "Status"].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}</tr>
-              </thead>
-              <tbody className="divide-y divide-blue-50">
-                {invoices.map((row) => <tr key={row[0]} className="text-sm font-semibold text-slate-600">{row.map((cell) => <td key={cell} className="px-4 py-4">{cell}</td>)}</tr>)}
-              </tbody>
-            </table>
+          <div className="grid gap-3 p-5">
+            <Info label="Current plan" value="Enterprise Beta" />
+            <Info label="Workspace/company" value="ARBCore AI" />
+            <Info label="Billing/license enforcement" value="Not active in this beta" />
+            <p className="rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-800">
+              Billing records and payment collection are not enforced by the app yet. Confirm account status manually before commercial launch.
+            </p>
           </div>
         </section>
 

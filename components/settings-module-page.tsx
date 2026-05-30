@@ -45,7 +45,7 @@ export function SettingsModulePage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [teamLoading, setTeamLoading] = useState(true);
   const [teamError, setTeamError] = useState("");
-  const [newMember, setNewMember] = useState({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
+  const [newMember, setNewMember] = useState({ name: "", email: "", role: "AGENT" as UserRole });
   const [savingSection, setSavingSection] = useState<string | null>(null);
   const [creatingMember, setCreatingMember] = useState(false);
 
@@ -192,7 +192,7 @@ async function createTeamMember() {
     });
 
     await loadTeam();
-    setNewMember({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
+    setNewMember({ name: "", email: "", role: "AGENT" as UserRole });
 
     showToast("Team member created.");
   } catch (error) {

@@ -4,9 +4,13 @@ ARBCore SwiftConnect is a WhatsApp business workspace for managing contacts, cam
 
 ## Beta Status
 
-This is a beta MVP. The workspace is ready for data entry, contact management, rule setup, settings persistence, team testing, and message-attempt logging. Real WhatsApp delivery still requires a configured WhatsApp Cloud API account and webhook verification.
+This is a launch-ready beta MVP. The workspace is ready for data entry, contact management, rule setup, settings persistence, team testing, message-attempt logging, and operational review. Real WhatsApp delivery still requires a configured WhatsApp Cloud API account and webhook verification.
 
 Do not treat local message drafts, queued replies, or failed send attempts as delivered customer messages unless the app confirms a successful WhatsApp Cloud API send.
+
+Production-ready in this beta: Settings persistence, Contacts, Auto Reply, Dashboard statistics, Team Member duplicate checks, Send Message safety checks, and operating documentation.
+
+Not yet implemented for full commercial launch: production OAuth/session management, billing enforcement, automated license blocking, approved-template campaign sending, and complete WhatsApp Cloud API operational monitoring.
 
 ## 1. Dashboard
 
@@ -120,6 +124,18 @@ Currently functional in beta:
 Real WhatsApp sending requires WhatsApp Cloud API credentials and webhook setup. This includes delivering outbound messages to customers, receiving inbound WhatsApp messages automatically, processing delivery/read receipts, and triggering auto replies from real incoming customer messages.
 
 Before production sending, confirm that the WhatsApp phone number ID, access token, verify token, webhook URL, and Meta webhook verification are fully configured.
+
+## 11. Token And Privacy Warning
+
+Treat WhatsApp access tokens, app secrets, database URLs, direct URLs, OpenAI keys, and session secrets as private credentials. Do not paste them into tickets, screenshots, public docs, or chat messages.
+
+The Settings page accepts a WhatsApp access token for launch setup, but the token is not displayed after refresh. If a token is exposed, rotate it in Meta and update the production environment immediately.
+
+## 12. Support And Maintenance
+
+Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.
+
+For support issues, collect the affected module, approximate time, user action, friendly error message, and whether the issue happened before or after a deployment. Do not collect or share raw access tokens or database connection strings.
 
 Known limitations:
 

@@ -12,8 +12,8 @@ export function LicenseFooter() {
   return (
     <footer className="grid gap-4 rounded-[20px] border border-blue-100 bg-white/92 p-4 shadow-panel backdrop-blur lg:grid-cols-[1fr_1fr_1fr_1fr_1fr]">
       <div className="min-w-0 border-blue-100 lg:border-r lg:pr-4">
-        <p className="truncate text-xs font-bold text-slate-500">Plan: Enterprise</p>
-        <p className="truncate text-xs font-semibold text-slate-600">Renews on 30 Jun 2026</p>
+        <p className="truncate text-xs font-bold text-slate-500">Plan: Enterprise Beta</p>
+        <p className="truncate text-xs font-semibold text-slate-600">License enforcement not active</p>
       </div>
       {usage.map((item) => (
         <div key={item.label} className="min-w-0 border-blue-100 lg:border-r lg:px-4">
