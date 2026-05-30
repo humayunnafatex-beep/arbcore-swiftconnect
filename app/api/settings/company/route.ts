@@ -32,6 +32,10 @@ export async function GET() {
           hotLead: company.notificationHotLead,
           billing: company.notificationBilling,
           weekly: company.notificationWeekly,
+          whatsappPhoneNumberId: company.whatsappPhoneNumberId,
+          whatsappAccessToken: company.whatsappAccessToken,
+          whatsappVerifyToken: company.whatsappVerifyToken,
+          whatsappWebhookUrl: company.whatsappWebhookUrl,
         },
       },
     });
@@ -70,6 +74,10 @@ export async function POST(request: NextRequest) {
         notificationHotLead: Boolean(body.notifications?.hotLead),
         notificationBilling: Boolean(body.notifications?.billing),
         notificationWeekly: Boolean(body.notifications?.weekly),
+        whatsappPhoneNumberId: body.whatsappPhoneNumberId ?? "",
+        whatsappAccessToken: body.whatsappAccessToken ?? "",
+        whatsappVerifyToken: body.whatsappVerifyToken ?? "",
+        whatsappWebhookUrl: body.whatsappWebhookUrl ?? "",
       },
     });
 

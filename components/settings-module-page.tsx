@@ -17,6 +17,12 @@ type TeamMember = {
   createdAt: string;
   updatedAt: string;
 };
+type WhatsAppSettings = {
+  phoneNumberId: string;
+  accessToken: string;
+  verifyToken: string;
+  webhookUrl: string;
+};
 
 export function SettingsModulePage() {
   const { toast, showToast } = useToast();
@@ -29,6 +35,12 @@ export function SettingsModulePage() {
   });
   const [language, setLanguage] = useState("English");
   const [notifications, setNotifications] = useState({ failed: true, hotLeads: true, billing: true, weekly: false });
+  const [whatsapp, setWhatsapp] = useState<WhatsAppSettings>({
+    phoneNumberId: "",
+    accessToken: "",
+    verifyToken: "",
+    webhookUrl: ""
+  });
   const [apiMode, setApiMode] = useState("Mock/local API");
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [teamLoading, setTeamLoading] = useState(true);
@@ -64,7 +76,12 @@ async function loadCompanySettings() {
       website: result.data.website || profile.website,
       timezone: result.data.timezone || profile.timezone,
     });
-
+     setWhatsapp({
+     phoneNumberId: result.data.whatsappPhoneNumberId || "",
+     accessToken: result.data.whatsappAccessToken || "",
+     verifyToken: result.data.whatsappVerifyToken || "",
+     webhookUrl: result.data.whatsappWebhookUrl || "",
+    });
     if (result.data.language) {
       setLanguage(result.data.language);
     }
@@ -85,11 +102,13 @@ async function save(section: string) {
     const normalizedSection = section.toLowerCase();
 
     const shouldPersist =
-      normalizedSection.includes("business") ||
-      normalizedSection.includes("profile") ||
-      normalizedSection.includes("notification") ||
-      normalizedSection.includes("language");
-
+  normalizedSection.includes("business") ||
+  normalizedSection.includes("profile") ||
+  normalizedSection.includes("notification") ||
+  normalizedSection.includes("language") ||
+  normalizedSection.includes("api") ||
+  normalizedSection.includes("whatsapp");
+  
     if (shouldPersist) {
       const response = await fetch("/api/settings/company", {
         method: "POST",
@@ -104,6 +123,10 @@ async function save(section: string) {
           timezone: profile.timezone,
           language,
           notifications,
+          whatsappPhoneNumberId: whatsapp.phoneNumberId,
+          whatsappAccessToken: whatsapp.accessToken,
+          whatsappVerifyToken: whatsapp.verifyToken,
+          whatsappWebhookUrl: whatsapp.webhookUrl,
         }),
       });
 
@@ -139,16 +162,16 @@ async function createTeamMember() {
     const result = await response.json();
 
     if (!response.ok || result.success === false) {
-      toast(result?.error || "Unable to create team member.", "error");
+     toast(result?.error || "Unable to create team member.");
       return;
     }
 
     await loadTeam();
-    setTeamMember({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
+  setNewMember({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
 
     toast("Team member created.");
   } catch (error) {
-    toast("Unable to create team member.", "error");
+   toast("Unable to create team member.");
   }
 }                         
 

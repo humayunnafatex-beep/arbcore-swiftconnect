@@ -96,6 +96,10 @@ model Company {
   notificationWeekly     Boolean  @default(false)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+  whatsappPhoneNumberId String @default("") 
+  whatsappAccessToken   String @default("")
+  whatsappVerifyToken   String @default("")
+  whatsappWebhookUrl    String @default("")
 
   users           User[]
   whatsappAccounts WhatsAppAccount[]
