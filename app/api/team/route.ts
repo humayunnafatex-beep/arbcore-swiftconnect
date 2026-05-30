@@ -1,5 +1,6 @@
 import { getCurrentAuthContext, assertRole } from "@/lib/auth";
 import { created, handleApiError, ok, parseJson } from "@/lib/api";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teamMemberCreateSchema } from "@/lib/validators";
 
@@ -58,6 +59,20 @@ export async function POST(request: Request) {
 
     return created(user);
   } catch (error) {
+      console.error("Team member create error:", error);
+
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
+    return Response.json(
+      {
+        success: false,
+        error: "A team member with this email already exists.",
+      },
+      { status: 409 }
+    );
+  }
     return handleApiError(error);
   }
 }
