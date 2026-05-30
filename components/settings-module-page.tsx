@@ -87,7 +87,12 @@ async function loadCompanySettings() {
     }
 
     if (result.data.notifications) {
-      setNotifications(result.data.notifications);
+      setNotifications({
+        failed: Boolean(result.data.notifications.failed),
+        hotLeads: Boolean(result.data.notifications.hotLeads ?? result.data.notifications.hotLead),
+        billing: Boolean(result.data.notifications.billing),
+        weekly: Boolean(result.data.notifications.weekly),
+      });
     }
   } catch (error) {
     console.error("Unable to load company settings", error);
@@ -122,7 +127,12 @@ async function save(section: string) {
           website: profile.website,
           timezone: profile.timezone,
           language,
-          notifications,
+          notifications: {
+            failed: notifications.failed,
+            hotLead: notifications.hotLeads,
+            billing: notifications.billing,
+            weekly: notifications.weekly,
+          },
           whatsappPhoneNumberId: whatsapp.phoneNumberId,
           whatsappAccessToken: whatsapp.accessToken,
           whatsappVerifyToken: whatsapp.verifyToken,
@@ -151,27 +161,17 @@ async function save(section: string) {
   
 async function createTeamMember() {
   try {
-    const response = await fetch("/api/team", {
+    await apiRequest<TeamMember>("/api/team", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-     body: JSON.stringify(newMember),
+      body: JSON.stringify(newMember),
     });
 
-    const result = await response.json();
-
-    if (!response.ok || result.success === false) {
-     toast(result?.error || "Unable to create team member.");
-      return;
-    }
-
     await loadTeam();
-  setNewMember({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
+    setNewMember({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
 
-    toast("Team member created.");
+    showToast("Team member created.");
   } catch (error) {
-   toast("Unable to create team member.");
+    showToast(getApiErrorMessage(error), "error");
   }
 }                         
 
@@ -235,6 +235,12 @@ async function createTeamMember() {
               <option disabled>Webhook production mode - planned</option>
             </select>
           </label>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Field label="Phone number ID" value={whatsapp.phoneNumberId} onChange={(value) => setWhatsapp({ ...whatsapp, phoneNumberId: value })} />
+            <Field label="Access token" value={whatsapp.accessToken} onChange={(value) => setWhatsapp({ ...whatsapp, accessToken: value })} />
+            <Field label="Verify token" value={whatsapp.verifyToken} onChange={(value) => setWhatsapp({ ...whatsapp, verifyToken: value })} />
+            <Field label="Webhook URL" value={whatsapp.webhookUrl} onChange={(value) => setWhatsapp({ ...whatsapp, webhookUrl: value })} />
+          </div>
           <div className="mt-4 rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold text-slate-600">
             Real WhatsApp credentials are intentionally not stored in this MVP.
           </div>

@@ -32,11 +32,11 @@ export async function GET() {
           hotLead: company.notificationHotLead,
           billing: company.notificationBilling,
           weekly: company.notificationWeekly,
-          whatsappPhoneNumberId: company.whatsappPhoneNumberId,
-          whatsappAccessToken: company.whatsappAccessToken,
-          whatsappVerifyToken: company.whatsappVerifyToken,
-          whatsappWebhookUrl: company.whatsappWebhookUrl,
         },
+        whatsappPhoneNumberId: company.whatsappPhoneNumberId,
+        whatsappAccessToken: company.whatsappAccessToken,
+        whatsappVerifyToken: company.whatsappVerifyToken,
+        whatsappWebhookUrl: company.whatsappWebhookUrl,
       },
     });
   } catch (error) {
@@ -96,6 +96,10 @@ export async function POST(request: NextRequest) {
           billing: company.notificationBilling,
           weekly: company.notificationWeekly,
         },
+        whatsappPhoneNumberId: company.whatsappPhoneNumberId,
+        whatsappAccessToken: company.whatsappAccessToken,
+        whatsappVerifyToken: company.whatsappVerifyToken,
+        whatsappWebhookUrl: company.whatsappWebhookUrl,
       },
     });
   } catch (error) {

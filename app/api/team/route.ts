@@ -37,11 +37,30 @@ export async function POST(request: Request) {
     const context = await getCurrentAuthContext();
     assertRole(context, ["OWNER", "ADMIN"]);
     const input = await parseJson(request, teamMemberCreateSchema);
+    const email = input.email.toLowerCase();
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true }
+    });
+
+    if (existingUser) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "DUPLICATE_TEAM_MEMBER",
+            message: "A team member with this email already exists."
+          }
+        },
+        { status: 409 }
+      );
+    }
 
     const user = await prisma.user.create({
       data: {
         name: input.name,
-        email: input.email.toLowerCase(),
+        email,
         role: input.role,
         isActive: true,
         companyId: context.company.id
@@ -59,20 +78,19 @@ export async function POST(request: Request) {
 
     return created(user);
   } catch (error) {
-      console.error("Team member create error:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "DUPLICATE_TEAM_MEMBER",
+            message: "A team member with this email already exists."
+          }
+        },
+        { status: 409 }
+      );
+    }
 
-  if (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === "P2002"
-  ) {
-    return Response.json(
-      {
-        success: false,
-        error: "A team member with this email already exists.",
-      },
-      { status: 409 }
-    );
-  }
     return handleApiError(error);
   }
 }
