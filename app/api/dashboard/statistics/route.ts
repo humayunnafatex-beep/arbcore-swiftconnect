@@ -15,9 +15,12 @@ export async function GET() {
     const [
       connectedNumbers,
       messagesSentToday,
+      totalMessages,
       openConversations,
       activeCampaigns,
       contacts,
+      activeAutoReplyRules,
+      teamMembers,
       aiCreditsUsed
     ] = await Promise.all([
       prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } }),
@@ -29,18 +32,24 @@ export async function GET() {
           status: { in: ["SENT", "DELIVERED", "READ"] }
         }
       }),
+      prisma.messageLog.count({ where: { companyId } }),
       prisma.conversation.count({ where: { companyId, status: "OPEN" } }),
       prisma.campaign.count({ where: { companyId, status: { in: ["SCHEDULED", "RUNNING"] } } }),
       prisma.contact.count({ where: { companyId } }),
+      prisma.autoReplyRule.count({ where: { companyId, isActive: true } }),
+      prisma.user.count({ where: { companyId, isActive: true } }),
       prisma.aiGeneration.count({ where: { companyId } })
     ]);
 
     return ok({
       connectedNumbers,
       messagesSentToday,
+      totalMessages,
       openConversations,
       activeCampaigns,
       contacts,
+      activeAutoReplyRules,
+      teamMembers,
       aiCreditsUsed,
       apiStatus: "Operational"
     });

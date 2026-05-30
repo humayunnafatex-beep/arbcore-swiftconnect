@@ -55,6 +55,14 @@ type MessageLog = {
   contact?: Contact | null;
 };
 
+type SendAttemptResponse = {
+  sent: boolean;
+  provider: string;
+  providerMessageId?: string;
+  errorMessage?: string;
+  message?: string;
+};
+
 const templates = [
   { name: "Custom Message", body: "Hi {{name}}, thanks for contacting ARBCore SwiftConnect." },
   { name: "Order Update", body: "Hi {{name}}, your order update is ready. Please reply if you need more details." },
@@ -123,13 +131,13 @@ export function InboxModulePage() {
     try {
       const message = await apiRequest<ConversationMessage>(`/api/conversations/${thread.id}`, {
         method: "POST",
-        body: JSON.stringify({ body: reply, direction: "OUTBOUND", status: "SENT" })
+        body: JSON.stringify({ body: reply, direction: "OUTBOUND", status: "QUEUED" })
       });
       setThread({ ...thread, messages: [...thread.messages, message] });
       setReply("");
       conversations.reload();
       logs.reload();
-      showToast("Message sent.");
+      showToast("Reply saved locally. WhatsApp Cloud API is required to send real messages.");
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
     } finally {
@@ -139,14 +147,32 @@ export function InboxModulePage() {
 
   async function submitQuickSend(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    const contact = findContactByPhone(contacts.data?.items ?? [], quickSend.phone);
-    if (!contact) {
-      showToast("Recipient phone must match an existing contact for this local MVP.", "error");
+    const phone = quickSend.phone.trim();
+    if (!phone || !preview.trim()) {
+      showToast("Enter a phone number and message before sending.", "error");
       return;
     }
 
     setBusy(true);
     try {
+      const result = await apiRequest<SendAttemptResponse>("/api/whatsapp/test-send", {
+        method: "POST",
+        body: JSON.stringify({ to: phone, body: preview })
+      });
+      contacts.reload();
+      logs.reload();
+
+      if (!result.sent) {
+        showToast(result.message || result.errorMessage || "WhatsApp Cloud API is required to send real messages.", "error");
+        return;
+      }
+
+      const contact = findContactByPhone(contacts.data?.items ?? [], phone);
+      if (!contact) {
+        showToast("Message sent through WhatsApp Cloud API.");
+        return;
+      }
+
       const existing = items.find((conversation) => conversation.contact.id === contact.id);
       if (existing) {
         const message = await apiRequest<ConversationMessage>(`/api/conversations/${existing.id}`, {
@@ -164,7 +190,7 @@ export function InboxModulePage() {
       }
       conversations.reload();
       logs.reload();
-      showToast(quickSend.scheduleAt ? "Message scheduled locally." : "Quick message sent.");
+      showToast(quickSend.scheduleAt ? "Message scheduled locally." : "Message sent through WhatsApp Cloud API.");
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
     } finally {

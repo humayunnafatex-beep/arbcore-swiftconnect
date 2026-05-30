@@ -55,6 +55,19 @@ export async function PUT(request: Request, { params }: Context) {
 
     return ok(contact);
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "DUPLICATE_CONTACT_PHONE",
+            message: "A contact with this phone number already exists."
+          }
+        },
+        { status: 409 }
+      );
+    }
+
     return handleApiError(error);
   }
 }

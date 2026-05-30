@@ -15,9 +15,11 @@ const testSendSchema = z.object({
 
 export async function GET() {
   try {
-    await getCurrentAuthContext();
+    const { company } = await getCurrentAuthContext();
     return ok({
       ...getWhatsAppConfigStatus(),
+      savedSettingsConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),
+      webhookUrl: company.whatsappWebhookUrl,
       webhookStatus: process.env.WHATSAPP_VERIFY_TOKEN ? "Ready to verify" : "Verify token missing"
     });
   } catch (error) {
@@ -54,14 +56,19 @@ export async function POST(request: Request) {
     }
 
     let providerMessageId: string | undefined;
-    let status: "SENT" | "FAILED" = "SENT";
+    let status: "SENT" | "FAILED" = "FAILED";
     let errorMessage: string | undefined;
-    const provider = isWhatsAppConfigured() ? "whatsapp_cloud_api" : "mock";
+    const savedSettingsConfigured = Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken);
+    const runtimeConfigured = isWhatsAppConfigured();
+    const provider = savedSettingsConfigured && runtimeConfigured ? "whatsapp_cloud_api" : "not_configured";
 
-    if (isWhatsAppConfigured()) {
+    if (!savedSettingsConfigured || !runtimeConfigured) {
+      errorMessage = "WhatsApp Cloud API is required to send real messages.";
+    } else {
       try {
         const result = await sendTextMessage(normalizedPhone, input.body);
         providerMessageId = result.messages?.[0]?.id;
+        status = "SENT";
       } catch (error) {
         status = "FAILED";
         errorMessage = error instanceof WhatsAppServiceError ? error.message : "WhatsApp API error.";
@@ -81,7 +88,13 @@ export async function POST(request: Request) {
       }
     });
 
-    return ok({ sent: status === "SENT", provider, providerMessageId, errorMessage });
+    return ok({
+      sent: status === "SENT",
+      provider,
+      providerMessageId,
+      errorMessage,
+      message: status === "SENT" ? "Message sent through WhatsApp Cloud API." : "WhatsApp Cloud API is required to send real messages."
+    });
   } catch (error) {
     return handleApiError(error);
   }

@@ -46,6 +46,24 @@ export async function POST(request: Request) {
   try {
     const input = await parseJson(request, contactCreateSchema);
     const { company } = await getCurrentAuthContext();
+    const existingContact = await prisma.contact.findUnique({
+      where: { phone: input.phone },
+      select: { id: true, name: true }
+    });
+
+    if (existingContact) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "DUPLICATE_CONTACT_PHONE",
+            message: `A contact with this phone number already exists: ${existingContact.name}.`
+          }
+        },
+        { status: 409 }
+      );
+    }
+
     const contact = await prisma.contact.create({
       data: {
         companyId: company.id,
@@ -62,6 +80,19 @@ export async function POST(request: Request) {
 
     return created(contact);
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "DUPLICATE_CONTACT_PHONE",
+            message: "A contact with this phone number already exists."
+          }
+        },
+        { status: 409 }
+      );
+    }
+
     return handleApiError(error);
   }
 }

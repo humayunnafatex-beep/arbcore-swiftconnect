@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, MessageSquareText, Megaphone, Send, TrendingUp } from "lucide-react";
+import { Bot, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
 import { kpis } from "@/data/dashboard";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
-const iconMap = [MessageCircle, Send, MessageSquareText, Megaphone];
+const iconMap = [Users, Send, MessageSquareText, Bot, Users];
 
 const toneClasses = {
   whatsapp: "from-emerald-400 to-cyan-500",
@@ -18,9 +18,12 @@ const toneClasses = {
 type DashboardStatistics = {
   connectedNumbers: number;
   messagesSentToday: number;
+  totalMessages: number;
   openConversations: number;
   activeCampaigns: number;
   contacts: number;
+  activeAutoReplyRules: number;
+  teamMembers: number;
   aiCreditsUsed: number;
   apiStatus: string;
 };
@@ -58,14 +61,15 @@ export function MetricGrid() {
     return [
       {
         ...kpis[0],
-        value: String(stats.connectedNumbers),
+        label: "Contacts",
+        value: stats.contacts.toLocaleString(),
         change: stats.connectedNumbers > 0 ? "Online" : "Offline",
-        helper: `${stats.connectedNumbers} Connected - API ${stats.apiStatus}`
+        helper: `${stats.connectedNumbers} connected number(s) - API ${stats.apiStatus}`
       },
       {
         ...kpis[1],
         value: stats.messagesSentToday.toLocaleString(),
-        helper: "Fetched from message logs"
+        helper: `${stats.totalMessages.toLocaleString()} total message log(s)`
       },
       {
         ...kpis[2],
@@ -74,8 +78,17 @@ export function MetricGrid() {
       },
       {
         ...kpis[3],
-        value: stats.activeCampaigns.toLocaleString(),
-        helper: `${stats.contacts.toLocaleString()} contacts in workspace`
+        label: "Active Auto Replies",
+        value: stats.activeAutoReplyRules.toLocaleString(),
+        helper: `${stats.activeCampaigns.toLocaleString()} active campaign(s)`
+      },
+      {
+        ...kpis[0],
+        label: "Team Members",
+        value: stats.teamMembers.toLocaleString(),
+        change: "Active",
+        helper: "Active workspace users",
+        tone: "whatsapp" as const
       }
     ];
   }, [stats]);
@@ -87,7 +100,7 @@ export function MetricGrid() {
           Dashboard API error: {error}
         </div>
       ) : null}
-      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-5">
       {liveKpis.map((item, index) => {
         const Icon = iconMap[index];
         const isOnline = item.change === "Online";
