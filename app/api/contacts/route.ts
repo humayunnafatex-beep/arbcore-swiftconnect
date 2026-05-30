@@ -46,8 +46,9 @@ export async function POST(request: Request) {
   try {
     const input = await parseJson(request, contactCreateSchema);
     const { company } = await getCurrentAuthContext();
+    const phone = input.phone.trim();
     const existingContact = await prisma.contact.findUnique({
-      where: { phone: input.phone },
+      where: { phone },
       select: { id: true, name: true }
     });
 
@@ -67,11 +68,11 @@ export async function POST(request: Request) {
     const contact = await prisma.contact.create({
       data: {
         companyId: company.id,
-        name: input.name,
-        phone: input.phone,
-        email: input.email ?? undefined,
+        name: input.name.trim(),
+        phone,
+        email: input.email?.trim() || undefined,
         tags: normalizeTags(input.tags),
-        segment: input.segment ?? undefined,
+        segment: input.segment?.trim() || undefined,
         stage: input.stage ?? "NEW_LEAD",
         optedIn: input.optedIn ?? true,
         metadata: input.metadata as Prisma.InputJsonValue | undefined

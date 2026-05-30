@@ -38,8 +38,8 @@ export async function PUT(request: Request, { params }: Context) {
     const rule = await prisma.autoReplyRule.update({
       where: { id: params.id },
       data: {
-        ...("keyword" in input ? { keyword: input.keyword } : {}),
-        ...("response" in input ? { response: input.response } : {}),
+        ...("keyword" in input ? { keyword: input.keyword?.trim() } : {}),
+        ...("response" in input ? { response: input.response?.trim() } : {}),
         ...("priority" in input ? { priority: input.priority } : {}),
         ...("isActive" in input ? { isActive: input.isActive } : {}),
         ...("matchMode" in input ? { matchMode: input.matchMode } : {})

@@ -103,15 +103,29 @@ export function AutoReplyModulePage() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const keyword = form.keyword.trim();
+    const response = form.response.trim();
+    const priority = Number(form.priority);
+
+    if (!keyword) {
+      showToast("Trigger keyword is required.", "error");
+      return;
+    }
+
+    if (!response) {
+      showToast("Reply message is required.", "error");
+      return;
+    }
+
     setBusy(true);
     try {
-      const payload = { ...form, priority: Number(form.priority) };
+      const payload = { ...form, keyword, response, priority: Number.isFinite(priority) && priority > 0 ? priority : 100 };
       if (editingRule) {
         await apiRequest<AutoReplyRule>(`/api/auto-reply/rules/${editingRule.id}`, { method: "PUT", body: JSON.stringify(payload) });
-        showToast("Rule updated.");
+        showToast("Auto reply rule saved.");
       } else {
         await apiRequest<AutoReplyRule>("/api/auto-reply/rules", { method: "POST", body: JSON.stringify(payload) });
-        showToast("Rule created.");
+        showToast("Auto reply rule saved.");
       }
       setModalOpen(false);
       rules.reload();
@@ -123,12 +137,14 @@ export function AutoReplyModulePage() {
   }
 
   async function toggleRule(rule: AutoReplyRule) {
+    if (rule.isActive && !window.confirm(`Deactivate auto reply rule "${rule.keyword}"?`)) return;
+
     try {
       await apiRequest<AutoReplyRule>(`/api/auto-reply/rules/${rule.id}`, {
         method: "PUT",
         body: JSON.stringify({ isActive: !rule.isActive })
       });
-      showToast(rule.isActive ? "Rule paused." : "Rule activated.");
+      showToast(rule.isActive ? "Auto reply rule deactivated." : "Auto reply rule activated.");
       rules.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
@@ -139,7 +155,7 @@ export function AutoReplyModulePage() {
     if (!window.confirm(`Delete auto reply rule "${rule.keyword}"?`)) return;
     try {
       await apiRequest<{ deleted: boolean }>(`/api/auto-reply/rules/${rule.id}`, { method: "DELETE" });
-      showToast("Rule deleted.");
+      showToast("Auto reply rule deleted.");
       rules.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");

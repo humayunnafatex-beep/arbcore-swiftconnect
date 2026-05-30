@@ -39,8 +39,8 @@ export async function POST(request: Request) {
     const rule = await prisma.autoReplyRule.create({
       data: {
         companyId: company.id,
-        keyword: input.keyword,
-        response: input.response,
+        keyword: input.keyword.trim(),
+        response: input.response.trim(),
         priority: input.priority ?? 100,
         isActive: input.isActive ?? true,
         matchMode: input.matchMode ?? "CONTAINS"

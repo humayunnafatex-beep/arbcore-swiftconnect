@@ -34,7 +34,8 @@ export async function GET() {
           weekly: company.notificationWeekly,
         },
         whatsappPhoneNumberId: company.whatsappPhoneNumberId,
-        whatsappAccessToken: company.whatsappAccessToken,
+        whatsappAccessToken: "",
+        whatsappAccessTokenSaved: Boolean(company.whatsappAccessToken),
         whatsappVerifyToken: company.whatsappVerifyToken,
         whatsappWebhookUrl: company.whatsappWebhookUrl,
       },
@@ -61,23 +62,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const businessName = String(body.businessName ?? "").trim();
+    const workspace = String(body.workspace ?? "").trim();
+    const whatsappAccessToken = typeof body.whatsappAccessToken === "string" ? body.whatsappAccessToken.trim() : undefined;
+
     const company = await prisma.company.update({
       where: { id: existingCompany.id },
       data: {
-        businessName: body.businessName || existingCompany.businessName || existingCompany.name,
-        workspaceName: body.workspace || existingCompany.workspaceName || existingCompany.plan || "Enterprise Workspace",
-        phone: body.phone || "",
-        website: body.website || "",
-        timezone: body.timezone || "Asia/Dhaka",
-        language: body.language || "English",
+        businessName: businessName || existingCompany.businessName || existingCompany.name,
+        workspaceName: workspace || existingCompany.workspaceName || existingCompany.plan || "Enterprise Workspace",
+        phone: String(body.phone ?? "").trim(),
+        website: String(body.website ?? "").trim(),
+        timezone: String(body.timezone ?? "Asia/Dhaka").trim() || "Asia/Dhaka",
+        language: String(body.language ?? "English").trim() || "English",
         notificationFailed: Boolean(body.notifications?.failed),
         notificationHotLead: Boolean(body.notifications?.hotLead),
         notificationBilling: Boolean(body.notifications?.billing),
         notificationWeekly: Boolean(body.notifications?.weekly),
-        whatsappPhoneNumberId: body.whatsappPhoneNumberId ?? "",
-        whatsappAccessToken: body.whatsappAccessToken ?? "",
-        whatsappVerifyToken: body.whatsappVerifyToken ?? "",
-        whatsappWebhookUrl: body.whatsappWebhookUrl ?? "",
+        whatsappPhoneNumberId: String(body.whatsappPhoneNumberId ?? "").trim(),
+        ...(whatsappAccessToken ? { whatsappAccessToken } : {}),
+        whatsappVerifyToken: String(body.whatsappVerifyToken ?? "").trim(),
+        whatsappWebhookUrl: String(body.whatsappWebhookUrl ?? "").trim(),
       },
     });
 
@@ -97,7 +102,8 @@ export async function POST(request: NextRequest) {
           weekly: company.notificationWeekly,
         },
         whatsappPhoneNumberId: company.whatsappPhoneNumberId,
-        whatsappAccessToken: company.whatsappAccessToken,
+        whatsappAccessToken: "",
+        whatsappAccessTokenSaved: Boolean(company.whatsappAccessToken),
         whatsappVerifyToken: company.whatsappVerifyToken,
         whatsappWebhookUrl: company.whatsappWebhookUrl,
       },

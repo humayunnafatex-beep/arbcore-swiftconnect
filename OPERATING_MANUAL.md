@@ -2,6 +2,12 @@
 
 ARBCore SwiftConnect is a WhatsApp business workspace for managing contacts, campaigns, message drafts, auto replies, CRM follow-up, and account settings.
 
+## Beta Status
+
+This is a beta MVP. The workspace is ready for data entry, contact management, rule setup, settings persistence, team testing, and message-attempt logging. Real WhatsApp delivery still requires a configured WhatsApp Cloud API account and webhook verification.
+
+Do not treat local message drafts, queued replies, or failed send attempts as delivered customer messages unless the app confirms a successful WhatsApp Cloud API send.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -13,6 +19,17 @@ Use it at the start of the day to check whether the workspace is healthy, whethe
 Contacts is the customer list. Each contact can store a name, WhatsApp phone number, email, source or segment, tags, status, and opt-in preference.
 
 Use Contacts to add new leads, update customer details, search by name or phone, filter by status or tags, import CSV or Excel files, and remove test or unwanted records.
+
+Basic Contacts workflow:
+
+1. Open Contacts.
+2. Click New Contact.
+3. Enter name and phone number.
+4. Optionally add email, source, tags, status, and opt-in state.
+5. Click Save Contact.
+6. Use search and filters to find the saved contact.
+7. Use the edit button to update details.
+8. Use delete only for test or unwanted contacts.
 
 ## 3. Campaigns
 
@@ -26,11 +43,33 @@ Send Messages is the message desk. It lets the team select or enter a phone numb
 
 If WhatsApp Cloud API is not configured, the app will not pretend a real message was sent. It will show that WhatsApp Cloud API is required to send real messages and can log the attempted message for review.
 
+Basic Send Messages workflow:
+
+1. Open Send Messages.
+2. Choose or type the recipient phone number.
+3. Select a template or write a custom message.
+4. Review the preview.
+5. Click Send.
+6. If WhatsApp Cloud API is missing, read the warning and treat the record as an attempted message only.
+7. If the API is configured and the provider accepts the request, the app can mark the message as sent.
+
 ## 5. Auto Reply
 
 Auto Reply manages keyword-based replies. A rule contains a trigger keyword, reply message, match mode, priority, and active/inactive status.
 
 Use Auto Reply for common questions such as price, delivery, payment, order status, support, or unsubscribe requests. Active rules are ready to respond when webhook processing is connected.
+
+Basic Auto Reply workflow:
+
+1. Open Auto Reply.
+2. Click New Rule or choose a starter category.
+3. Enter a trigger keyword.
+4. Enter the reply message.
+5. Choose the match mode and priority.
+6. Keep the rule active if it should be used.
+7. Click Save Rule.
+8. Use the status button to activate or deactivate a rule.
+9. Delete only rules that are no longer needed.
 
 ## 6. CRM
 
@@ -44,6 +83,16 @@ Settings controls workspace configuration. Business Profile saves company name, 
 
 Team Members lets owners and admins add users, change roles, deactivate users, and see friendly duplicate-email errors.
 
+Basic Settings workflow:
+
+1. Open Settings.
+2. Update Business Profile fields and click Save.
+3. Add WhatsApp/API fields when available and click Save in that panel.
+4. Enter a new access token only when you want to save or replace it; saved tokens are not shown after refresh.
+5. Update notifications or language and save the relevant panel.
+6. Add team members with name, email, and role.
+7. If a duplicate email is entered, the app shows a friendly error.
+
 ## 8. License
 
 License shows the current plan, usage limits, and seat/message allowance for the workspace.
@@ -56,8 +105,26 @@ Without WhatsApp Cloud API, the app can still manage business settings, WhatsApp
 
 This is enough for preparing customer data, training the team, building message templates, and organizing the sales workflow.
 
+Currently functional in beta:
+
+1. Dashboard real workspace counts.
+2. Business Profile save and refresh.
+3. WhatsApp/API settings save and refresh, with access token hidden after save.
+4. Team member create, role changes, deactivate, and duplicate-email handling.
+5. Contacts create, edit, delete, search, filter, import, and duplicate-phone handling.
+6. Auto Reply create, edit, activate, deactivate, delete, and AI draft assistance.
+7. Send Messages attempt logging and clear no-API warning.
+
 ## 10. What Requires WhatsApp Cloud API
 
 Real WhatsApp sending requires WhatsApp Cloud API credentials and webhook setup. This includes delivering outbound messages to customers, receiving inbound WhatsApp messages automatically, processing delivery/read receipts, and triggering auto replies from real incoming customer messages.
 
 Before production sending, confirm that the WhatsApp phone number ID, access token, verify token, webhook URL, and Meta webhook verification are fully configured.
+
+Known limitations:
+
+1. Real WhatsApp sending is blocked until WhatsApp Cloud API credentials and server environment variables are configured.
+2. Inbound WhatsApp auto replies require Meta webhook verification and live webhook events.
+3. Campaign sending depends on approved WhatsApp templates and a completed production send flow.
+4. Authentication is demo-cookie based for MVP testing.
+5. Access tokens are saved but intentionally not displayed after refresh.

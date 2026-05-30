@@ -129,23 +129,42 @@ export function ContactsModulePage() {
 
   async function saveContact(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const name = form.name.trim();
+    const phone = form.phone.trim();
+    const email = form.email.trim();
+
+    if (!name) {
+      showToast("Contact name is required.", "error");
+      return;
+    }
+
+    if (!phone) {
+      showToast("Phone number is required.", "error");
+      return;
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showToast("Enter a valid email address or leave it blank.", "error");
+      return;
+    }
+
     const duplicate = allContacts.find(
-      (contact) => normalizePhone(contact.phone) === normalizePhone(form.phone) && contact.id !== editingContact?.id
+      (contact) => normalizePhone(contact.phone) === normalizePhone(phone) && contact.id !== editingContact?.id
     );
 
     if (duplicate) {
-      showToast(`Duplicate phone warning: ${form.phone} already belongs to ${duplicate.name}.`, "error");
+      showToast(`This phone number already belongs to ${duplicate.name}.`, "error");
       return;
     }
 
     setSubmitting(true);
     try {
       const payload = {
-        name: form.name,
-        phone: form.phone,
-        email: form.email || null,
-        tags: form.tags || null,
-        segment: form.segment || null,
+        name,
+        phone,
+        email: email || null,
+        tags: form.tags.trim() || null,
+        segment: form.segment.trim() || null,
         stage: form.stage,
         optedIn: form.optedIn
       };
@@ -155,13 +174,13 @@ export function ContactsModulePage() {
           method: "PUT",
           body: JSON.stringify(payload)
         });
-        showToast("Contact updated.");
+        showToast("Contact saved.");
       } else {
         await apiRequest<Contact>("/api/contacts", {
           method: "POST",
           body: JSON.stringify(payload)
         });
-        showToast("Contact created.");
+        showToast("Contact saved.");
       }
 
       contacts.reload();
@@ -175,6 +194,7 @@ export function ContactsModulePage() {
 
   async function deleteContact() {
     if (!deletingContact) return;
+    if (!window.confirm(`Delete contact "${deletingContact.name}"? This cannot be undone.`)) return;
 
     setSubmitting(true);
     try {

@@ -31,7 +31,8 @@ export async function POST(request: Request) {
   try {
     const input = await parseJson(request, testSendSchema);
     const { company } = await getCurrentAuthContext();
-    const normalizedPhone = input.to.replace(/[^\d]/g, "");
+    const messageBody = input.body.trim();
+    const normalizedPhone = input.to.trim().replace(/[^\d]/g, "");
     const existingContact = await prisma.contact.findUnique({ where: { phone: normalizedPhone } });
     const contact = existingContact
       ? await prisma.contact.update({
@@ -66,12 +67,12 @@ export async function POST(request: Request) {
       errorMessage = "WhatsApp Cloud API is required to send real messages.";
     } else {
       try {
-        const result = await sendTextMessage(normalizedPhone, input.body);
+        const result = await sendTextMessage(normalizedPhone, messageBody);
         providerMessageId = result.messages?.[0]?.id;
         status = "SENT";
       } catch (error) {
         status = "FAILED";
-        errorMessage = error instanceof WhatsAppServiceError ? error.message : "WhatsApp API error.";
+        errorMessage = error instanceof WhatsAppServiceError ? "WhatsApp API request failed. Check credentials and recipient number." : "WhatsApp API error.";
       }
     }
 
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
       data: {
         companyId: company.id,
         contactId: contact.id,
-        body: input.body,
+        body: messageBody,
         direction: "OUTBOUND",
         status,
         sentAt: status === "SENT" ? new Date() : undefined,

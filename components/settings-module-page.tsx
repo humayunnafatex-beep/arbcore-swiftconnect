@@ -46,6 +46,8 @@ export function SettingsModulePage() {
   const [teamLoading, setTeamLoading] = useState(true);
   const [teamError, setTeamError] = useState("");
   const [newMember, setNewMember] = useState({ name: "Demo Agent", email: "agent@arbcore.ai", role: "AGENT" as UserRole });
+  const [savingSection, setSavingSection] = useState<string | null>(null);
+  const [creatingMember, setCreatingMember] = useState(false);
 
   async function loadTeam() {
     setTeamLoading(true);
@@ -106,6 +108,18 @@ async function save(section: string) {
   try {
     const normalizedSection = section.toLowerCase();
 
+    if (!profile.businessName.trim()) {
+      showToast("Business name is required.", "error");
+      return;
+    }
+
+    if (!profile.workspace.trim()) {
+      showToast("Workspace name is required.", "error");
+      return;
+    }
+
+    setSavingSection(section);
+
     const shouldPersist =
   normalizedSection.includes("business") ||
   normalizedSection.includes("profile") ||
@@ -121,11 +135,11 @@ async function save(section: string) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          businessName: profile.businessName,
-          workspace: profile.workspace,
-          phone: profile.phone,
-          website: profile.website,
-          timezone: profile.timezone,
+          businessName: profile.businessName.trim(),
+          workspace: profile.workspace.trim(),
+          phone: profile.phone.trim(),
+          website: profile.website.trim(),
+          timezone: profile.timezone.trim(),
           language,
           notifications: {
             failed: notifications.failed,
@@ -133,10 +147,10 @@ async function save(section: string) {
             billing: notifications.billing,
             weekly: notifications.weekly,
           },
-          whatsappPhoneNumberId: whatsapp.phoneNumberId,
-          whatsappAccessToken: whatsapp.accessToken,
-          whatsappVerifyToken: whatsapp.verifyToken,
-          whatsappWebhookUrl: whatsapp.webhookUrl,
+          whatsappPhoneNumberId: whatsapp.phoneNumberId.trim(),
+          whatsappAccessToken: whatsapp.accessToken.trim(),
+          whatsappVerifyToken: whatsapp.verifyToken.trim(),
+          whatsappWebhookUrl: whatsapp.webhookUrl.trim(),
         }),
       });
 
@@ -156,14 +170,25 @@ async function save(section: string) {
       error instanceof Error ? error.message : "Unable to save settings.",
       "error"
     );
+  } finally {
+    setSavingSection(null);
   }
 }
   
 async function createTeamMember() {
   try {
+    const name = newMember.name.trim();
+    const email = newMember.email.trim().toLowerCase();
+
+    if (!name || !email) {
+      showToast("Name and email are required.", "error");
+      return;
+    }
+
+    setCreatingMember(true);
     await apiRequest<TeamMember>("/api/team", {
       method: "POST",
-      body: JSON.stringify(newMember),
+      body: JSON.stringify({ ...newMember, name, email }),
     });
 
     await loadTeam();
@@ -172,6 +197,8 @@ async function createTeamMember() {
     showToast("Team member created.");
   } catch (error) {
     showToast(getApiErrorMessage(error), "error");
+  } finally {
+    setCreatingMember(false);
   }
 }                         
 
@@ -216,7 +243,7 @@ async function createTeamMember() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <Panel icon={<Building2 className="h-5 w-5" />} title="Business Profile" action={<button className={primaryButtonClassName} onClick={() => save("Business profile")}><Save className="h-4 w-4" />Save</button>}>
+        <Panel icon={<Building2 className="h-5 w-5" />} title="Business Profile" action={<button className={primaryButtonClassName} onClick={() => save("Business profile")} disabled={savingSection !== null}><Save className="h-4 w-4" />{savingSection === "Business profile" ? "Saving..." : "Save"}</button>}>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Business name" value={profile.businessName} onChange={(value) => setProfile({ ...profile, businessName: value })} />
             <Field label="Workspace" value={profile.workspace} onChange={(value) => setProfile({ ...profile, workspace: value })} />
@@ -226,7 +253,7 @@ async function createTeamMember() {
           </div>
         </Panel>
 
-        <Panel icon={<Smartphone className="h-5 w-5" />} title="WhatsApp / API Settings" action={<button className={secondaryButtonClassName} onClick={() => save("API")}><KeyRound className="h-4 w-4" />Save</button>}>
+        <Panel icon={<Smartphone className="h-5 w-5" />} title="WhatsApp / API Settings" action={<button className={secondaryButtonClassName} onClick={() => save("API")} disabled={savingSection !== null}><KeyRound className="h-4 w-4" />{savingSection === "API" ? "Saving..." : "Save"}</button>}>
           <label className="grid gap-1.5 text-xs font-black text-slate-500">
             API mode
             <select className={inputClassName} value={apiMode} onChange={(event) => setApiMode(event.target.value)}>
@@ -242,18 +269,18 @@ async function createTeamMember() {
             <Field label="Webhook URL" value={whatsapp.webhookUrl} onChange={(value) => setWhatsapp({ ...whatsapp, webhookUrl: value })} />
           </div>
           <div className="mt-4 rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold text-slate-600">
-            Real WhatsApp credentials are intentionally not stored in this MVP.
+            Access tokens are saved only when entered and are not displayed after refresh.
           </div>
         </Panel>
 
-        <Panel icon={<Bell className="h-5 w-5" />} title="Notification Preferences" action={<button className={primaryButtonClassName} onClick={() => save("Notification")}><Save className="h-4 w-4" />Save</button>}>
+        <Panel icon={<Bell className="h-5 w-5" />} title="Notification Preferences" action={<button className={primaryButtonClassName} onClick={() => save("Notification")} disabled={savingSection !== null}><Save className="h-4 w-4" />{savingSection === "Notification" ? "Saving..." : "Save"}</button>}>
           <Toggle label="Failed message alerts" checked={notifications.failed} onChange={(checked) => setNotifications({ ...notifications, failed: checked })} />
           <Toggle label="Hot lead alerts" checked={notifications.hotLeads} onChange={(checked) => setNotifications({ ...notifications, hotLeads: checked })} />
           <Toggle label="Billing and license alerts" checked={notifications.billing} onChange={(checked) => setNotifications({ ...notifications, billing: checked })} />
           <Toggle label="Weekly analytics digest" checked={notifications.weekly} onChange={(checked) => setNotifications({ ...notifications, weekly: checked })} />
         </Panel>
 
-        <Panel icon={<Globe2 className="h-5 w-5" />} title="Language Settings" action={<button className={primaryButtonClassName} onClick={() => save("Language")}><Save className="h-4 w-4" />Save</button>}>
+        <Panel icon={<Globe2 className="h-5 w-5" />} title="Language Settings" action={<button className={primaryButtonClassName} onClick={() => save("Language")} disabled={savingSection !== null}><Save className="h-4 w-4" />{savingSection === "Language" ? "Saving..." : "Save"}</button>}>
           <div className="grid gap-2 sm:grid-cols-3">
             {["English", "Bangla", "Banglish"].map((item) => (
               <button key={item} className={`h-12 rounded-[14px] border text-sm font-black ${language === item ? "border-royal bg-blue-50 text-royal" : "border-blue-100 bg-white text-slate-600"}`} onClick={() => setLanguage(item)}>
@@ -283,9 +310,9 @@ async function createTeamMember() {
                 ))}
               </select>
             </label>
-            <button className={`${primaryButtonClassName} self-end`} onClick={createTeamMember}>
+            <button className={`${primaryButtonClassName} self-end`} onClick={createTeamMember} disabled={creatingMember}>
               <Plus className="h-4 w-4" />
-              Create
+              {creatingMember ? "Creating..." : "Create"}
             </button>
           </div>
 

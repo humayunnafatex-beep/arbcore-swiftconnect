@@ -126,12 +126,17 @@ export function InboxModulePage() {
   }
 
   async function sendReply() {
-    if (!thread || !reply.trim()) return;
+    const messageBody = reply.trim();
+    if (!thread || !messageBody) {
+      showToast("Reply message is required.", "error");
+      return;
+    }
+
     setBusy(true);
     try {
       const message = await apiRequest<ConversationMessage>(`/api/conversations/${thread.id}`, {
         method: "POST",
-        body: JSON.stringify({ body: reply, direction: "OUTBOUND", status: "QUEUED" })
+        body: JSON.stringify({ body: messageBody, direction: "OUTBOUND", status: "QUEUED" })
       });
       setThread({ ...thread, messages: [...thread.messages, message] });
       setReply("");
@@ -148,7 +153,8 @@ export function InboxModulePage() {
   async function submitQuickSend(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     const phone = quickSend.phone.trim();
-    if (!phone || !preview.trim()) {
+    const messageBody = preview.trim();
+    if (!phone || !messageBody) {
       showToast("Enter a phone number and message before sending.", "error");
       return;
     }
@@ -157,7 +163,7 @@ export function InboxModulePage() {
     try {
       const result = await apiRequest<SendAttemptResponse>("/api/whatsapp/test-send", {
         method: "POST",
-        body: JSON.stringify({ to: phone, body: preview })
+        body: JSON.stringify({ to: phone, body: messageBody })
       });
       contacts.reload();
       logs.reload();
@@ -177,14 +183,14 @@ export function InboxModulePage() {
       if (existing) {
         const message = await apiRequest<ConversationMessage>(`/api/conversations/${existing.id}`, {
           method: "POST",
-          body: JSON.stringify({ body: preview, direction: "OUTBOUND", status: quickSend.scheduleAt ? "QUEUED" : "SENT" })
+          body: JSON.stringify({ body: messageBody, direction: "OUTBOUND", status: quickSend.scheduleAt ? "QUEUED" : "SENT" })
         });
         if (thread?.id === existing.id) setThread({ ...thread, messages: [...thread.messages, message] });
         setSelectedId(existing.id);
       } else {
         const conversation = await apiRequest<Conversation>("/api/conversations", {
           method: "POST",
-          body: JSON.stringify({ contactId: contact.id, subject: quickSend.template, body: preview })
+          body: JSON.stringify({ contactId: contact.id, subject: quickSend.template, body: messageBody })
         });
         setSelectedId(conversation.id);
       }
@@ -290,7 +296,7 @@ export function InboxModulePage() {
                     <textarea className={`${textareaClassName} min-h-20 flex-1`} value={reply} onChange={(event) => setReply(event.target.value)} placeholder="Write a reply" />
                     <button className={`${primaryButtonClassName} lg:self-end`} onClick={() => void sendReply()} disabled={!reply.trim() || busy}>
                       <Send className="h-4 w-4" />
-                      Send
+                      {busy ? "Saving..." : "Send"}
                     </button>
                   </div>
                 </div>
@@ -317,9 +323,9 @@ export function InboxModulePage() {
                   <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{preview}</p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <button className={primaryButtonClassName} disabled={busy}>
+                  <button className={primaryButtonClassName} disabled={busy || !quickSend.phone.trim() || !quickSend.message.trim()}>
                     <Send className="h-4 w-4" />
-                    Send
+                    {busy ? "Checking..." : "Send"}
                   </button>
                   <button className={secondaryButtonClassName} type="button" onClick={() => void submitQuickSend()} disabled={busy || !quickSend.scheduleAt}>
                     <CalendarClock className="h-4 w-4" />

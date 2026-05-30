@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const context = await getCurrentAuthContext();
     assertRole(context, ["OWNER", "ADMIN"]);
     const input = await parseJson(request, teamMemberCreateSchema);
-    const email = input.email.toLowerCase();
+    const email = input.email.trim().toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.create({
       data: {
-        name: input.name,
+        name: input.name.trim(),
         email,
         role: input.role,
         isActive: true,

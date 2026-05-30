@@ -42,11 +42,11 @@ export async function PUT(request: Request, { params }: Context) {
     const contact = await prisma.contact.update({
       where: { id: params.id },
       data: {
-        ...("name" in input ? { name: input.name } : {}),
-        ...("phone" in input ? { phone: input.phone } : {}),
-        ...("email" in input ? { email: input.email ?? null } : {}),
+        ...("name" in input ? { name: input.name?.trim() } : {}),
+        ...("phone" in input ? { phone: input.phone?.trim() } : {}),
+        ...("email" in input ? { email: input.email?.trim() || null } : {}),
         ...("tags" in input ? { tags: normalizeTags(input.tags) ?? null } : {}),
-        ...("segment" in input ? { segment: input.segment ?? null } : {}),
+        ...("segment" in input ? { segment: input.segment?.trim() || null } : {}),
         ...("stage" in input ? { stage: input.stage } : {}),
         ...("optedIn" in input ? { optedIn: input.optedIn } : {}),
         ...("metadata" in input ? { metadata: input.metadata as Prisma.InputJsonValue | undefined } : {})
