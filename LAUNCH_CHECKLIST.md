@@ -11,7 +11,7 @@ Use this checklist before each production launch or rollback.
 - [ ] `OPENAI_API_KEY` is blank for beta fallback mode or set only in server secrets.
 - [ ] `WHATSAPP_ACCESS_TOKEN` is set only when real WhatsApp sending is approved.
 - [ ] `WHATSAPP_PHONE_NUMBER_ID` matches the Meta phone number.
-- [ ] `WHATSAPP_VERIFY_TOKEN` matches the token configured in Meta webhooks.
+- [ ] `WHATSAPP_VERIFY_TOKEN` matches the token configured in Meta webhooks, or the saved Settings verify token is used.
 - [ ] `WHATSAPP_APP_SECRET` is set before trusting webhook signatures.
 - [ ] No real values are committed to Git.
 
@@ -60,6 +60,7 @@ Use this checklist before each production launch or rollback.
 - [ ] Missing WhatsApp Cloud API shows: `WhatsApp Cloud API is required to send real messages.`
 - [ ] The app does not claim success unless the provider accepts the send.
 - [ ] Message attempts are logged without exposing secrets.
+- [ ] Provider errors show a friendly message and never include the access token.
 
 ## 8. Dashboard QA
 
@@ -70,11 +71,15 @@ Use this checklist before each production launch or rollback.
 ## 9. WhatsApp Cloud API QA
 
 - [ ] Meta phone number ID is correct.
-- [ ] Access token is valid and stored only in environment/platform secrets or protected settings.
+- [ ] Access token is valid and stored only in protected settings or platform secrets.
 - [ ] Webhook verify token matches Meta.
+- [ ] Meta callback URL is `https://YOUR_DOMAIN/api/whatsapp/webhook`.
+- [ ] Webhook GET verification succeeds with the correct verify token.
+- [ ] Webhook GET verification fails with the wrong verify token.
+- [ ] Webhook POST with a sample inbound message returns 200.
 - [ ] App secret is configured before relying on signature validation.
 - [ ] Test send succeeds only after provider success.
-- [ ] Inbound webhook handling is verified with a real Meta callback.
+- [ ] Inbound message logging is verified with a real Meta callback.
 
 ## 10. Known Limitations
 

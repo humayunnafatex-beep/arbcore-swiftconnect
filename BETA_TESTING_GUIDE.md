@@ -84,6 +84,16 @@ Before testing:
 - [ ] Confirm the app says: `WhatsApp Cloud API is required to send real messages.`
 - [ ] Confirm the app does not claim the message was sent.
 
+### WhatsApp Cloud API Setup Test
+
+- [ ] Save the WhatsApp Phone Number ID in Settings.
+- [ ] Save the WhatsApp Access Token in Settings.
+- [ ] Save the Verify Token in Settings.
+- [ ] Configure Meta webhook callback as `/api/whatsapp/webhook`.
+- [ ] Confirm webhook verification succeeds with the correct verify token.
+- [ ] Confirm webhook verification fails with a wrong token.
+- [ ] Send one approved test message only after Meta setup is complete.
+
 ### License Page
 
 - [ ] Open License.
@@ -107,6 +117,8 @@ Ask each tester:
 - Full billing automation is not active.
 - License enforcement is not active.
 - Real WhatsApp sending requires WhatsApp Cloud API.
+- The production webhook path is `/api/whatsapp/webhook`.
+- Advanced auto-reply sending from inbound webhook messages is a next-phase safety item.
 - Complete inbound WhatsApp webhook automation is not final.
 - Advanced campaign scheduling is limited.
 - Advanced analytics can be improved in a later phase.

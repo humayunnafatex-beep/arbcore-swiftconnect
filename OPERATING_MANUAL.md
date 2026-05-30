@@ -125,6 +125,14 @@ Real WhatsApp sending requires WhatsApp Cloud API credentials and webhook setup.
 
 Before production sending, confirm that the WhatsApp phone number ID, access token, verify token, webhook URL, and Meta webhook verification are fully configured.
 
+For Meta webhook setup, use this callback path:
+
+```text
+https://YOUR_DOMAIN/api/whatsapp/webhook
+```
+
+Webhook verification uses the saved Verify Token from Settings, with the server environment token as a fallback. Outbound test sends use the saved Phone Number ID and Access Token from Settings. Access tokens must remain private and are not displayed after refresh.
+
 ## 11. Token And Privacy Warning
 
 Treat WhatsApp access tokens, app secrets, database URLs, direct URLs, OpenAI keys, and session secrets as private credentials. Do not paste them into tickets, screenshots, public docs, or chat messages.
@@ -140,7 +148,7 @@ For support issues, collect the affected module, approximate time, user action, 
 Known limitations:
 
 1. Real WhatsApp sending is blocked until WhatsApp Cloud API credentials and server environment variables are configured.
-2. Inbound WhatsApp auto replies require Meta webhook verification and live webhook events.
+2. Inbound WhatsApp messages can be received through `/api/whatsapp/webhook`, but automatic reply sending from inbound rules is a next-phase safety item.
 3. Campaign sending depends on approved WhatsApp templates and a completed production send flow.
 4. Authentication is demo-cookie based for MVP testing.
 5. Access tokens are saved but intentionally not displayed after refresh.

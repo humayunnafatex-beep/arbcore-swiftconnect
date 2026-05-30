@@ -56,11 +56,12 @@ type MessageLog = {
 };
 
 type SendAttemptResponse = {
-  sent: boolean;
-  provider: string;
+  success: boolean;
+  status: "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
+  error?: string;
+  data?: {
   providerMessageId?: string;
-  errorMessage?: string;
-  message?: string;
+  };
 };
 
 const templates = [
@@ -161,15 +162,17 @@ export function InboxModulePage() {
 
     setBusy(true);
     try {
-      const result = await apiRequest<SendAttemptResponse>("/api/whatsapp/test-send", {
+      const response = await fetch("/api/whatsapp/test-send", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: phone, body: messageBody })
       });
+      const result = (await response.json()) as SendAttemptResponse;
       contacts.reload();
       logs.reload();
 
-      if (!result.sent) {
-        showToast(result.message || result.errorMessage || "WhatsApp Cloud API is required to send real messages.", "error");
+      if (!response.ok || !result.success || result.status !== "sent_successfully") {
+        showToast(result.error || "WhatsApp Cloud API is required to send real messages.", "error");
         return;
       }
 
