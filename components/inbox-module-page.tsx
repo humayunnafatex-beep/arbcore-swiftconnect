@@ -60,8 +60,17 @@ type SendAttemptResponse = {
   status: "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
   error?: string;
   data?: {
-  providerMessageId?: string;
+    providerMessageId?: string;
   };
+};
+
+type SendStatus = SendAttemptResponse["status"];
+
+const sendStatusText: Record<SendStatus, string> = {
+  not_configured: "WhatsApp Cloud API is not configured.",
+  validation_failed: "Please check phone number and message.",
+  provider_error: "WhatsApp provider rejected the message.",
+  sent_successfully: "Message sent successfully through WhatsApp Cloud API."
 };
 
 const templates = [
@@ -82,6 +91,7 @@ export function InboxModulePage() {
   const [query, setQuery] = useState("");
   const [reply, setReply] = useState("");
   const [quickSend, setQuickSend] = useState({ phone: "", template: templates[0].name, message: templates[0].body, scheduleAt: "" });
+  const [quickSendStatus, setQuickSendStatus] = useState<SendStatus | null>(null);
   const [busy, setBusy] = useState(false);
 
   const items = conversations.data?.items ?? [];
@@ -156,6 +166,7 @@ export function InboxModulePage() {
     const phone = quickSend.phone.trim();
     const messageBody = preview.trim();
     if (!phone || !messageBody) {
+      setQuickSendStatus("validation_failed");
       showToast("Enter a phone number and message before sending.", "error");
       return;
     }
@@ -168,6 +179,7 @@ export function InboxModulePage() {
         body: JSON.stringify({ to: phone, body: messageBody })
       });
       const result = (await response.json()) as SendAttemptResponse;
+      setQuickSendStatus(result.status);
       contacts.reload();
       logs.reload();
 
@@ -201,6 +213,7 @@ export function InboxModulePage() {
       logs.reload();
       showToast(quickSend.scheduleAt ? "Message scheduled locally." : "Message sent through WhatsApp Cloud API.");
     } catch (error) {
+      setQuickSendStatus("provider_error");
       showToast(getApiErrorMessage(error), "error");
     } finally {
       setBusy(false);
@@ -325,6 +338,11 @@ export function InboxModulePage() {
                   <p className="text-xs font-black uppercase text-royal">Preview</p>
                   <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">{preview}</p>
                 </div>
+                {quickSendStatus ? (
+                  <div className={cn("rounded-[16px] border p-3 text-sm font-bold", quickSendStatus === "sent_successfully" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-amber-100 bg-amber-50 text-amber-700")}>
+                    {sendStatusText[quickSendStatus]}
+                  </div>
+                ) : null}
                 <div className="grid gap-2 sm:grid-cols-2">
                   <button className={primaryButtonClassName} disabled={busy || !quickSend.phone.trim() || !quickSend.message.trim()}>
                     <Send className="h-4 w-4" />

@@ -2,6 +2,8 @@
 
 Use this checklist before each production launch or rollback.
 
+For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -70,6 +72,7 @@ Use this checklist before each production launch or rollback.
 
 ## 9. WhatsApp Cloud API QA
 
+- [ ] `META_WHATSAPP_SETUP_GUIDE.md` has been reviewed for the current production domain.
 - [ ] Meta phone number ID is correct.
 - [ ] Access token is valid and stored only in protected settings or platform secrets.
 - [ ] Webhook verify token matches Meta.
@@ -79,6 +82,7 @@ Use this checklist before each production launch or rollback.
 - [ ] Webhook POST with a sample inbound message returns 200.
 - [ ] App secret is configured before relying on signature validation.
 - [ ] Test send succeeds only after provider success.
+- [ ] Send Messages shows one of the safe states: `not_configured`, `validation_failed`, `provider_error`, or `sent_successfully`.
 - [ ] Inbound message logging is verified with a real Meta callback.
 
 ## 10. Known Limitations

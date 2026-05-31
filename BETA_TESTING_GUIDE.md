@@ -23,6 +23,7 @@ Before testing:
 4. Avoid using real sensitive customer data unless approved.
 5. Do not enter real WhatsApp access tokens unless the business has approved live API testing.
 6. Explain that real WhatsApp sending requires WhatsApp Cloud API.
+7. Use `META_WHATSAPP_SETUP_GUIDE.md` before any real end-to-end WhatsApp Cloud API test.
 
 ## 3. Test Flow Checklist
 
@@ -86,6 +87,7 @@ Before testing:
 
 ### WhatsApp Cloud API Setup Test
 
+- [ ] Review `META_WHATSAPP_SETUP_GUIDE.md`.
 - [ ] Save the WhatsApp Phone Number ID in Settings.
 - [ ] Save the WhatsApp Access Token in Settings.
 - [ ] Save the Verify Token in Settings.
@@ -93,6 +95,9 @@ Before testing:
 - [ ] Confirm webhook verification succeeds with the correct verify token.
 - [ ] Confirm webhook verification fails with a wrong token.
 - [ ] Send one approved test message only after Meta setup is complete.
+- [ ] Confirm Send Messages shows `sent_successfully` only when Meta accepts the request.
+- [ ] Send one inbound WhatsApp message to the connected number.
+- [ ] Confirm the webhook POST returns 200 and verify the message in UI logs, server logs, or the database.
 
 ### License Page
 

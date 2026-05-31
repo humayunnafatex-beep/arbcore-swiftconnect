@@ -125,6 +125,8 @@ Real WhatsApp sending requires WhatsApp Cloud API credentials and webhook setup.
 
 Before production sending, confirm that the WhatsApp phone number ID, access token, verify token, webhook URL, and Meta webhook verification are fully configured.
 
+For the full live setup walkthrough, use `META_WHATSAPP_SETUP_GUIDE.md`.
+
 For Meta webhook setup, use this callback path:
 
 ```text
@@ -132,6 +134,15 @@ https://YOUR_DOMAIN/api/whatsapp/webhook
 ```
 
 Webhook verification uses the saved Verify Token from Settings, with the server environment token as a fallback. Outbound test sends use the saved Phone Number ID and Access Token from Settings. Access tokens must remain private and are not displayed after refresh.
+
+Live end-to-end test flow:
+
+1. Save WhatsApp/API Settings in ARBCore.
+2. Verify the Meta webhook callback.
+3. Send a controlled outbound test from Send Messages.
+4. Confirm the safe status is `sent_successfully`, or review `not_configured`, `validation_failed`, or `provider_error`.
+5. Send a WhatsApp message to the connected business number.
+6. Confirm the inbound webhook returns 200 and check logs or database records.
 
 ## 11. Token And Privacy Warning
 
