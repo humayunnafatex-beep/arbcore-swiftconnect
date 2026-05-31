@@ -115,6 +115,7 @@ Use a controlled test contact first.
 6. Enter the recipient phone number in international format, such as `8801XXXXXXXXX`.
 7. Enter a simple test message.
 8. Click Send.
+9. Open WhatsApp Logs and confirm the outbound attempt appears in Recent WhatsApp Message Logs.
 
 Expected success state:
 
@@ -139,6 +140,15 @@ Failure state meanings:
 | `provider_error` | Meta rejected the request or returned an API error. |
 | `sent_successfully` | Meta accepted the message through WhatsApp Cloud API. |
 
+Message log statuses may include:
+
+| Status | Meaning |
+| --- | --- |
+| `SENT` | The outbound message was accepted for sending. |
+| `FAILED` | The outbound message attempt failed. |
+| `RECEIVED` | An inbound WhatsApp message was received through the webhook. |
+| `ATTEMPTED` | A send was attempted if the workflow records attempted-only states in a future phase. |
+
 ## 6. First Inbound Webhook Test
 
 After webhook verification succeeds:
@@ -151,8 +161,10 @@ After webhook verification succeeds:
 ```
 
 3. Confirm the webhook POST returns HTTP 200.
-4. Check whether the inbound message appears in the app logs if the UI exposes it.
-5. If the UI does not expose the inbound log yet, verify it in the database or server logs.
+4. Open WhatsApp Logs.
+5. Confirm the inbound message appears in Recent WhatsApp Message Logs with `RECEIVED` status.
+6. Confirm the webhook appears in Recent Webhook Events.
+7. If the UI does not show the expected record, verify it in the database or server logs.
 
 Inbound auto-reply sending is a future phase unless it has been explicitly enabled and tested.
 
@@ -221,4 +233,4 @@ For every live test, record:
 4. Outbound test result.
 5. Inbound webhook result.
 6. Any Meta error message, without secrets.
-7. Whether Settings, Send Messages, and message logs behaved correctly.
+7. Whether Settings, Send Messages, WhatsApp Logs, and message logs behaved correctly.

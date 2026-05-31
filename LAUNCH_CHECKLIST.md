@@ -83,7 +83,17 @@ For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` be
 - [ ] App secret is configured before relying on signature validation.
 - [ ] Test send succeeds only after provider success.
 - [ ] Send Messages shows one of the safe states: `not_configured`, `validation_failed`, `provider_error`, or `sent_successfully`.
-- [ ] Inbound message logging is verified with a real Meta callback.
+- [ ] WhatsApp Logs opens at `/whatsapp-logs`.
+- [ ] Outbound send attempts appear in WhatsApp Logs with `SENT` or `FAILED` status.
+- [ ] Inbound webhook messages appear in WhatsApp Logs with `RECEIVED` status.
+- [ ] Recent webhook events appear without exposing access tokens or secrets.
+
+Message log status meanings:
+
+- `SENT`: provider accepted the outbound send.
+- `FAILED`: provider rejected the send or the attempt failed.
+- `RECEIVED`: inbound webhook message was received.
+- `ATTEMPTED`: attempted-only state if used by a future workflow.
 
 ## 10. Known Limitations
 

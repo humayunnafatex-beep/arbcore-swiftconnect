@@ -57,6 +57,8 @@ Basic Send Messages workflow:
 6. If WhatsApp Cloud API is missing, read the warning and treat the record as an attempted message only.
 7. If the API is configured and the provider accepts the request, the app can mark the message as sent.
 
+After testing, open WhatsApp Logs to confirm the outbound message attempt, provider ID, status, and any safe error message.
+
 ## 5. Auto Reply
 
 Auto Reply manages keyword-based replies. A rule contains a trigger keyword, reply message, match mode, priority, and active/inactive status.
@@ -97,13 +99,32 @@ Basic Settings workflow:
 6. Add team members with name, email, and role.
 7. If a duplicate email is entered, the app shows a friendly error.
 
-## 8. License
+## 8. WhatsApp Logs
+
+WhatsApp Logs is the admin-facing test view for recent WhatsApp activity. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
+
+Use WhatsApp Logs during beta testing to verify:
+
+1. Outbound Send Messages attempts.
+2. Provider accepted or rejected status.
+3. Inbound webhook messages.
+4. Webhook event summaries.
+5. Safe error messages.
+
+Message log status meanings:
+
+1. `SENT`: the outbound message was accepted for sending.
+2. `FAILED`: the outbound message attempt failed.
+3. `RECEIVED`: an inbound WhatsApp message arrived through the webhook.
+4. `ATTEMPTED`: an attempted-only status if used by a future workflow.
+
+## 9. License
 
 License shows the current plan, usage limits, and seat/message allowance for the workspace.
 
 Use License to review whether the business is within its current package and what needs upgrading before higher-volume messaging.
 
-## 9. What Works Without WhatsApp API
+## 10. What Works Without WhatsApp API
 
 Without WhatsApp Cloud API, the app can still manage business settings, WhatsApp/API settings, contacts, team members, campaigns, CRM records, auto-reply rules, message drafts or attempted message logs, dashboard counts, and local AI-assisted text generation.
 
@@ -118,8 +139,9 @@ Currently functional in beta:
 5. Contacts create, edit, delete, search, filter, import, and duplicate-phone handling.
 6. Auto Reply create, edit, activate, deactivate, delete, and AI draft assistance.
 7. Send Messages attempt logging and clear no-API warning.
+8. WhatsApp Logs view for safe message and webhook verification data already stored by the app.
 
-## 10. What Requires WhatsApp Cloud API
+## 11. What Requires WhatsApp Cloud API
 
 Real WhatsApp sending requires WhatsApp Cloud API credentials and webhook setup. This includes delivering outbound messages to customers, receiving inbound WhatsApp messages automatically, processing delivery/read receipts, and triggering auto replies from real incoming customer messages.
 
@@ -142,15 +164,18 @@ Live end-to-end test flow:
 3. Send a controlled outbound test from Send Messages.
 4. Confirm the safe status is `sent_successfully`, or review `not_configured`, `validation_failed`, or `provider_error`.
 5. Send a WhatsApp message to the connected business number.
-6. Confirm the inbound webhook returns 200 and check logs or database records.
+6. Open WhatsApp Logs at `/whatsapp-logs`.
+7. Confirm outbound logs show `SENT` or `FAILED`.
+8. Confirm inbound logs show `RECEIVED`.
+9. Confirm the inbound webhook returns 200 and appears in Recent Webhook Events.
 
-## 11. Token And Privacy Warning
+## 12. Token And Privacy Warning
 
 Treat WhatsApp access tokens, app secrets, database URLs, direct URLs, OpenAI keys, and session secrets as private credentials. Do not paste them into tickets, screenshots, public docs, or chat messages.
 
 The Settings page accepts a WhatsApp access token for launch setup, but the token is not displayed after refresh. If a token is exposed, rotate it in Meta and update the production environment immediately.
 
-## 12. Support And Maintenance
+## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.
 
