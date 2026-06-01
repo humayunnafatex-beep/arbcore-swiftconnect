@@ -113,6 +113,8 @@ Basic Settings workflow:
 
 Connecting Welzz Stride real number `01958474577`:
 
+Use `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md` as the step-by-step operational checklist before changing the live customer-facing number.
+
 1. Confirm whether `01958474577` is currently active in the WhatsApp or WhatsApp Business app.
 2. If active, it may need to be removed or disconnected before Cloud API registration.
 3. In Meta Developer Dashboard, go to WhatsApp, API Setup, and Add phone number.

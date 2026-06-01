@@ -82,6 +82,8 @@ After saving, refresh Settings and confirm the non-secret fields persist. The ac
 
 Customers should eventually message Welzz Stride on `01958474577`, but ARBCore can only receive messages for a number that is connected in Meta WhatsApp Cloud API and whose Phone Number ID is saved in ARBCore Settings.
 
+For the dedicated operational checklist, use `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
+
 Follow this safe connection flow:
 
 1. Confirm whether `01958474577` is currently active in the WhatsApp or WhatsApp Business app.

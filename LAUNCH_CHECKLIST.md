@@ -4,6 +4,8 @@ Use this checklist before each production launch or rollback.
 
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
+For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -111,6 +113,7 @@ Live auto-reply test:
 
 Connecting Welzz Stride real number `01958474577`:
 
+- [ ] `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md` has been reviewed.
 - [ ] Confirm whether `01958474577` is currently active in WhatsApp or WhatsApp Business app.
 - [ ] If active, confirm whether it must be removed or disconnected before Cloud API registration.
 - [ ] In Meta Developer Dashboard, go to WhatsApp, API Setup, and Add phone number.
