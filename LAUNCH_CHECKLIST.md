@@ -10,6 +10,8 @@ For SaaS, Messenger, and payment readiness, review `SAAS_ARCHITECTURE_PLAN.md`, 
 
 Before onboarding external clients, review `AUTH_WORKSPACE_HARDENING_PLAN.md`.
 
+For Phase 1 auth foundation scope, review `AUTH_IMPLEMENTATION_PHASE_1.md`.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -134,7 +136,9 @@ Connecting Welzz Stride real number `01958474577`:
 
 - Billing/license enforcement is not active in beta.
 - Demo cookie auth remains in place until production auth is implemented.
-- Current beta is single-company mode; each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
+- Current beta is single-company/demo-auth mode; Phase 1 adds foundation only and real login enforcement comes later.
+- Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
+- Meta webhook routes must remain public but verified.
 - Real WhatsApp sending requires Meta Cloud API credentials and webhook readiness.
 - Messenger automation is planned but not active.
 - Payment/subscription automation is planned but not active.

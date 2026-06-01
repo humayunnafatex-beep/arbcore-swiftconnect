@@ -39,6 +39,28 @@ export function assertRole(context: AuthContext, roles: UserRole[]) {
   }
 }
 
+export function isAuthEnforced() {
+  // Phase 1 foundation only: keep beta behavior and do not enforce full real login yet.
+  // TODO: Return true after Supabase Auth or NextAuth sessions are fully wired and tested.
+  return false;
+}
+
+export async function getCurrentUser() {
+  // Phase 1 foundation only: return the existing beta/default owner.
+  // TODO: Resolve the current user from Supabase Auth session cookies.
+  return (await ensureDefaultWorkspace()).user;
+}
+
+export async function getCurrentUserRole() {
+  return (await getCurrentUser()).role;
+}
+
+export async function requireCurrentUser() {
+  // Phase 1 foundation only: do not block access beyond the existing beta flow.
+  // TODO: Throw UNAUTHENTICATED when real auth enforcement is enabled.
+  return getCurrentUser();
+}
+
 export async function ensureDefaultWorkspace() {
   const company = await prisma.company.upsert({
     where: { id: DEFAULT_COMPANY_ID },

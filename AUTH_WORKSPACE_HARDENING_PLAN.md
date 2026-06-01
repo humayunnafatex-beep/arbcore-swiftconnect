@@ -6,6 +6,8 @@ ARBCore SwiftConnect currently uses a demo-cookie auth flow for beta operation. 
 
 This is acceptable for the current single-company Enterprise Beta, but it is not enough for onboarding external client businesses.
 
+Phase 1 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`.
+
 Current behavior:
 
 - Demo login route exists.
@@ -173,5 +175,6 @@ This pass does not implement full auth or billing. It adds:
 - `lib/permissions.ts` as a future permission map stub.
 - Documentation for current auth/workspace behavior and SaaS hardening phases.
 - Small License page clarity for single-company beta vs future multi-client SaaS.
+- Phase 1 auth helpers and route classifications are documented in `AUTH_IMPLEMENTATION_PHASE_1.md`.
 
 No schema migration was added in this pass.

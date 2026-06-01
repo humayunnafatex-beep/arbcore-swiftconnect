@@ -16,6 +16,8 @@ For SaaS readiness and future paid rollout direction, use `SAAS_ARCHITECTURE_PLA
 
 For auth, roles, and workspace/company isolation before external client onboarding, use `AUTH_WORKSPACE_HARDENING_PLAN.md`.
 
+For Phase 1 auth foundation details, use `AUTH_IMPLEMENTATION_PHASE_1.md`. Current beta remains single-company/demo auth, and real login enforcement is planned for a later phase.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -224,4 +226,5 @@ Known limitations:
 3. Campaign sending depends on approved WhatsApp templates and a completed production send flow.
 4. Authentication is demo-cookie based for MVP testing.
 5. Access tokens are saved but intentionally not displayed after refresh.
-6. Current beta is single-company mode; before onboarding external clients, real auth and company isolation must be implemented so each client sees only its own contacts, messages, settings, auto replies, and logs.
+6. Current beta is single-company/demo-auth mode; before onboarding external clients, real auth and company isolation must be implemented so each client sees only its own contacts, messages, settings, auto replies, and logs.
+7. Webhook routes must remain public for Meta provider callbacks, but they must stay verified by provider tokens/signatures.

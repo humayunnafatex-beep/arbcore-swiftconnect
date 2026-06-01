@@ -50,6 +50,8 @@ Recommended future schema changes, not implemented in this pass:
 
 For the detailed auth, role, and workspace isolation plan, use `AUTH_WORKSPACE_HARDENING_PLAN.md`.
 
+For the first non-breaking auth foundation step, use `AUTH_IMPLEMENTATION_PHASE_1.md`.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

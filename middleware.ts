@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AUTH_COOKIE_NAME, DEMO_SESSION_VALUE } from "@/lib/auth-constants";
 
+const AUTH_ENFORCED = false;
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLogin = pathname === "/login";
@@ -10,7 +12,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (!isLogin && !isAuthenticated) {
+  if (AUTH_ENFORCED && !isLogin && !isAuthenticated) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
