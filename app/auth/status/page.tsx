@@ -39,6 +39,10 @@ export default function AuthStatusPage() {
   const [status, setStatus] = useState<AuthStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const safeToTestEnforcement =
+    status?.mode === "supabase_mapped" &&
+    (status.prismaUser.role === "OWNER" || status.prismaUser.role === "ADMIN") &&
+    status.company.exists;
 
   async function loadStatus() {
     setLoading(true);
@@ -92,6 +96,20 @@ export default function AuthStatusPage() {
         <div className="mt-5 rounded-[18px] border border-amber-100 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800">
           Do not enable AUTH_ENFORCED=true in production until this page shows a mapped admin user.
         </div>
+
+        {!loading && !error && status ? (
+          <div
+            className={
+              safeToTestEnforcement
+                ? "mt-5 rounded-[18px] border border-emerald-100 bg-emerald-50 p-4 text-sm font-bold leading-6 text-emerald-800"
+                : "mt-5 rounded-[18px] border border-rose-100 bg-rose-50 p-4 text-sm font-bold leading-6 text-rose-700"
+            }
+          >
+            {safeToTestEnforcement
+              ? "Safe to test AUTH_ENFORCED=true in local or staging. Keep production enforcement off until the full checklist passes."
+              : "Do not enable auth enforcement yet. A mapped OWNER or ADMIN user with a company is required first."}
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="mt-5 rounded-[18px] bg-blue-50 p-5 text-sm font-bold text-royal">Loading auth status...</div>

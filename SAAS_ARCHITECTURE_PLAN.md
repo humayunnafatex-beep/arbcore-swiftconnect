@@ -58,6 +58,8 @@ Phase 3 route protection readiness is documented in `AUTH_IMPLEMENTATION_PHASE_3
 
 Phase 4 Supabase Auth to Prisma user/company mapping is documented in `AUTH_IMPLEMENTATION_PHASE_4.md` and `SUPABASE_ADMIN_USER_MAPPING.md`.
 
+Phase 5 and Phase 6 add safe admin mapping verification and local/staging enforcement readiness. Use `AUTH_IMPLEMENTATION_PHASE_5.md`, `AUTH_IMPLEMENTATION_PHASE_6.md`, and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` before enabling `AUTH_ENFORCED=true`.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:
@@ -110,6 +112,7 @@ Recommended rule engine direction:
 Required production direction:
 
 - Login/Auth system: replace demo-cookie auth before commercial launch.
+- Auth enforcement: test `AUTH_ENFORCED=true` locally or in staging with `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` before production.
 - Role-based access control: protect Settings, Billing, Team, and provider credentials.
 - Environment variables: keep database URLs, app secrets, and provider secrets out of Git.
 - Token masking: never return or display access tokens after save.

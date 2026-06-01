@@ -58,6 +58,8 @@ Use `AUTH_ENFORCED=true` only in local or staging after `/auth/status` confirms 
 
 Do not enable this in production until the same flow has passed safely.
 
+Phase 6 adds the dedicated local/staging enforcement test workflow. Use `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` before any `AUTH_ENFORCED=true` rollout.
+
 ## 5. Rollback
 
 If auth mapping or enforcement testing causes an issue:

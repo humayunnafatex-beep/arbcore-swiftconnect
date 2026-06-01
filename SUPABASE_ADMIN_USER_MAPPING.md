@@ -57,6 +57,8 @@ You can also verify the mapping safely from the app:
 
 For the full verification flow, use `AUTH_IMPLEMENTATION_PHASE_5.md`.
 
+For the next enforcement-readiness step, use `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` in local or staging before any production `AUTH_ENFORCED=true` rollout.
+
 ## 5. Before Enabling Auth Enforcement
 
 Do not set `AUTH_ENFORCED=true` until:
@@ -75,3 +77,4 @@ Do not set `AUTH_ENFORCED=true` until:
 - Do not auto-create unknown workspaces from random Supabase users yet.
 - If mapping fails, keep `AUTH_ENFORCED=false`.
 - If a wrong mapping is created, clear or correct `supabaseAuthId` in the database before enabling auth enforcement.
+- Do not enable production auth enforcement until the Phase 6 checklist passes.
