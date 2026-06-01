@@ -12,6 +12,8 @@ Production-ready in this beta: Settings persistence, Contacts, Auto Reply, Dashb
 
 Not yet implemented for full commercial launch: production OAuth/session management, billing enforcement, automated license blocking, approved-template campaign sending, and complete WhatsApp Cloud API operational monitoring.
 
+For SaaS readiness and future paid rollout direction, use `SAAS_ARCHITECTURE_PLAN.md`, `MESSENGER_INTEGRATION_PLAN.md`, and `PAYMENT_SUBSCRIPTION_PLAN.md`.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -153,6 +155,8 @@ Message log status meanings:
 License shows the current plan, usage limits, and seat/message allowance for the workspace.
 
 Use License to review whether the business is within its current package and what needs upgrading before higher-volume messaging.
+
+Current status is Enterprise Beta. Billing/payment enforcement is not active yet. Future paid plans should support client workspaces, feature limits, and channel-based automation for WhatsApp and Messenger.
 
 ## 10. What Works Without WhatsApp API
 

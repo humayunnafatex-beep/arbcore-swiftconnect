@@ -22,7 +22,7 @@ export function LicenseModulePage() {
             <div>
               <p className="text-xs font-black uppercase text-royal">License and Usage</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Subscription</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Monitor plan, quotas, renewal, billing history, and operational status for the local MVP workspace.</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Monitor Enterprise Beta status, future plan limits, and operational readiness for client workspaces.</p>
             </div>
           </div>
           <button className={primaryButtonClassName} disabled>Beta Workspace</button>
@@ -38,7 +38,7 @@ export function LicenseModulePage() {
             </div>
             <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">Beta Active</span>
           </div>
-          <p className="mt-5 text-sm font-semibold leading-6 text-slate-500">Includes beta access to workspace modules while billing and license enforcement are prepared for launch.</p>
+          <p className="mt-5 text-sm font-semibold leading-6 text-slate-500">Includes beta access to workspace modules while billing, subscriptions, and channel-based automation limits are prepared for paid SaaS launch.</p>
           <div className="mt-6 grid gap-3">
             <Info label="Workspace" value="ARBCore AI" />
             <Info label="License status" value="Beta active" />
@@ -81,7 +81,7 @@ export function LicenseModulePage() {
             <Info label="Workspace/company" value="ARBCore AI" />
             <Info label="Billing/license enforcement" value="Not active in this beta" />
             <p className="rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-800">
-              Billing records and payment collection are not enforced by the app yet. Confirm account status manually before commercial launch.
+              Billing records and payment collection are not enforced by the app yet. Future paid plans will support client workspaces and channel-based automation, but payment success must not be claimed until manual verification or gateway confirmation.
             </p>
           </div>
         </section>
