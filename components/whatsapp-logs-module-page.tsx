@@ -91,6 +91,7 @@ export function WhatsAppLogsModulePage() {
               <p className="text-xs font-black uppercase text-royal">WhatsApp Testing</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">WhatsApp Logs</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Verify outbound sends, inbound webhooks, and provider errors without checking the database manually.</p>
+              <p className="mt-2 max-w-3xl text-xs font-bold leading-5 text-slate-500">INBOUND means a customer messaged the WhatsApp API number connected in Meta. OUTBOUND means ARBCore sent through that connected WhatsApp API number.</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -104,6 +105,11 @@ export function WhatsAppLogsModulePage() {
             </Link>
           </div>
         </div>
+      </section>
+
+      <section className="rounded-[24px] border border-blue-100 bg-blue-50 p-5 text-sm font-semibold leading-6 text-slate-600 shadow-panel">
+        <p className="font-black text-royal">Connected WhatsApp number reminder</p>
+        <p className="mt-1">ARBCore only receives customer messages for the WhatsApp number connected to the saved Meta Phone Number ID. If a customer messages another WhatsApp number, ARBCore will not receive it.</p>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">

@@ -78,6 +78,7 @@ For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` be
 ## 9. WhatsApp Cloud API QA
 
 - [ ] `META_WHATSAPP_SETUP_GUIDE.md` has been reviewed for the current production domain.
+- [ ] The active customer WhatsApp number is confirmed in Meta for the saved Phone Number ID.
 - [ ] Meta phone number ID is correct.
 - [ ] Access token is valid and stored only in protected settings or platform secrets.
 - [ ] Webhook verify token matches Meta.
@@ -107,6 +108,20 @@ Live auto-reply test:
 3. Check `/whatsapp-logs`.
 4. Expect inbound `RECEIVED`.
 5. Expect outbound `SENT` or `FAILED`.
+
+Connecting Welzz Stride real number `01958474577`:
+
+- [ ] Confirm whether `01958474577` is currently active in WhatsApp or WhatsApp Business app.
+- [ ] If active, confirm whether it must be removed or disconnected before Cloud API registration.
+- [ ] In Meta Developer Dashboard, go to WhatsApp, API Setup, and Add phone number.
+- [ ] Add `+8801958474577`.
+- [ ] Verify by SMS or voice.
+- [ ] Copy the new Phone Number ID.
+- [ ] Paste the new Phone Number ID into ARBCore Settings.
+- [ ] Keep webhook URL as `https://arbcore-swiftconnect.vercel.app/api/whatsapp/webhook`.
+- [ ] Test inbound from another number.
+- [ ] Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
+- [ ] Create Auto Reply rule and test live reply.
 
 ## 10. Known Limitations
 

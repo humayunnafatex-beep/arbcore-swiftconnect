@@ -50,6 +50,21 @@ Before testing:
 - [ ] Click Save.
 - [ ] Refresh and confirm non-secret settings persist.
 - [ ] Confirm access token is not displayed after refresh.
+- [ ] Confirm testers understand customer messages are received only on the number connected in Meta for the saved Phone Number ID.
+
+### Connecting Welzz Stride Real Number 01958474577
+
+- [ ] Confirm whether `01958474577` is currently active in WhatsApp or WhatsApp Business app.
+- [ ] If active, confirm whether it must be removed or disconnected before Cloud API registration.
+- [ ] In Meta Developer Dashboard, go to WhatsApp, API Setup, and Add phone number.
+- [ ] Add `+8801958474577`.
+- [ ] Verify by SMS or voice.
+- [ ] Copy the new Phone Number ID.
+- [ ] Paste the new Phone Number ID into ARBCore Settings.
+- [ ] Keep webhook URL as `https://arbcore-swiftconnect.vercel.app/api/whatsapp/webhook`.
+- [ ] Test inbound from another number.
+- [ ] Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
+- [ ] Create Auto Reply rule and test live reply.
 
 ### Contacts Create/Edit/Delete
 

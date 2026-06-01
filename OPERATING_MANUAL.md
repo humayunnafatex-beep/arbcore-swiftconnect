@@ -97,6 +97,8 @@ Use CRM to move customers from new lead to interested, follow-up, won, or lost s
 
 Settings controls workspace configuration. Business Profile saves company name, workspace name, WhatsApp number, website, and timezone. WhatsApp/API Settings stores phone number ID, access token, verify token, and webhook URL. Notification and language preferences also save here.
 
+The Business Profile WhatsApp number is customer-facing business copy. Actual inbound and outbound WhatsApp API traffic uses the number connected in Meta for the saved Phone Number ID.
+
 Team Members lets owners and admins add users, change roles, deactivate users, and see friendly duplicate-email errors.
 
 Basic Settings workflow:
@@ -109,9 +111,25 @@ Basic Settings workflow:
 6. Add team members with name, email, and role.
 7. If a duplicate email is entered, the app shows a friendly error.
 
+Connecting Welzz Stride real number `01958474577`:
+
+1. Confirm whether `01958474577` is currently active in the WhatsApp or WhatsApp Business app.
+2. If active, it may need to be removed or disconnected before Cloud API registration.
+3. In Meta Developer Dashboard, go to WhatsApp, API Setup, and Add phone number.
+4. Add `+8801958474577`.
+5. Verify by SMS or voice.
+6. Copy the new Phone Number ID.
+7. Paste the new Phone Number ID into ARBCore Settings.
+8. Keep the webhook URL as `https://arbcore-swiftconnect.vercel.app/api/whatsapp/webhook`.
+9. Test inbound from another number.
+10. Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
+11. Create an Auto Reply rule and test a live reply.
+
 ## 8. WhatsApp Logs
 
 WhatsApp Logs is the admin-facing test view for recent WhatsApp activity. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
+
+`INBOUND` means a customer messaged the connected WhatsApp API number. `OUTBOUND` means ARBCore sent through the connected WhatsApp API number. If a customer messages another WhatsApp number, ARBCore will not receive it.
 
 Use WhatsApp Logs during beta testing to verify:
 

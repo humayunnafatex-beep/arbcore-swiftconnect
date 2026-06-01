@@ -78,7 +78,33 @@ https://YOUR-PRODUCTION-DOMAIN/api/whatsapp/webhook
 
 After saving, refresh Settings and confirm the non-secret fields persist. The access token should stay hidden after refresh.
 
-## 4. Meta Webhook Setup
+## 4. Connecting Welzz Stride Real Number 01958474577
+
+Customers should eventually message Welzz Stride on `01958474577`, but ARBCore can only receive messages for a number that is connected in Meta WhatsApp Cloud API and whose Phone Number ID is saved in ARBCore Settings.
+
+Follow this safe connection flow:
+
+1. Confirm whether `01958474577` is currently active in the WhatsApp or WhatsApp Business app.
+2. If it is active in the app, it may need to be removed or disconnected before Cloud API registration. Confirm Meta's current requirements before changing live customer communication.
+3. In Meta Developer Dashboard, open WhatsApp, then API Setup, then Add phone number.
+4. Add the number as `+8801958474577`.
+5. Verify the number by SMS or voice.
+6. Copy the new Meta Phone Number ID.
+7. Paste the new Phone Number ID into ARBCore Settings under WhatsApp Phone Number ID.
+8. Keep the webhook URL the same:
+
+```text
+https://arbcore-swiftconnect.vercel.app/api/whatsapp/webhook
+```
+
+9. Save WhatsApp/API Settings in ARBCore.
+10. Test inbound by sending a WhatsApp message from another number to `01958474577`.
+11. Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
+12. Create an active Auto Reply rule and test a live reply.
+
+Do not assume `01958474577` is active in ARBCore until Meta shows it as connected and the new Phone Number ID is saved in ARBCore Settings.
+
+## 5. Meta Webhook Setup
 
 In the Meta Developer dashboard:
 
@@ -103,7 +129,7 @@ https://YOUR-PRODUCTION-DOMAIN/api/whatsapp/webhook
 
 If the verify token has even one different character, Meta verification will fail.
 
-## 5. First Outbound Test
+## 6. First Outbound Test
 
 Use a controlled test contact first.
 
@@ -149,7 +175,7 @@ Message log statuses may include:
 | `RECEIVED` | An inbound WhatsApp message was received through the webhook. |
 | `ATTEMPTED` | A send was attempted if the workflow records attempted-only states in a future phase. |
 
-## 6. First Inbound Webhook Test
+## 7. First Inbound Webhook Test
 
 After webhook verification succeeds:
 
@@ -168,7 +194,7 @@ After webhook verification succeeds:
 
 Simple live keyword auto replies are enabled when WhatsApp Cloud API settings are configured and an active rule matches the inbound text.
 
-## 7. First Live Auto Reply Test
+## 8. First Live Auto Reply Test
 
 After outbound and inbound tests pass:
 
@@ -193,7 +219,7 @@ Thanks for your interest. Our team will share the latest price details shortly.
 
 ARBCore SwiftConnect does not fake auto-reply success. Auto replies are logged as `SENT` only when Meta API returns success.
 
-## 8. Troubleshooting Common Meta Errors
+## 9. Troubleshooting Common Meta Errors
 
 ### Invalid OAuth Access Token
 
@@ -231,7 +257,7 @@ Temporary Meta tokens expire. Use a fresh temporary token for testing or set up 
 
 Outside the 24-hour customer service window, WhatsApp may require an approved message template. Free-form text messages may be rejected until the customer has recently messaged the business.
 
-## 9. Safety Notes
+## 10. Safety Notes
 
 1. Never share the WhatsApp access token.
 2. Never commit the access token to Git.
@@ -241,7 +267,7 @@ Outside the 24-hour customer service window, WhatsApp may require an approved me
 6. Keep production credentials in protected settings or platform secrets.
 7. Test auto replies with a small controlled group before using live customer traffic.
 
-## 10. Current Limitations
+## 11. Current Limitations
 
 1. Auto-reply from inbound webhook messages supports simple active keyword rules. More advanced routing and template logic can be added in a future phase.
 2. Advanced campaign sending is not final.
@@ -249,7 +275,7 @@ Outside the 24-hour customer service window, WhatsApp may require an approved me
 4. Multi-company webhook routing may need future hardening if multiple companies share one callback path.
 5. Delivery and read-receipt UI may need additional refinement after live Meta testing.
 
-## 11. Live Test Record
+## 12. Live Test Record
 
 For every live test, record:
 

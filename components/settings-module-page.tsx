@@ -247,13 +247,22 @@ async function createTeamMember() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Business name" value={profile.businessName} onChange={(value) => setProfile({ ...profile, businessName: value })} />
             <Field label="Workspace" value={profile.workspace} onChange={(value) => setProfile({ ...profile, workspace: value })} />
-            <Field label="WhatsApp" value={profile.phone} onChange={(value) => setProfile({ ...profile, phone: value })} />
+            <Field label="Customer-facing WhatsApp number" value={profile.phone} onChange={(value) => setProfile({ ...profile, phone: value })} />
             <Field label="Website" value={profile.website} onChange={(value) => setProfile({ ...profile, website: value })} />
             <Field label="Timezone" value={profile.timezone} onChange={(value) => setProfile({ ...profile, timezone: value })} />
+          </div>
+          <div className="mt-4 rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
+            This business profile number is customer-facing copy only. ARBCore receives customer messages only on the WhatsApp number connected to the saved Meta Phone Number ID.
           </div>
         </Panel>
 
         <Panel icon={<Smartphone className="h-5 w-5" />} title="WhatsApp / API Settings" action={<button className={secondaryButtonClassName} onClick={() => save("API")} disabled={savingSection !== null}><KeyRound className="h-4 w-4" />{savingSection === "API" ? "Saving..." : "Save"}</button>}>
+          <div className="mb-4 rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
+            <p className="font-black text-royal">Connected number rule</p>
+            <p className="mt-1">Customer messages will be received only on the WhatsApp number connected to this Phone Number ID.</p>
+            <p className="mt-1">To use Welzz Stride number 01958474577, this number must be added and verified in Meta WhatsApp Cloud API first.</p>
+            <p className="mt-1">Current active customer number is the number selected in Meta for the saved Phone Number ID.</p>
+          </div>
           <label className="grid gap-1.5 text-xs font-black text-slate-500">
             API mode
             <select className={inputClassName} value={apiMode} onChange={(event) => setApiMode(event.target.value)}>
