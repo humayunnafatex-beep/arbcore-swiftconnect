@@ -62,6 +62,8 @@ Phase 5 and Phase 6 add safe admin mapping verification and local/staging enforc
 
 Phase 7 adds role permission readiness. Use `AUTH_IMPLEMENTATION_PHASE_7.md`, `/auth/permissions`, and `/api/auth/permissions` before enabling `PERMISSIONS_ENFORCED=true`.
 
+Phase 8 and Phase 9 apply selected API guards and local/staging permission enforcement test support. Use `AUTH_IMPLEMENTATION_PHASE_8.md`, `AUTH_IMPLEMENTATION_PHASE_9.md`, and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md` before any production role blocking.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

@@ -20,7 +20,7 @@ export async function requirePermission(permission: Permission): Promise<ApiGuar
   const wouldAllow = hasPermission(context.user.role, permission);
 
   if (permissionsEnforced && !wouldAllow) {
-    throw new ApiError(403, "FORBIDDEN", "Your role does not have permission for this action.");
+    throw new ApiError(403, "FORBIDDEN", "You do not have permission to perform this action.");
   }
 
   return {
@@ -31,14 +31,12 @@ export async function requirePermission(permission: Permission): Promise<ApiGuar
   };
 }
 
-export function createForbiddenResponse(message = "Your role does not have permission for this action.") {
+export function createForbiddenResponse(message = "You do not have permission to perform this action.") {
   return NextResponse.json(
     {
       success: false,
-      error: {
-        code: "FORBIDDEN",
-        message
-      }
+      error: message,
+      code: "FORBIDDEN"
     },
     { status: 403 }
   );

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ApiError, handleApiError } from "@/lib/api";
+import { requirePermission } from "@/lib/api-guard";
 import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
 
@@ -8,6 +10,7 @@ async function getCompany() {
 
 export async function GET() {
   try {
+    await requirePermission("settings.view");
     const company = await getCompany();
 
     if (!company) {
@@ -40,6 +43,10 @@ export async function GET() {
       },
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return handleApiError(error);
+    }
+
     console.error("Company settings GET error:", error);
 
     return NextResponse.json(
@@ -51,6 +58,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    await requirePermission("settings.manage");
     const body = await request.json();
     const existingCompany = await getCompany();
 
@@ -108,6 +116,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return handleApiError(error);
+    }
+
     console.error("Company settings PUT error:", error);
 
     return NextResponse.json(

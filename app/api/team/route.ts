@@ -1,5 +1,6 @@
 import { getCurrentAuthContext, assertRole } from "@/lib/auth";
 import { created, handleApiError, ok, parseJson } from "@/lib/api";
+import { requirePermission } from "@/lib/api-guard";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teamMemberCreateSchema } from "@/lib/validators";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    await requirePermission("team.view");
     const context = await getCurrentAuthContext();
     assertRole(context, ["OWNER", "ADMIN"]);
 
@@ -34,6 +36,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await requirePermission("team.manage");
     const context = await getCurrentAuthContext();
     assertRole(context, ["OWNER", "ADMIN"]);
     const input = await parseJson(request, teamMemberCreateSchema);

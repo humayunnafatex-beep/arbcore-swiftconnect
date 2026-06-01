@@ -104,3 +104,5 @@ The next phase should test real permission enforcement with limited roles in loc
 - Verify `MANAGER` can manage operational modules but not settings/team.
 - Verify `AGENT` can use contacts/messages/logs but not manage auto replies or settings.
 - Add enforcement to more APIs only after the limited-role test passes.
+
+Phase 9 adds this local/staging test support in `AUTH_IMPLEMENTATION_PHASE_9.md` and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md`.

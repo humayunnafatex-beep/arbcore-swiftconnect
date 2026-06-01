@@ -32,6 +32,8 @@ Phase 7 adds role permission readiness. Use `AUTH_IMPLEMENTATION_PHASE_7.md`, `/
 
 Phase 8 applies permission guards to selected APIs in report-only mode. Use `AUTH_IMPLEMENTATION_PHASE_8.md` to review which Dashboard, WhatsApp Logs, Contacts, Auto Reply, and Send Messages APIs are guarded while beta behavior remains non-blocking.
 
+Phase 9 adds limited local/staging permission enforcement test support. Use `AUTH_IMPLEMENTATION_PHASE_9.md` and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md` before testing `AUTH_ENFORCED=true` with `PERMISSIONS_ENFORCED=true`.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -238,6 +240,8 @@ Before enforcing login, complete `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` in local o
 Before enforcing role permissions, open `/auth/permissions` and confirm the current user role and permission list are correct. Permission enforcement remains off in beta unless `PERMISSIONS_ENFORCED=true`.
 
 When permission enforcement is off, guarded APIs continue normal beta behavior. When `PERMISSIONS_ENFORCED=true` is tested in staging, unauthorized roles should receive safe 403 responses while webhook routes stay public.
+
+Settings and Team APIs are also prepared with report-only permission guards. Keep production permission enforcement off until the checklist passes.
 
 For support issues, collect the affected module, approximate time, user action, friendly error message, and whether the issue happened before or after a deployment. Do not collect or share raw access tokens or database connection strings.
 
