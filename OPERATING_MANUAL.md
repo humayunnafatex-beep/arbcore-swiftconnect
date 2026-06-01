@@ -34,6 +34,8 @@ Phase 8 applies permission guards to selected APIs in report-only mode. Use `AUT
 
 Phase 9 adds limited local/staging permission enforcement test support. Use `AUTH_IMPLEMENTATION_PHASE_9.md` and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md` before testing `AUTH_ENFORCED=true` with `PERMISSIONS_ENFORCED=true`.
 
+Channel Center at `/channels` gives a safe status view for WhatsApp and Messenger setup. It shows whether IDs, tokens, and verify tokens are present, but it never displays access tokens.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -81,6 +83,8 @@ Basic Send Messages workflow:
 
 After testing, open WhatsApp Logs to confirm the outbound message attempt, provider ID, status, and any safe error message.
 
+Use Channel Center to check whether WhatsApp and Messenger are configured before running channel tests.
+
 ## 5. Auto Reply
 
 Auto Reply manages keyword-based replies. A rule contains a trigger keyword, reply message, match mode, priority, and active/inactive status.
@@ -123,6 +127,8 @@ The Business Profile WhatsApp number is customer-facing business copy. Actual in
 
 Team Members lets owners and admins add users, change roles, deactivate users, and see friendly duplicate-email errors.
 
+Channel Center links back to Settings for WhatsApp/API and Messenger/Page API setup. It is a status page only and does not reveal tokens.
+
 Basic Settings workflow:
 
 1. Open Settings.
@@ -164,6 +170,8 @@ Use WhatsApp Logs during beta testing to verify:
 4. Webhook event summaries.
 5. Safe error messages.
 6. Messenger inbound Page messages after `/api/messenger/webhook` setup.
+
+Channel Center links to Logs for inbound/outbound verification across both channels.
 
 Message log status meanings:
 

@@ -25,6 +25,8 @@ Open ARBCore Settings and use the Messenger / Page API Settings section:
 - Verify Token -> Messenger Verify Token
 - Webhook URL -> Messenger Webhook URL
 
+Use Channel Center at `/channels` to confirm whether the Page ID, Page Access Token, Verify Token, and webhook URL are present. The Page Access Token is never displayed.
+
 Use this webhook URL:
 
 ```text
@@ -65,6 +67,7 @@ https://arbcore-swiftconnect.vercel.app/api/messenger/webhook
    - Direction: `INBOUND`
    - Status: `RECEIVED`
 6. Recent webhook events should show a Messenger event summary.
+7. Channel Center links to Logs for this verification step.
 
 ## 5. Real Send API Test
 

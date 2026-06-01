@@ -61,6 +61,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Business Profile saves and persists after refresh.
 - [ ] WhatsApp/API settings save and persist after refresh.
 - [ ] Saved access token is not returned or displayed after refresh.
+- [ ] Channel Center opens at `/channels`.
+- [ ] `/api/channels/status` returns safe JSON with token presence booleans only.
+- [ ] Channel Center shows WhatsApp and Messenger setup status without displaying tokens.
 - [ ] Team duplicate email returns a friendly error.
 
 ## 4A. Auth Mapping QA
@@ -135,6 +138,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Test send succeeds only after provider success.
 - [ ] Send Messages shows one of the safe states: `not_configured`, `validation_failed`, `provider_error`, or `sent_successfully`.
 - [ ] WhatsApp Logs opens at `/whatsapp-logs`.
+- [ ] Channel Center links to Settings, Send Messages, and Logs.
 - [ ] Outbound send attempts appear in WhatsApp Logs with `SENT` or `FAILED` status.
 - [ ] Inbound webhook messages appear in WhatsApp Logs with `RECEIVED` status.
 - [ ] Recent webhook events appear without exposing access tokens or secrets.
@@ -181,6 +185,7 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Messenger webhook GET verification fails with the wrong verify token.
 - [ ] Messenger webhook POST with a sample Page message returns 200.
 - [ ] Messenger inbound messages appear in `/whatsapp-logs` with channel `MESSENGER`, direction `INBOUND`, and status `RECEIVED`.
+- [ ] Channel Center shows Messenger Page ID, Page Access Token, and Verify Token presence as Yes/No only.
 - [ ] `/api/messenger/test-send` without config returns `not_configured`.
 - [ ] `/api/messenger/test-send` with config logs `SENT` only after Meta accepts the Send API request.
 - [ ] Messenger provider errors log `FAILED` and show a safe provider error.

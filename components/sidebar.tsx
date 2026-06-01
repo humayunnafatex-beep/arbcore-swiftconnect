@@ -6,6 +6,7 @@ import {
   BarChart3,
   Bot,
   BriefcaseBusiness,
+  Cable,
   ClipboardList,
   ContactRound,
   Home,
@@ -23,6 +24,7 @@ import { RobotAvatar } from "./robot-avatar";
 const navigation = [
   { label: "Dashboard", icon: Home, href: "/" },
   { label: "Connect", icon: MessageCircle, href: "/connect" },
+  { label: "Channel Center", icon: Cable, href: "/channels" },
   { label: "Contacts", icon: ContactRound, href: "/contacts" },
   { label: "Campaigns", icon: Send, href: "/campaigns" },
   { label: "Send Messages", icon: MessagesSquare, href: "/send-messages" },
