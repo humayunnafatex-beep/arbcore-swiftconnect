@@ -36,7 +36,7 @@ Phase 9 adds limited local/staging permission enforcement test support. Use `AUT
 
 Channel Center at `/channels` gives a safe status view for WhatsApp and Messenger setup. It shows whether IDs, tokens, and verify tokens are present, but it never displays access tokens. It also includes diagnostics, webhook URL copy helpers, a Messenger PSID test-send form, and links to Send Messages and Message Logs.
 
-Unified Inbox at `/inbox` gives the team a business-friendly conversation view across WhatsApp and Messenger. It is read-only in Phase 1, so manual replies still happen through Send Messages and automated replies still happen through Auto Reply.
+Unified Inbox at `/inbox` gives the team a business-friendly conversation view across WhatsApp and Messenger. It also supports safe replies from the selected conversation when the relevant Meta channel is configured. The app still does not fake provider success; check Message Logs for `SENT` or `FAILED` verification.
 
 ## 1. Dashboard
 
@@ -89,7 +89,7 @@ Use Channel Center to check whether WhatsApp and Messenger are configured before
 
 WhatsApp test sending stays in Send Messages. Messenger test sending is available in Channel Center and requires a Facebook Page PSID, not a phone number.
 
-After messages are received or sent, open Inbox at `/inbox` for a customer conversation view. Use Message Logs when you need technical provider IDs, webhook summaries, or debug filtering.
+After messages are received or sent, open Inbox at `/inbox` for a customer conversation view. Selected conversations include a reply composer. WhatsApp replies require WhatsApp Cloud API configuration, and Messenger replies require a Page Access Token plus a Facebook PSID conversation. Use Message Logs when you need technical provider IDs, webhook summaries, or debug filtering.
 
 ## 5. Auto Reply
 
@@ -166,7 +166,7 @@ Use `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md` as the step-by-step operationa
 
 Message Logs is the admin-facing test view for recent WhatsApp and Messenger activity. The existing route remains `/whatsapp-logs`, and `/message-logs` is also available as an alias. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
 
-Inbox at `/inbox` is the business conversation view. It groups existing message logs by WhatsApp phone number or Messenger PSID, shows the latest customer thread, and remains read-only in Phase 1. Replies are not sent from Inbox yet.
+Inbox at `/inbox` is the business conversation view. It groups existing message logs by WhatsApp phone number or Messenger PSID and shows the latest customer thread. The selected conversation includes a reply composer. A reply is logged as `SENT` only after Meta accepts it, and provider failures are logged as `FAILED`.
 
 `INBOUND` means a customer messaged the connected WhatsApp API number or configured Facebook Page. `OUTBOUND` means ARBCore sent through a configured provider. If a customer messages another WhatsApp number or unconnected Facebook Page, ARBCore will not receive it.
 

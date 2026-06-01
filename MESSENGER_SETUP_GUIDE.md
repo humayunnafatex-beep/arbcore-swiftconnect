@@ -95,6 +95,8 @@ If Messenger settings are missing, it returns:
 
 When Messenger settings are configured, ARBCore calls the Meta Messenger Send API. It logs `SENT` only after Meta accepts the request and logs `FAILED` when Meta rejects the request.
 
+Inbox at `/inbox` can also reply from a selected Messenger conversation. Messenger replies require the Page Access Token and a valid Facebook PSID conversation. Do not use phone numbers for Messenger replies. After sending from Inbox, check `/message-logs` for `MESSENGER / OUTBOUND / SENT` or `MESSENGER / OUTBOUND / FAILED`.
+
 Provider success state:
 
 ```json
@@ -132,6 +134,8 @@ Provider failure state:
    - Status: `FAILED` if Meta rejects the request or Page Access Token is missing
 
 Duplicate inbound provider message IDs are skipped so the same Messenger message should not trigger repeated auto replies.
+
+Manual Inbox replies use the same provider-backed safety rule as test sends and auto replies: ARBCore does not fake Messenger sending success.
 
 ## 7. Safety
 

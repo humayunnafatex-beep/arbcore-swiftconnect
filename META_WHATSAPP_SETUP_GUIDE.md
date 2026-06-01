@@ -169,6 +169,8 @@ WhatsApp test sending remains in `/send-messages`; Channel Center only links to 
 
 The logs page supports filtering by channel `WHATSAPP`, direction, status, and search. Use `/whatsapp-logs` or `/message-logs` for verification.
 
+Inbox at `/inbox` can also reply from a selected WhatsApp conversation. The selected conversation must have a valid customer phone number, and WhatsApp Cloud API settings must be configured. ARBCore logs `SENT` only after Meta accepts the reply and logs `FAILED` if Meta rejects it. Check `/message-logs` after each Inbox reply.
+
 Failure state meanings:
 
 | Status | Meaning |
@@ -230,6 +232,8 @@ Thanks for your interest. Our team will share the latest price details shortly.
 8. If Meta rejects the auto reply, confirm it appears as `OUTBOUND - FAILED` with a safe error message.
 
 ARBCore SwiftConnect does not fake auto-reply success. Auto replies are logged as `SENT` only when Meta API returns success.
+
+Manual Inbox replies follow the same rule: success is never faked, and `/message-logs` should show `OUTBOUND - SENT` or `OUTBOUND - FAILED`.
 
 ## 9. Troubleshooting Common Meta Errors
 

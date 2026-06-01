@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Cable, ClipboardList, Inbox, MessageCircle, RefreshCw, Search } from "lucide-react";
+import { Cable, ClipboardList, Inbox, MessageCircle, RefreshCw, Search, Send } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { AppShell } from "./app-shell";
@@ -16,6 +16,7 @@ import {
 } from "./saas-page-utils";
 
 type ChannelFilter = "ALL" | "WHATSAPP" | "MESSENGER";
+type ReplyStatus = "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
 
 type ConversationSummary = {
   id: string;
@@ -64,6 +65,19 @@ type ConversationDetailResponse = {
   error?: string;
 };
 
+type ReplyResponse = {
+  success: boolean;
+  status: ReplyStatus;
+  error?: string;
+};
+
+const replyStatusText: Record<ReplyStatus, string> = {
+  not_configured: "This channel is not configured for real replies.",
+  validation_failed: "Please check the recipient and message.",
+  provider_error: "The provider rejected the reply.",
+  sent_successfully: "Reply sent successfully through the provider."
+};
+
 export function InboxModulePage() {
   const [channel, setChannel] = useState<ChannelFilter>("ALL");
   const [search, setSearch] = useState("");
@@ -74,6 +88,10 @@ export function InboxModulePage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState("");
+  const [replyStatus, setReplyStatus] = useState<ReplyStatus | null>(null);
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [replySending, setReplySending] = useState(false);
 
   const selectedConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
@@ -116,6 +134,17 @@ export function InboxModulePage() {
     void loadConversations();
   }, [loadConversations]);
 
+  const loadConversationDetail = useCallback(async (conversationId: string) => {
+    const response = await fetch(`/api/inbox/conversations/${encodeURIComponent(conversationId)}`);
+    const result = (await response.json()) as ConversationDetailResponse;
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "Failed to load inbox conversation.");
+    }
+
+    setDetail(result.data);
+  }, []);
+
   useEffect(() => {
     if (!selectedId) {
       setDetail(null);
@@ -126,16 +155,7 @@ export function InboxModulePage() {
     setDetailLoading(true);
     setDetailError(null);
 
-    fetch(`/api/inbox/conversations/${encodeURIComponent(selectedId)}`)
-      .then(async (response) => {
-        const result = (await response.json()) as ConversationDetailResponse;
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || "Failed to load inbox conversation.");
-        }
-
-        if (active) setDetail(result.data);
-      })
+    loadConversationDetail(selectedId)
       .catch((requestError) => {
         if (active) {
           setDetail(null);
@@ -149,7 +169,57 @@ export function InboxModulePage() {
     return () => {
       active = false;
     };
-  }, [selectedId]);
+  }, [loadConversationDetail, selectedId]);
+
+  async function sendReply() {
+    if (!detail) return;
+
+    const body = replyBody.trim();
+    setReplyStatus(null);
+    setReplyError(null);
+
+    if (!body) {
+      setReplyStatus("validation_failed");
+      setReplyError("Reply message is required.");
+      return;
+    }
+
+    setReplySending(true);
+
+    try {
+      const response = await fetch("/api/inbox/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: detail.conversation.channel,
+          contactKey: detail.conversation.contactKey,
+          body
+        })
+      });
+      const result = (await response.json()) as ReplyResponse;
+      setReplyStatus(result.status);
+
+      if (!response.ok || !result.success || result.status !== "sent_successfully") {
+        setReplyError(result.error || replyStatusText[result.status] || "Reply was not sent.");
+        if (selectedId && result.status !== "validation_failed") {
+          await loadConversationDetail(selectedId).catch(() => undefined);
+          await loadConversations().catch(() => undefined);
+        }
+        return;
+      }
+
+      setReplyBody("");
+      if (selectedId) {
+        await loadConversationDetail(selectedId);
+        await loadConversations();
+      }
+    } catch (requestError) {
+      setReplyStatus("provider_error");
+      setReplyError(getApiErrorMessage(requestError));
+    } finally {
+      setReplySending(false);
+    }
+  }
 
   function clearFilters() {
     setChannel("ALL");
@@ -315,8 +385,47 @@ export function InboxModulePage() {
                   )}
                 </div>
 
-                <div className="mt-4 rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
-                  Inbox is read-only in Phase 1. Use Send Messages for manual WhatsApp tests, Auto Reply for matching inbound keywords, and Message Logs for technical provider details.
+                <div className="mt-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-ink">Reply from Inbox</h3>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">
+                        {detail.conversation.channel === "WHATSAPP"
+                          ? "WhatsApp replies use the customer phone number from this conversation."
+                          : "Messenger replies use the Facebook PSID from this conversation."}
+                      </p>
+                    </div>
+                    <Link className="text-xs font-black text-royal hover:underline" href="/message-logs">
+                      Verify in Message Logs
+                    </Link>
+                  </div>
+                  <textarea
+                    className="mt-4 min-h-24 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
+                    value={replyBody}
+                    onChange={(event) => setReplyBody(event.target.value)}
+                    placeholder="Write a reply"
+                  />
+                  {replyStatus ? (
+                    <div
+                      className={cn(
+                        "mt-3 rounded-[14px] border p-3 text-sm font-bold",
+                        replyStatus === "sent_successfully"
+                          ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+                          : "border-amber-100 bg-amber-50 text-amber-700"
+                      )}
+                    >
+                      {replyError || replyStatusText[replyStatus]}
+                    </div>
+                  ) : null}
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs font-semibold text-slate-500">
+                      Success is logged only after Meta accepts the message. Failed provider attempts are logged as FAILED.
+                    </p>
+                    <button className={primaryButtonClassName} onClick={() => void sendReply()} disabled={replySending || !replyBody.trim()}>
+                      <Send className="h-4 w-4" />
+                      {replySending ? "Sending..." : "Send Reply"}
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : null}

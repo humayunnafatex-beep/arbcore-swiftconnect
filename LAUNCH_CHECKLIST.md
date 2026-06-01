@@ -66,7 +66,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `/api/channels/diagnostics` returns safe readiness JSON and missing field names only.
 - [ ] Channel Center shows WhatsApp and Messenger setup status without displaying tokens.
 - [ ] Webhook copy text contains only webhook URL/path and no secrets.
-- [ ] Inbox opens at `/inbox` and shows a read-only conversation list when message logs exist.
+- [ ] Inbox opens at `/inbox` and shows a conversation list when message logs exist.
+- [ ] Inbox reply composer appears when a conversation is selected.
 - [ ] Team duplicate email returns a friendly error.
 
 ## 4A. Auth Mapping QA
@@ -145,7 +146,12 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Logs filters work for channel, direction, status, search, and limit.
 - [ ] Inbox groups WhatsApp and Messenger logs into business conversations without exposing raw webhook payloads or tokens.
 - [ ] Inbox filters work for all channels, WhatsApp, Messenger, and search.
-- [ ] Inbox message detail is read-only; replies still happen through Send Messages or Auto Reply.
+- [ ] Inbox reply with empty text shows `validation_failed`.
+- [ ] Inbox reply with missing channel config shows `not_configured`.
+- [ ] Inbox WhatsApp reply logs `OUTBOUND / SENT` only after Meta accepts the send.
+- [ ] Inbox Messenger reply logs `OUTBOUND / SENT` only after Meta accepts the send.
+- [ ] Inbox provider failures log `OUTBOUND / FAILED` with safe error text.
+- [ ] Inbox failed replies keep the draft text so the user can retry.
 - [ ] Channel Center links to Settings, Send Messages, and Logs.
 - [ ] Channel Center WhatsApp button opens `/send-messages`.
 - [ ] Outbound send attempts appear in WhatsApp Logs with `SENT` or `FAILED` status.
