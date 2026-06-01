@@ -12,6 +12,8 @@ Before onboarding external clients, review `AUTH_WORKSPACE_HARDENING_PLAN.md`.
 
 For Phase 1 auth foundation scope, review `AUTH_IMPLEMENTATION_PHASE_1.md`.
 
+Phase 2 Supabase Auth helpers and login UI may exist, but app-route login enforcement is still disabled.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -136,6 +138,7 @@ Connecting Welzz Stride real number `01958474577`:
 
 - Billing/license enforcement is not active in beta.
 - Demo cookie auth remains in place until production auth is implemented.
+- Supabase Auth helpers are preparation only; real login enforcement comes in a later phase.
 - Current beta is single-company/demo-auth mode; Phase 1 adds foundation only and real login enforcement comes later.
 - Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
 - Meta webhook routes must remain public but verified.

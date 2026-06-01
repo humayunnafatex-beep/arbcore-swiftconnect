@@ -4,7 +4,7 @@
 
 Phase 1 prepares ARBCore SwiftConnect for real authentication without disrupting the current single-company Enterprise Beta.
 
-This phase adds documentation, route classification, and non-breaking helper stubs. It does not complete the full Supabase Auth migration and does not block current app pages behind real login.
+This phase adds documentation, route classification, and non-breaking helper stubs. Phase 2 adds Supabase Auth client/server helpers and login UI, but still does not block current app pages behind real login.
 
 ## 2. Why Login Is Not Enforced Yet
 
@@ -29,6 +29,7 @@ Current auth behavior:
 - `getCurrentAuthContext()` still checks for the demo cookie and returns the default workspace context.
 - `getCurrentUser()`, `getCurrentUserRole()`, and `requireCurrentUser()` are Phase 1 helper stubs that return the current beta/default owner without enforcing real login.
 - `isAuthEnforced()` returns `false` for now.
+- Phase 2 adds Supabase session lookup first; if no mapped Supabase user exists and auth is not enforced, the beta/default owner fallback remains.
 
 ## 4. Recommended Future Provider
 
@@ -126,8 +127,10 @@ Future SaaS behavior:
 ### Phase 2: Login Page And Session Helper
 
 - Add Supabase Auth client/server helpers.
-- Connect login/logout to real sessions.
-- Keep demo fallback only if explicitly needed for internal beta.
+- Add `/auth/callback` for Supabase redirect flows.
+- Add `/auth/logout` for Supabase sign-out plus beta cookie cleanup.
+- Prepare `/login` for Supabase email/password and magic link.
+- Keep demo fallback because auth enforcement is still off in Phase 2.
 
 ### Phase 3: Protect Pages
 

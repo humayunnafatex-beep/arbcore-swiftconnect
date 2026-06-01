@@ -5,20 +5,35 @@ import { useRouter } from "next/navigation";
 import { LockKeyhole, LogIn, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { RobotAvatar } from "@/components/robot-avatar";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
+import { createSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("admin@arbcore.ai");
   const [password, setPassword] = useState("demo1234");
   const [loading, setLoading] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const supabaseConfigured = isSupabaseBrowserConfigured();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setNotice(null);
 
     try {
+      if (supabaseConfigured) {
+        const supabase = createSupabaseBrowserClient();
+        const result = await supabase?.auth.signInWithPassword({ email, password });
+        if (result?.error) throw result.error;
+
+        router.push("/");
+        router.refresh();
+        return;
+      }
+
       await apiRequest("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password })
@@ -29,6 +44,33 @@ export default function LoginPage() {
       setError(getApiErrorMessage(requestError));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function sendMagicLink() {
+    setMagicLoading(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
+        setNotice("Supabase Auth is not configured yet. Use demo access for Enterprise Beta.");
+        return;
+      }
+
+      const origin = window.location.origin;
+      const result = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${origin}/auth/callback` }
+      });
+
+      if (result.error) throw result.error;
+      setNotice("Magic link sent. Check your email to continue.");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to send magic link.");
+    } finally {
+      setMagicLoading(false);
     }
   }
 
@@ -50,13 +92,13 @@ export default function LoginPage() {
               <div className="mt-14 max-w-2xl">
                 <p className="inline-flex h-9 items-center gap-2 rounded-full bg-white px-4 text-xs font-black uppercase text-royal ring-1 ring-blue-100">
                   <Sparkles className="h-4 w-4" />
-                  Local MVP Access
+                  Enterprise Beta Access
                 </p>
                 <h1 className="mt-5 text-4xl font-black tracking-normal text-ink sm:text-5xl">
                   Sign in to your WhatsApp automation workspace
                 </h1>
                 <p className="mt-5 text-base leading-8 text-slate-600">
-                  Manage contacts, campaigns, conversations, CRM pipeline, and ARBCore AI tools from one secure workspace.
+                  Manage contacts, WhatsApp automation, logs, CRM pipeline, and ARBCore AI tools while SaaS authentication is prepared safely.
                 </p>
               </div>
             </div>
@@ -75,7 +117,7 @@ export default function LoginPage() {
         <div className="flex flex-col justify-center p-6 sm:p-8">
           <div>
             <h2 className="text-2xl font-black text-ink">Welcome back</h2>
-            <p className="mt-2 text-sm font-medium text-slate-500">Use the demo admin account for this local MVP.</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">Login is being prepared for SaaS mode. Current Enterprise Beta may still use demo access until auth enforcement is enabled.</p>
           </div>
 
           <form onSubmit={submit} className="mt-8 space-y-4">
@@ -113,19 +155,40 @@ export default function LoginPage() {
               </div>
             ) : null}
 
+            {notice ? (
+              <div className="rounded-[16px] border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                {notice}
+              </div>
+            ) : null}
+
             <button
               className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-royal to-electric text-sm font-black text-white shadow-glow transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={loading}
             >
               <LogIn className="h-4 w-4" />
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Signing in..." : supabaseConfigured ? "Sign in" : "Demo sign in"}
+            </button>
+
+            <button
+              type="button"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-blue-200 bg-white text-sm font-black text-royal transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={() => void sendMagicLink()}
+              disabled={magicLoading}
+            >
+              <Mail className="h-4 w-4" />
+              {magicLoading ? "Sending..." : "Send magic link"}
             </button>
           </form>
 
           <div className="mt-6 rounded-[16px] bg-blue-50 p-4 text-sm font-semibold text-slate-600">
             <p>Email: admin@arbcore.ai</p>
             <p>Password: demo1234</p>
+            <p className="mt-2">Dashboard remains available during Phase 2 auth preparation.</p>
           </div>
+
+          <button className="mt-4 text-sm font-black text-royal" onClick={() => router.push("/")}>
+            Back to dashboard
+          </button>
         </div>
       </section>
     </main>

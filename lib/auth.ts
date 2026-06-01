@@ -4,6 +4,7 @@ import type { UserRole } from "@prisma/client";
 import { ApiError } from "@/lib/api";
 import { DEMO_EMAIL, DEMO_PASSWORD, DEFAULT_COMPANY_ID, DEFAULT_USER_ID, AUTH_COOKIE_NAME, isDemoSession } from "@/lib/auth-constants";
 import { prisma } from "@/lib/prisma";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type AuthContext = Awaited<ReturnType<typeof ensureDefaultWorkspace>>;
 export type AppModule = "dashboard" | "connect" | "contacts" | "campaigns" | "inbox" | "ai-studio" | "auto-reply" | "crm" | "analytics" | "settings" | "license";
@@ -46,7 +47,14 @@ export function isAuthEnforced() {
 }
 
 export async function getCurrentUser() {
-  // Phase 1 foundation only: return the existing beta/default owner.
+  const supabaseUser = await getSupabaseAuthUser();
+
+  if (supabaseUser?.email) {
+    const user = await prisma.user.findUnique({ where: { email: supabaseUser.email.toLowerCase() } });
+    if (user) return user;
+  }
+
+  // Phase 2 foundation only: return the existing beta/default owner when auth is not enforced.
   // TODO: Resolve the current user from Supabase Auth session cookies.
   return (await ensureDefaultWorkspace()).user;
 }
@@ -56,7 +64,7 @@ export async function getCurrentUserRole() {
 }
 
 export async function requireCurrentUser() {
-  // Phase 1 foundation only: do not block access beyond the existing beta flow.
+  // Phase 2 foundation only: do not block access beyond the existing beta flow.
   // TODO: Throw UNAUTHENTICATED when real auth enforcement is enabled.
   return getCurrentUser();
 }
@@ -115,11 +123,35 @@ export async function ensureDefaultWorkspace() {
 }
 
 export async function getCurrentAuthContext() {
+  const supabaseUser = await getSupabaseAuthUser();
+
+  if (supabaseUser?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: supabaseUser.email.toLowerCase() },
+      include: { company: true }
+    });
+
+    if (user?.company) {
+      return { user, company: user.company };
+    }
+  }
+
   const session = cookies().get(AUTH_COOKIE_NAME)?.value;
 
-  if (!isDemoSession(session)) {
+  if (!isDemoSession(session) && isAuthEnforced()) {
     throw new ApiError(401, "UNAUTHENTICATED", "You must be logged in to access this resource.");
   }
 
   return ensureDefaultWorkspace();
+}
+
+async function getSupabaseAuthUser() {
+  const supabase = createSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data } = await supabase.auth.getUser();
+  return data.user;
 }

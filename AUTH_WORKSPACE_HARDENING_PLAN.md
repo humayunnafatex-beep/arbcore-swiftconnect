@@ -6,7 +6,7 @@ ARBCore SwiftConnect currently uses a demo-cookie auth flow for beta operation. 
 
 This is acceptable for the current single-company Enterprise Beta, but it is not enough for onboarding external client businesses.
 
-Phase 1 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`.
+Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`.
 
 Current behavior:
 
@@ -15,6 +15,7 @@ Current behavior:
 - `/api/auth/me` returns the current demo auth context.
 - The default user is seeded as `OWNER`.
 - Auth is not yet backed by Supabase Auth, NextAuth, or a production identity provider.
+- Supabase Auth helpers and login UI are present for Phase 2 preparation, but login is not enforced yet.
 - There is no real user invite/password reset/session lifecycle yet.
 
 ## 2. Current Company / Workspace Selection Behavior

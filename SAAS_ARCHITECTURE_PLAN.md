@@ -52,6 +52,8 @@ For the detailed auth, role, and workspace isolation plan, use `AUTH_WORKSPACE_H
 
 For the first non-breaking auth foundation step, use `AUTH_IMPLEMENTATION_PHASE_1.md`.
 
+Phase 2 adds Supabase Auth browser/server helpers and a login/logout surface while keeping auth enforcement disabled until route protection is rolled out safely.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

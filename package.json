@@ -2,19 +2,21 @@
   "name": "arbcore-swiftconnect",
   "version": "0.1.0",
   "private": true,
- "scripts": {
-  "dev": "next dev",
-  "build": "prisma generate && next build",
-  "db:push": "prisma db push",
-  "db:init-local": "node scripts/init-sqlite.mjs",
-  "db:seed": "node scripts/seed-production.mjs",
-  "prisma:generate": "prisma generate",
-  "start": "next start",
-  "postinstall": "prisma generate",
-  "lint": "next lint"
-},
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "db:push": "prisma db push",
+    "db:init-local": "node scripts/init-sqlite.mjs",
+    "db:seed": "node scripts/seed-production.mjs",
+    "prisma:generate": "prisma generate",
+    "start": "next start",
+    "postinstall": "prisma generate",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@prisma/client": "^6.16.3",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.2",
     "@types/node": "^24.0.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
