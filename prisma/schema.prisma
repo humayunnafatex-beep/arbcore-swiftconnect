@@ -143,6 +143,9 @@ model ConversationState {
   channel      String
   contactKey   String
   status       String   @default("OPEN")
+  internalNote String   @default("")
+  followUpAt   DateTime?
+  followUpDone Boolean  @default(false)
   assignedToId String?
   assignedTo   User?    @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())

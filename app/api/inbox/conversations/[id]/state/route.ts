@@ -12,7 +12,10 @@ const statusValues = ["OPEN", "PENDING", "CLOSED"] as const;
 
 const stateSchema = z.object({
   status: z.enum(statusValues).optional(),
-  assignedToId: z.string().trim().min(1).nullable().optional()
+  assignedToId: z.string().trim().min(1).nullable().optional(),
+  internalNote: z.string().max(2000).optional(),
+  followUpAt: z.string().trim().nullable().optional(),
+  followUpDone: z.boolean().optional()
 });
 
 type ConversationChannel = (typeof validConversationChannels)[number];
@@ -36,7 +39,9 @@ export async function PATCH(
     }
 
     const assignedToProvided = Object.prototype.hasOwnProperty.call(parsed.data, "assignedToId");
+    const followUpAtProvided = Object.prototype.hasOwnProperty.call(parsed.data, "followUpAt");
     const assignedToId = parsed.data.assignedToId ?? null;
+    const followUpAt = parseFollowUpAt(parsed.data.followUpAt);
 
     if (assignedToId) {
       const user = await prisma.user.findFirst({
@@ -67,6 +72,13 @@ export async function PATCH(
       select: { status: true }
     });
     const nextStatus = parsed.data.status ?? normalizeConversationStatus(current?.status);
+    const updateData = {
+      status: nextStatus,
+      ...(assignedToProvided ? { assignedToId } : {}),
+      ...("internalNote" in parsed.data ? { internalNote: parsed.data.internalNote?.trim() ?? "" } : {}),
+      ...(followUpAtProvided ? { followUpAt } : {}),
+      ...("followUpDone" in parsed.data ? { followUpDone: parsed.data.followUpDone ?? false } : {})
+    };
 
     const state = await prisma.conversationState.upsert({
       where: {
@@ -76,16 +88,16 @@ export async function PATCH(
           contactKey: conversation.contactKey
         }
       },
-      update: {
-        status: nextStatus,
-        ...(assignedToProvided ? { assignedToId } : {})
-      },
+      update: updateData,
       create: {
         companyId: company.id,
         channel: conversation.channel,
         contactKey: conversation.contactKey,
         status: nextStatus,
-        assignedToId
+        assignedToId,
+        internalNote: parsed.data.internalNote?.trim() ?? "",
+        followUpAt,
+        followUpDone: parsed.data.followUpDone ?? false
       },
       include: {
         assignedTo: {
@@ -103,7 +115,11 @@ export async function PATCH(
       success: true,
       data: {
         status: normalizeConversationStatus(state.status),
-        assignedTo: state.assignedTo
+        assignedTo: state.assignedTo,
+        internalNote: state.internalNote,
+        followUpAt: state.followUpAt?.toISOString() ?? null,
+        followUpDone: state.followUpDone,
+        followUpStatus: getFollowUpStatus(state.followUpAt, state.followUpDone)
       }
     });
   } catch (error) {
@@ -146,4 +162,22 @@ function isConversationChannel(value: string | undefined): value is Conversation
 
 function normalizeConversationStatus(value: string | null | undefined): ConversationStatus {
   return value === "PENDING" || value === "CLOSED" ? value : "OPEN";
+}
+
+function parseFollowUpAt(value: string | null | undefined) {
+  if (value === undefined) return undefined;
+  if (value === null || !value.trim()) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new ApiError(400, "INVALID_FOLLOW_UP", "Follow-up date must be a valid date.");
+  }
+
+  return date;
+}
+
+function getFollowUpStatus(followUpAt: Date | null, followUpDone: boolean): "NONE" | "DUE" | "UPCOMING" | "DONE" {
+  if (followUpDone) return "DONE";
+  if (!followUpAt) return "NONE";
+  return followUpAt.getTime() <= Date.now() ? "DUE" : "UPCOMING";
 }

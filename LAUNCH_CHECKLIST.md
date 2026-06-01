@@ -79,6 +79,12 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Duplicate WhatsApp contact phone from Inbox shows a friendly error.
 - [ ] Linked contact quick edit saves name, email, status, and tags.
 - [ ] Messenger conversation explains PSID contact-linking limitation without pretending it is linked.
+- [ ] Inbox internal note saves and reloads.
+- [ ] Internal note does not create a customer MessageLog entry.
+- [ ] Inbox follow-up date saves and reloads.
+- [ ] Inbox follow-up badges show Due, Upcoming, Done, or None correctly.
+- [ ] Inbox follow-up filter works for All, None, Due, Upcoming, and Done.
+- [ ] Clear follow-up removes the reminder and resets done state.
 - [ ] Team duplicate email returns a friendly error.
 
 ## 4A. Auth Mapping QA
@@ -164,6 +170,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Inbox provider failures log `OUTBOUND / FAILED` with safe error text.
 - [ ] Inbox failed replies keep the draft text so the user can retry.
 - [ ] Inbox assignment helps team workflow while Message Logs remains the technical/debug view.
+- [ ] Internal notes remain CRM-only and are never sent to WhatsApp or Messenger.
 - [ ] Channel Center links to Settings, Send Messages, and Logs.
 - [ ] Channel Center WhatsApp button opens `/send-messages`.
 - [ ] Outbound send attempts appear in WhatsApp Logs with `SENT` or `FAILED` status.

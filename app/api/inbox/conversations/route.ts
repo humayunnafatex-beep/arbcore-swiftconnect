@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 const channels = ["ALL", "WHATSAPP", "MESSENGER"] as const;
 const directions = ["ALL", "INBOUND", "OUTBOUND"] as const;
 const statuses = ["ALL", "OPEN", "PENDING", "CLOSED"] as const;
+const followUps = ["ALL", "NONE", "DUE", "UPCOMING", "DONE"] as const;
 const validConversationChannels = ["WHATSAPP", "MESSENGER"] as const;
 
 export async function GET(request: Request) {
@@ -20,6 +21,7 @@ export async function GET(request: Request) {
     const channel = parseOption(searchParams.get("channel"), channels, "ALL");
     const direction = parseOption(searchParams.get("direction"), directions, "ALL");
     const status = parseOption(searchParams.get("status"), statuses, "ALL");
+    const followUp = parseOption(searchParams.get("followUp"), followUps, "ALL");
     const assignedTo = searchParams.get("assignedTo")?.trim() || "ALL";
     const search = searchParams.get("search")?.trim();
     const limit = parseLimit(searchParams.get("limit"));
@@ -53,6 +55,10 @@ export async function GET(request: Request) {
           status: "OPEN",
           assignedTo: null,
           contact: null,
+          internalNotePreview: "",
+          followUpAt: null,
+          followUpDone: false,
+          followUpStatus: "NONE",
           messageCount: 1,
           failedCount: message.status === "FAILED" ? 1 : 0,
           inboundCount: message.direction === "INBOUND" ? 1 : 0,
@@ -115,10 +121,15 @@ export async function GET(request: Request) {
           displayName: contact?.name ?? conversation.displayName,
           status: normalizeConversationStatus(state?.status),
           assignedTo: state?.assignedTo ?? null,
-          contact
+          contact,
+          internalNotePreview: previewText(state?.internalNote ?? "", 80),
+          followUpAt: state?.followUpAt?.toISOString() ?? null,
+          followUpDone: state?.followUpDone ?? false,
+          followUpStatus: getFollowUpStatus(state?.followUpAt ?? null, state?.followUpDone ?? false)
         };
       })
       .filter((conversation) => status === "ALL" || conversation.status === status)
+      .filter((conversation) => followUp === "ALL" || conversation.followUpStatus === followUp)
       .filter((conversation) => {
         if (assignedTo === "ALL") return true;
         if (assignedTo === "UNASSIGNED") return !conversation.assignedTo;
@@ -168,6 +179,10 @@ type ConversationSummary = {
     role: string;
   } | null;
   contact: ContactSummary | null;
+  internalNotePreview: string;
+  followUpAt: string | null;
+  followUpDone: boolean;
+  followUpStatus: "NONE" | "DUE" | "UPCOMING" | "DONE";
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -230,6 +245,12 @@ function normalizeChannel(value: string): ConversationChannel {
 
 function normalizeConversationStatus(value: string | null | undefined): "OPEN" | "PENDING" | "CLOSED" {
   return value === "PENDING" || value === "CLOSED" ? value : "OPEN";
+}
+
+function getFollowUpStatus(followUpAt: Date | null, followUpDone: boolean): "NONE" | "DUE" | "UPCOMING" | "DONE" {
+  if (followUpDone) return "DONE";
+  if (!followUpAt) return "NONE";
+  return followUpAt.getTime() <= Date.now() ? "DUE" : "UPCOMING";
 }
 
 function getContactKey(message: MessageWithRelations) {

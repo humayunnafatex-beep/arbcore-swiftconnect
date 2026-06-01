@@ -42,6 +42,20 @@ export async function GET(
     const contact = conversation.channel === "WHATSAPP"
       ? await findMatchingContact(company.id, conversation.contactKey)
       : null;
+    const state = await prisma.conversationState.findUnique({
+      where: {
+        companyId_channel_contactKey: {
+          companyId: company.id,
+          channel: conversation.channel,
+          contactKey: conversation.contactKey
+        }
+      },
+      select: {
+        internalNote: true,
+        followUpAt: true,
+        followUpDone: true
+      }
+    });
 
     return NextResponse.json({
       success: true,
@@ -50,7 +64,11 @@ export async function GET(
           channel: conversation.channel,
           contactKey: conversation.contactKey,
           displayName: contact?.name ?? (firstMessage ? getDisplayName(firstMessage) : null),
-          contact
+          contact,
+          internalNote: state?.internalNote ?? "",
+          followUpAt: state?.followUpAt?.toISOString() ?? null,
+          followUpDone: state?.followUpDone ?? false,
+          followUpStatus: getFollowUpStatus(state?.followUpAt ?? null, state?.followUpDone ?? false)
         },
         messages: orderedMessages.map((message) => ({
           id: message.id,
@@ -179,6 +197,12 @@ function phoneMatchCandidates(phone: string) {
 
 function normalizePhoneForMatch(phone: string) {
   return phone.replace(/[^\d]/g, "");
+}
+
+function getFollowUpStatus(followUpAt: Date | null, followUpDone: boolean): "NONE" | "DUE" | "UPCOMING" | "DONE" {
+  if (followUpDone) return "DONE";
+  if (!followUpAt) return "NONE";
+  return followUpAt.getTime() <= Date.now() ? "DUE" : "UPCOMING";
 }
 
 function previewText(value: string, maxLength = 140) {

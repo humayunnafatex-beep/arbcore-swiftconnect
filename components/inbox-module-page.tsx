@@ -18,6 +18,8 @@ import {
 type ChannelFilter = "ALL" | "WHATSAPP" | "MESSENGER";
 type ConversationStatus = "OPEN" | "PENDING" | "CLOSED";
 type StatusFilter = "ALL" | ConversationStatus;
+type FollowUpStatus = "NONE" | "DUE" | "UPCOMING" | "DONE";
+type FollowUpFilter = "ALL" | FollowUpStatus;
 type ReplyStatus = "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
 type ContactStage = "NEW_LEAD" | "INTERESTED" | "FOLLOW_UP" | "WON" | "LOST";
 
@@ -49,6 +51,10 @@ type ConversationSummary = {
   status: ConversationStatus;
   assignedTo: Assignee | null;
   contact: LinkedContact | null;
+  internalNotePreview: string;
+  followUpAt: string | null;
+  followUpDone: boolean;
+  followUpStatus: FollowUpStatus;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -82,6 +88,10 @@ type ConversationDetailResponse = {
       contactKey: string;
       displayName: string | null;
       contact: LinkedContact | null;
+      internalNote: string;
+      followUpAt: string | null;
+      followUpDone: boolean;
+      followUpStatus: FollowUpStatus;
     };
     messages: InboxMessage[];
   };
@@ -107,6 +117,10 @@ type StateResponse = {
   data: {
     status: ConversationStatus;
     assignedTo: Assignee | null;
+    internalNote: string;
+    followUpAt: string | null;
+    followUpDone: boolean;
+    followUpStatus: FollowUpStatus;
   };
   error?: string;
 };
@@ -153,6 +167,7 @@ const replyStatusText: Record<ReplyStatus, string> = {
 export function InboxModulePage() {
   const [channel, setChannel] = useState<ChannelFilter>("ALL");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [followUpFilter, setFollowUpFilter] = useState<FollowUpFilter>("ALL");
   const [assignedToFilter, setAssignedToFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [assignees, setAssignees] = useState<Assignee[]>([]);
@@ -171,6 +186,11 @@ export function InboxModulePage() {
     status: "OPEN",
     assignedToId: "UNASSIGNED"
   });
+  const [internalDraft, setInternalDraft] = useState<{ internalNote: string; followUpAt: string; followUpDone: boolean }>({
+    internalNote: "",
+    followUpAt: "",
+    followUpDone: false
+  });
   const [stateSaving, setStateSaving] = useState(false);
   const [stateMessage, setStateMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [contactForm, setContactForm] = useState<ContactForm>(emptyContactForm);
@@ -187,7 +207,7 @@ export function InboxModulePage() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({ channel, status: statusFilter, assignedTo: assignedToFilter, limit: "50" });
+      const params = new URLSearchParams({ channel, status: statusFilter, followUp: followUpFilter, assignedTo: assignedToFilter, limit: "50" });
       if (search.trim()) params.set("search", search.trim());
 
       const response = await fetch(`/api/inbox/conversations?${params.toString()}`);
@@ -212,7 +232,7 @@ export function InboxModulePage() {
     } finally {
       setLoading(false);
     }
-  }, [assignedToFilter, channel, search, statusFilter]);
+  }, [assignedToFilter, channel, followUpFilter, search, statusFilter]);
 
   useEffect(() => {
     void loadConversations();
@@ -299,6 +319,16 @@ export function InboxModulePage() {
       : emptyContactForm);
   }, [detail?.conversation.contact]);
 
+  useEffect(() => {
+    if (!detail) return;
+
+    setInternalDraft({
+      internalNote: detail.conversation.internalNote,
+      followUpAt: toDateTimeLocalValue(detail.conversation.followUpAt),
+      followUpDone: detail.conversation.followUpDone
+    });
+  }, [detail]);
+
   async function sendReply() {
     if (!detail) return;
 
@@ -352,11 +382,12 @@ export function InboxModulePage() {
   function clearFilters() {
     setChannel("ALL");
     setStatusFilter("ALL");
+    setFollowUpFilter("ALL");
     setAssignedToFilter("ALL");
     setSearch("");
   }
 
-  async function saveConversationState() {
+  async function saveConversationState(options?: { clearFollowUp?: boolean }) {
     if (!selectedId) return;
 
     setStateSaving(true);
@@ -368,7 +399,10 @@ export function InboxModulePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: draftState.status,
-          assignedToId: draftState.assignedToId === "UNASSIGNED" ? null : draftState.assignedToId
+          assignedToId: draftState.assignedToId === "UNASSIGNED" ? null : draftState.assignedToId,
+          internalNote: internalDraft.internalNote,
+          followUpAt: options?.clearFollowUp ? null : internalDraft.followUpAt || null,
+          followUpDone: options?.clearFollowUp ? false : internalDraft.followUpDone
         })
       });
       const result = (await response.json()) as StateResponse;
@@ -378,6 +412,10 @@ export function InboxModulePage() {
       }
 
       setStateMessage({ tone: "success", text: "Conversation state updated." });
+      if (options?.clearFollowUp) {
+        setInternalDraft((current) => ({ ...current, followUpAt: "", followUpDone: false }));
+      }
+      await loadConversationDetail(selectedId);
       await loadConversations();
     } catch (requestError) {
       setStateMessage({ tone: "error", text: getApiErrorMessage(requestError) });
@@ -469,7 +507,7 @@ export function InboxModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
-        <div className="grid gap-3 lg:grid-cols-[180px_180px_220px_1fr_auto_auto]">
+        <div className="grid gap-3 lg:grid-cols-[160px_160px_170px_200px_1fr_auto_auto]">
           <select className={`${inputClassName} w-full`} value={channel} onChange={(event) => setChannel(event.target.value as ChannelFilter)}>
             <option value="ALL">All channels</option>
             <option value="WHATSAPP">WhatsApp</option>
@@ -480,6 +518,13 @@ export function InboxModulePage() {
             <option value="OPEN">Open</option>
             <option value="PENDING">Pending</option>
             <option value="CLOSED">Closed</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={followUpFilter} onChange={(event) => setFollowUpFilter(event.target.value as FollowUpFilter)}>
+            <option value="ALL">All follow-ups</option>
+            <option value="NONE">No follow-up</option>
+            <option value="DUE">Due</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="DONE">Done</option>
           </select>
           <select className={`${inputClassName} w-full`} value={assignedToFilter} onChange={(event) => setAssignedToFilter(event.target.value)}>
             <option value="ALL">All assignees</option>
@@ -549,8 +594,13 @@ export function InboxModulePage() {
                         <StatusPill label={conversation.status} tone={conversation.status === "OPEN" ? "green" : conversation.status === "PENDING" ? "blue" : "gray"} />
                         <StatusPill label={conversation.lastDirection} tone={conversation.lastDirection === "INBOUND" ? "green" : "blue"} />
                         <StatusPill label={conversation.lastStatus} tone={conversation.lastStatus === "FAILED" ? "red" : "gray"} />
+                        {conversation.followUpStatus !== "NONE" ? <StatusPill label={formatFollowUpStatus(conversation.followUpStatus)} tone={followUpTone(conversation.followUpStatus)} /> : null}
+                        {conversation.internalNotePreview ? <StatusPill label="Note" tone="purple" /> : null}
                         {conversation.failedCount ? <StatusPill label={`${conversation.failedCount} failed`} tone="red" /> : null}
                       </div>
+                      {conversation.internalNotePreview ? (
+                        <p className="mt-2 line-clamp-1 text-[11px] font-semibold text-slate-500">Note: {conversation.internalNotePreview}</p>
+                      ) : null}
                       <p className="mt-2 truncate text-[11px] font-bold text-slate-400">
                         {conversation.assignedTo ? `Assigned to ${conversation.assignedTo.name}` : "Unassigned"}
                       </p>
@@ -576,6 +626,7 @@ export function InboxModulePage() {
                     <div className="flex flex-wrap gap-2">
                       <StatusPill label={selectedConversation.status} tone={selectedConversation.status === "OPEN" ? "green" : selectedConversation.status === "PENDING" ? "blue" : "gray"} />
                       <StatusPill label={`${selectedConversation.messageCount} messages`} tone="gray" />
+                      {selectedConversation.followUpStatus !== "NONE" ? <StatusPill label={formatFollowUpStatus(selectedConversation.followUpStatus)} tone={followUpTone(selectedConversation.followUpStatus)} /> : null}
                       <StatusPill label={`${selectedConversation.inboundCount} inbound`} tone="green" />
                       <StatusPill label={`${selectedConversation.outboundCount} outbound`} tone="blue" />
                     </div>
@@ -663,6 +714,55 @@ export function InboxModulePage() {
                       {stateMessage.text}
                     </div>
                   ) : null}
+                </div>
+
+                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-ink">Internal CRM</h3>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">Internal notes are never sent to the customer.</p>
+                    </div>
+                    <StatusPill label={formatFollowUpStatus(detail.conversation.followUpStatus)} tone={followUpTone(detail.conversation.followUpStatus)} />
+                  </div>
+                  <textarea
+                    className="mt-4 min-h-24 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
+                    value={internalDraft.internalNote}
+                    maxLength={2000}
+                    onChange={(event) => setInternalDraft((current) => ({ ...current, internalNote: event.target.value }))}
+                    placeholder="Add an internal note for the team"
+                  />
+                  <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto_auto]">
+                    <label className="grid gap-1">
+                      <span className="text-xs font-black uppercase text-slate-500">Follow-up</span>
+                      <input
+                        className={`${inputClassName} w-full`}
+                        type="datetime-local"
+                        value={internalDraft.followUpAt}
+                        onChange={(event) => setInternalDraft((current) => ({ ...current, followUpAt: event.target.value, followUpDone: false }))}
+                      />
+                    </label>
+                    <label className="flex h-11 items-center gap-2 self-end rounded-[14px] border border-blue-100 bg-blue-50 px-3 text-sm font-bold text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={internalDraft.followUpDone}
+                        onChange={(event) => setInternalDraft((current) => ({ ...current, followUpDone: event.target.checked }))}
+                      />
+                      Done
+                    </label>
+                    <div className="flex gap-2 self-end">
+                      {internalDraft.followUpAt ? (
+                        <button className={secondaryButtonClassName} type="button" onClick={() => void saveConversationState({ clearFollowUp: true })} disabled={stateSaving}>
+                          Clear Follow-up
+                        </button>
+                      ) : null}
+                      <button className={primaryButtonClassName} type="button" onClick={() => void saveConversationState()} disabled={stateSaving}>
+                        {stateSaving ? "Saving..." : "Save Internal"}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs font-semibold text-slate-500">
+                    Follow-up status: Due means now or overdue, Upcoming means scheduled later, Done means completed, and None means no reminder.
+                  </p>
                 </div>
 
                 <div className="soft-scrollbar flex-1 space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-4">
@@ -782,4 +882,32 @@ function isContactStage(value: string | null | undefined): value is ContactStage
 
 function formatContactStage(value: string | null | undefined) {
   return isContactStage(value) ? contactStageLabels[value] : value ?? "-";
+}
+
+function formatFollowUpStatus(value: FollowUpStatus) {
+  const labels: Record<FollowUpStatus, string> = {
+    NONE: "None",
+    DUE: "Due",
+    UPCOMING: "Upcoming",
+    DONE: "Done"
+  };
+
+  return labels[value];
+}
+
+function followUpTone(value: FollowUpStatus): "blue" | "green" | "gray" | "purple" | "red" {
+  if (value === "DUE") return "red";
+  if (value === "UPCOMING") return "blue";
+  if (value === "DONE") return "green";
+  return "gray";
+}
+
+function toDateTimeLocalValue(value: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
