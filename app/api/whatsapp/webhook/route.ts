@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { ensureDefaultWorkspace } from "@/lib/auth";
+import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
 import { parseWebhookEvent, sendWhatsAppTextMessage, validateSignature } from "@/lib/whatsapp-service";
 
@@ -171,12 +171,6 @@ function normalizeText(value: string) {
 }
 
 async function getWebhookCompany() {
-  const company = await prisma.company.findFirst({ orderBy: { createdAt: "asc" } });
-
-  if (company) {
-    return company;
-  }
-
   // TODO: Replace default-company fallback with explicit multi-workspace webhook routing.
-  return (await ensureDefaultWorkspace()).company;
+  return getCurrentCompany();
 }

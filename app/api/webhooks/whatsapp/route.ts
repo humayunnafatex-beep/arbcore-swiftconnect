@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { handleApiError, ok } from "@/lib/api";
-import { ensureDefaultWorkspace } from "@/lib/auth";
+import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
 import { parseWebhookEvent, validateSignature, verifyWebhook } from "@/lib/whatsapp-service";
 
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     const payload = JSON.parse(rawBody) as Prisma.InputJsonValue;
-    const { company } = await ensureDefaultWorkspace();
+    const company = await getCurrentCompany();
     const parsed = parseWebhookEvent(payload);
     await prisma.webhookEvent.create({
       data: {

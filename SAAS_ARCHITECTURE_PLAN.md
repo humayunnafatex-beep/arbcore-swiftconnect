@@ -48,6 +48,8 @@ Recommended future schema changes, not implemented in this pass:
 - Add audit logs for sensitive admin actions and billing events.
 - Harden company scoping and uniqueness rules before large multi-client rollout.
 
+For the detailed auth, role, and workspace isolation plan, use `AUTH_WORKSPACE_HARDENING_PLAN.md`.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

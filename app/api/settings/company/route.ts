@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
 
 async function getCompany() {
-  return prisma.company.findFirst({
-    orderBy: { createdAt: "asc" },
-  });
+  return getCurrentCompany();
 }
 
 export async function GET() {

@@ -8,6 +8,8 @@ For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHE
 
 For SaaS, Messenger, and payment readiness, review `SAAS_ARCHITECTURE_PLAN.md`, `MESSENGER_INTEGRATION_PLAN.md`, and `PAYMENT_SUBSCRIPTION_PLAN.md`.
 
+Before onboarding external clients, review `AUTH_WORKSPACE_HARDENING_PLAN.md`.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -132,6 +134,7 @@ Connecting Welzz Stride real number `01958474577`:
 
 - Billing/license enforcement is not active in beta.
 - Demo cookie auth remains in place until production auth is implemented.
+- Current beta is single-company mode; each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
 - Real WhatsApp sending requires Meta Cloud API credentials and webhook readiness.
 - Messenger automation is planned but not active.
 - Payment/subscription automation is planned but not active.
