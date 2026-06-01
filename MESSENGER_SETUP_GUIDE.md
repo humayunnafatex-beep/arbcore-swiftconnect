@@ -27,6 +27,8 @@ Open ARBCore Settings and use the Messenger / Page API Settings section:
 
 Use Channel Center at `/channels` to confirm whether the Page ID, Page Access Token, Verify Token, and webhook URL are present. The Page Access Token is never displayed.
 
+Channel Center also shows Messenger outbound readiness, webhook readiness, missing setup items, and a copy button for the webhook URL.
+
 Use this webhook URL:
 
 ```text
@@ -76,6 +78,8 @@ ARBCore includes:
 ```text
 /api/messenger/test-send
 ```
+
+Channel Center includes a Messenger Test Send form that calls this API. Use a Facebook Page PSID as the recipient. Do not enter phone numbers in the Messenger test form.
 
 If Messenger settings are missing, it returns:
 

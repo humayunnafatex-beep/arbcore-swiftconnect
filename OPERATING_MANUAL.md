@@ -34,7 +34,7 @@ Phase 8 applies permission guards to selected APIs in report-only mode. Use `AUT
 
 Phase 9 adds limited local/staging permission enforcement test support. Use `AUTH_IMPLEMENTATION_PHASE_9.md` and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md` before testing `AUTH_ENFORCED=true` with `PERMISSIONS_ENFORCED=true`.
 
-Channel Center at `/channels` gives a safe status view for WhatsApp and Messenger setup. It shows whether IDs, tokens, and verify tokens are present, but it never displays access tokens.
+Channel Center at `/channels` gives a safe status view for WhatsApp and Messenger setup. It shows whether IDs, tokens, and verify tokens are present, but it never displays access tokens. It also includes diagnostics, webhook URL copy helpers, a Messenger PSID test-send form, and links to Send Messages and Logs.
 
 ## 1. Dashboard
 
@@ -84,6 +84,8 @@ Basic Send Messages workflow:
 After testing, open WhatsApp Logs to confirm the outbound message attempt, provider ID, status, and any safe error message.
 
 Use Channel Center to check whether WhatsApp and Messenger are configured before running channel tests.
+
+WhatsApp test sending stays in Send Messages. Messenger test sending is available in Channel Center and requires a Facebook Page PSID, not a phone number.
 
 ## 5. Auto Reply
 
@@ -172,6 +174,8 @@ Use WhatsApp Logs during beta testing to verify:
 6. Messenger inbound Page messages after `/api/messenger/webhook` setup.
 
 Channel Center links to Logs for inbound/outbound verification across both channels.
+
+Use the diagnostics section in Channel Center to see outbound readiness, webhook readiness, and missing setup items for WhatsApp and Messenger.
 
 Message log status meanings:
 

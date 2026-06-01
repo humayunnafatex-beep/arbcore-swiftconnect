@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Bot, CheckCircle2, ClipboardList, ExternalLink, MessageCircle, RefreshCw, Send, Settings, ShieldCheck, Smartphone, XCircle } from "lucide-react";
+import { useState } from "react";
+import { Bot, CheckCircle2, Clipboard, ClipboardList, ExternalLink, MessageCircle, RefreshCw, Send, Settings, ShieldCheck, Smartphone, XCircle } from "lucide-react";
 import { AppShell } from "./app-shell";
-import { DataState, primaryButtonClassName, secondaryButtonClassName, useApiData } from "./saas-page-utils";
+import { DataState, Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, textareaClassName, useApiData, useToast } from "./saas-page-utils";
+import { getApiErrorMessage } from "@/lib/api-client";
 
 type ChannelStatus = {
   whatsapp: {
@@ -32,8 +34,97 @@ type ChannelStatus = {
   };
 };
 
+type ChannelDiagnostics = {
+  whatsapp: {
+    readyForOutbound: boolean;
+    readyForWebhook: boolean;
+    missing: string[];
+    webhookPath: "/api/whatsapp/webhook";
+    webhookUrl: string | null;
+  };
+  messenger: {
+    readyForOutbound: boolean;
+    readyForWebhook: boolean;
+    missing: string[];
+    webhookPath: "/api/messenger/webhook";
+    webhookUrl: string | null;
+  };
+};
+
+type MessengerTestResponse = {
+  status: "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
+  providerMessageId?: string;
+};
+
+type MessengerTestEnvelope =
+  | { success: true; status: "sent_successfully"; data?: { providerMessageId?: string } }
+  | { success: false; status: "not_configured" | "validation_failed" | "provider_error"; error: string };
+
+const productionBaseUrl = "https://arbcore-swiftconnect.vercel.app";
+
 export function ChannelsModulePage() {
   const { data, loading, error, reload } = useApiData<ChannelStatus>("/api/channels/status");
+  const diagnostics = useApiData<ChannelDiagnostics>("/api/channels/diagnostics");
+  const { toast, showToast } = useToast();
+  const [messengerRecipientPsid, setMessengerRecipientPsid] = useState("");
+  const [messengerBody, setMessengerBody] = useState("");
+  const [messengerStatus, setMessengerStatus] = useState<string | null>(null);
+  const [sendingMessenger, setSendingMessenger] = useState(false);
+
+  function refreshAll() {
+    reload();
+    diagnostics.reload();
+  }
+
+  async function copyWebhook(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      showToast("Webhook URL copied.");
+    } catch {
+      showToast("Unable to copy webhook URL.", "error");
+    }
+  }
+
+  async function sendMessengerTest() {
+    setSendingMessenger(true);
+    setMessengerStatus(null);
+    let handledStatus: string | null = null;
+
+    try {
+      const response = await fetch("/api/messenger/test-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientPsid: messengerRecipientPsid,
+          body: messengerBody
+        })
+      });
+      const result = (await response.json()) as MessengerTestEnvelope;
+
+      if (!response.ok || !result.success) {
+        setMessengerStatus(result.status);
+        handledStatus = result.status;
+        throw new Error(result.success ? "Messenger test failed." : result.error);
+      }
+
+      setMessengerStatus(result.status);
+      handledStatus = result.status;
+      showToast("Messenger test sent.");
+    } catch (error) {
+      if (!handledStatus) {
+        const message = error instanceof Error ? error.message : getApiErrorMessage(error);
+        const status = message.includes("required")
+          ? "validation_failed"
+          : message.includes("Messenger Page API")
+            ? "not_configured"
+            : "provider_error";
+        setMessengerStatus(status);
+      }
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setSendingMessenger(false);
+    }
+  }
 
   return (
     <AppShell>
@@ -49,7 +140,7 @@ export function ChannelsModulePage() {
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Check WhatsApp and Messenger setup status, webhook paths, test links, and auto-reply readiness without exposing access tokens.</p>
             </div>
           </div>
-          <button className={secondaryButtonClassName} onClick={reload} disabled={loading}>
+          <button className={secondaryButtonClassName} onClick={refreshAll} disabled={loading || diagnostics.loading}>
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
@@ -71,6 +162,8 @@ export function ChannelsModulePage() {
                 ]}
                 webhookUrl={data.whatsapp.webhookUrl}
                 webhookPath={data.whatsapp.webhookPath}
+                copyWebhookUrl={data.whatsapp.webhookUrl || `${productionBaseUrl}${data.whatsapp.webhookPath}`}
+                onCopyWebhook={copyWebhook}
                 actions={[
                   { label: "Settings", href: "/settings", icon: Settings },
                   { label: "Send Messages", href: data.whatsapp.sendTestPath, icon: Send },
@@ -89,11 +182,83 @@ export function ChannelsModulePage() {
                 ]}
                 webhookUrl={data.messenger.webhookUrl}
                 webhookPath={data.messenger.webhookPath}
+                copyWebhookUrl={data.messenger.webhookUrl || `${productionBaseUrl}${data.messenger.webhookPath}`}
+                onCopyWebhook={copyWebhook}
                 actions={[
                   { label: "Settings", href: "/settings", icon: Settings },
                   { label: "Logs", href: data.messenger.logsPath, icon: ClipboardList }
                 ]}
               />
+            </section>
+
+            <DataState loading={diagnostics.loading} error={diagnostics.error} empty={!diagnostics.data} emptyText="No diagnostics are available yet.">
+              {diagnostics.data ? (
+                <section className="grid gap-4 xl:grid-cols-2">
+                  <DiagnosticsCard
+                    title="WhatsApp Diagnostics"
+                    outboundReady={diagnostics.data.whatsapp.readyForOutbound}
+                    webhookReady={diagnostics.data.whatsapp.readyForWebhook}
+                    missing={diagnostics.data.whatsapp.missing}
+                  />
+                  <DiagnosticsCard
+                    title="Messenger Diagnostics"
+                    outboundReady={diagnostics.data.messenger.readyForOutbound}
+                    webhookReady={diagnostics.data.messenger.readyForWebhook}
+                    missing={diagnostics.data.messenger.missing}
+                  />
+                </section>
+              ) : null}
+            </DataState>
+
+            <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
+              <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-black text-ink">Messenger Test Send</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">Messenger requires a valid Facebook Page PSID. Do not use phone numbers here.</p>
+                  </div>
+                  <Link href="/whatsapp-logs" className={secondaryButtonClassName}>
+                    <ClipboardList className="h-4 w-4" />
+                    View Logs
+                  </Link>
+                </div>
+                <div className="mt-5 grid gap-3">
+                  <label className="grid gap-1.5 text-xs font-black text-slate-500">
+                    Recipient PSID
+                    <input className={inputClassName} value={messengerRecipientPsid} onChange={(event) => setMessengerRecipientPsid(event.target.value)} placeholder="Facebook Page scoped sender ID" />
+                  </label>
+                  <label className="grid gap-1.5 text-xs font-black text-slate-500">
+                    Message body
+                    <textarea className={textareaClassName} value={messengerBody} onChange={(event) => setMessengerBody(event.target.value)} placeholder="Write a short Messenger test message" />
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button className={primaryButtonClassName} onClick={() => void sendMessengerTest()} disabled={sendingMessenger}>
+                      <Send className="h-4 w-4" />
+                      {sendingMessenger ? "Sending..." : "Send Messenger Test"}
+                    </button>
+                    {messengerStatus ? (
+                      <span className="rounded-full bg-blue-50 px-3 py-2 text-xs font-black uppercase text-royal ring-1 ring-blue-100">
+                        {messengerStatus}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+                <h2 className="text-lg font-black text-ink">WhatsApp Test</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">WhatsApp sending already has a dedicated workflow. Use Send Messages for phone-number validation, provider status, and message logging.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Link href="/send-messages" className={primaryButtonClassName}>
+                    <Send className="h-4 w-4" />
+                    Open WhatsApp Send Test
+                  </Link>
+                  <Link href="/whatsapp-logs" className={secondaryButtonClassName}>
+                    <ClipboardList className="h-4 w-4" />
+                    Open Logs
+                  </Link>
+                </div>
+              </section>
             </section>
 
             <section className="grid gap-4 xl:grid-cols-[1fr_420px]">
@@ -132,6 +297,7 @@ export function ChannelsModulePage() {
           </>
         ) : null}
       </DataState>
+      {toast ? <Toast {...toast} /> : null}
     </AppShell>
   );
 }
@@ -143,6 +309,8 @@ function ChannelCard({
   rows,
   webhookUrl,
   webhookPath,
+  copyWebhookUrl,
+  onCopyWebhook,
   actions
 }: {
   title: string;
@@ -151,6 +319,8 @@ function ChannelCard({
   rows: Array<[string, boolean]>;
   webhookUrl: string | null;
   webhookPath: string;
+  copyWebhookUrl: string;
+  onCopyWebhook: (value: string) => Promise<void>;
   actions: Array<{ label: string; href: string; icon: React.ComponentType<{ className?: string }> }>;
 }) {
   return (
@@ -177,6 +347,13 @@ function ChannelCard({
       <div className="mt-5 rounded-[18px] bg-blue-50 p-4 text-sm font-semibold text-slate-600">
         <p><span className="font-black text-royal">Webhook path:</span> {webhookPath}</p>
         <p className="mt-1 break-all"><span className="font-black text-royal">Saved URL:</span> {webhookUrl || "Not saved"}</p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input className={`${inputClassName} flex-1`} value={copyWebhookUrl} readOnly />
+          <button className={secondaryButtonClassName} onClick={() => void onCopyWebhook(copyWebhookUrl)}>
+            <Clipboard className="h-4 w-4" />
+            Copy
+          </button>
+        </div>
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
@@ -191,6 +368,32 @@ function ChannelCard({
             </Link>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+function DiagnosticsCard({ title, outboundReady, webhookReady, missing }: { title: string; outboundReady: boolean; webhookReady: boolean; missing: string[] }) {
+  return (
+    <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+      <h2 className="text-lg font-black text-ink">{title}</h2>
+      <div className="mt-4 space-y-3">
+        <StatusRow label="Outbound ready" present={outboundReady} />
+        <StatusRow label="Webhook ready" present={webhookReady} />
+      </div>
+      <div className="mt-5 rounded-[18px] bg-blue-50 p-4">
+        <p className="text-xs font-black uppercase text-slate-500">Missing setup items</p>
+        {missing.length ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {missing.map((item) => (
+              <span key={item} className="rounded-full bg-white px-3 py-2 text-xs font-black text-slate-600 ring-1 ring-blue-100">
+                {item}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm font-bold text-emerald-700">No missing setup items detected.</p>
+        )}
       </div>
     </section>
   );

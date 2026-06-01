@@ -80,6 +80,8 @@ After saving, refresh Settings and confirm the non-secret fields persist. The ac
 
 After saving, open `/channels` to confirm the WhatsApp Phone Number ID, Access Token, Verify Token, and webhook URL show as present. Channel Center never displays the access token.
 
+Channel Center also shows WhatsApp outbound readiness, webhook readiness, missing setup items, and a copy button for the webhook URL.
+
 ## 4. Connecting Welzz Stride Real Number 01958474577
 
 Customers should eventually message Welzz Stride on `01958474577`, but ARBCore can only receive messages for a number that is connected in Meta WhatsApp Cloud API and whose Phone Number ID is saved in ARBCore Settings.
@@ -162,6 +164,8 @@ provider_error
 ```
 
 Use Channel Center to jump to Send Messages and Logs during this test.
+
+WhatsApp test sending remains in `/send-messages`; Channel Center only links to it.
 
 Failure state meanings:
 
