@@ -4,7 +4,7 @@
 
 This plan documents the future Meta Messenger/Facebook Page integration for ARBCore SwiftConnect. Messenger support should not be presented as active until a real Facebook Page, Meta App permissions, webhook verification, inbound logging, and provider-backed sending are working.
 
-Messenger Integration Foundation Phase 1 is documented in `MESSENGER_SETUP_GUIDE.md`.
+Messenger Integration Foundation Phase 1 and Send/Auto Reply Phase 2 are documented in `MESSENGER_SETUP_GUIDE.md`.
 
 ## 2. Required Meta Setup
 
@@ -29,7 +29,7 @@ Foundation fields:
 
 Safety expectation: the Page Access Token must be saved securely, masked after refresh, and never returned in normal API responses.
 
-## 4. Foundation Routes
+## 4. Foundation And Send Routes
 
 Current foundation routes:
 
@@ -40,9 +40,11 @@ Current foundation routes:
 
 Messenger inbound logs appear in the existing `/whatsapp-logs` viewer because the message log is now channel-aware.
 
+`/api/messenger/test-send` calls the Meta Messenger Send API when Page settings are configured. It logs `SENT` only after Meta accepts the request and `FAILED` when Meta rejects it.
+
 ## 5. Auto Reply Integration
 
-Messenger auto replies should reuse the same rule engine direction as WhatsApp:
+Messenger auto replies reuse the same rule engine direction as WhatsApp:
 
 1. Receive Messenger webhook event.
 2. Verify webhook request.
@@ -53,7 +55,7 @@ Messenger auto replies should reuse the same rule engine direction as WhatsApp:
 7. Log `SENT` only after Messenger provider success.
 8. Log `FAILED` if Messenger rejects the request.
 
-Future Auto Reply should become channel-aware so a business can choose whether a rule applies to WhatsApp, Messenger, or all channels.
+Current Messenger auto reply is live for active keyword rules when Page Access Token is configured. Future Auto Reply should become channel-aware so a business can choose whether a rule applies to WhatsApp, Messenger, or all channels.
 
 ## 6. Safety
 
@@ -72,4 +74,4 @@ Future Auto Reply should become channel-aware so a business can choose whether a
 - Requires Meta App setup with Messenger product.
 - Requires webhook verification and `messages` subscription.
 - Requires Meta permissions and possible app review for production.
-- Messenger Send API and Messenger auto-reply are planned for later phases.
+- Production Page messaging may require Meta permissions and app review.

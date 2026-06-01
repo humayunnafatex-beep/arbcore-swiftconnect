@@ -1,8 +1,8 @@
 # Messenger Setup Guide
 
-Use this guide to prepare Meta Messenger/Facebook Page receive and future reply support in ARBCore SwiftConnect.
+Use this guide to prepare Meta Messenger/Facebook Page receive and reply support in ARBCore SwiftConnect.
 
-Messenger support is foundation-ready. Do not claim Messenger sending or auto-reply is active until Meta setup is complete and provider-backed tests pass.
+Messenger support is provider-backed only after Meta setup is complete. ARBCore does not fake Messenger sending success.
 
 ## 1. Prerequisites
 
@@ -66,7 +66,7 @@ https://arbcore-swiftconnect.vercel.app/api/messenger/webhook
    - Status: `RECEIVED`
 6. Recent webhook events should show a Messenger event summary.
 
-## 5. Test Send Placeholder
+## 5. Real Send API Test
 
 ARBCore includes:
 
@@ -84,9 +84,47 @@ If Messenger settings are missing, it returns:
 }
 ```
 
-The app does not fake Messenger send success. Real Messenger Send API delivery should be implemented in a later phase and should log `SENT` only after Meta accepts the request.
+When Messenger settings are configured, ARBCore calls the Meta Messenger Send API. It logs `SENT` only after Meta accepts the request and logs `FAILED` when Meta rejects the request.
 
-## 6. Safety
+Provider success state:
+
+```json
+{
+  "success": true,
+  "status": "sent_successfully",
+  "data": { "providerMessageId": "..." }
+}
+```
+
+Provider failure state:
+
+```json
+{
+  "success": false,
+  "status": "provider_error",
+  "error": "Messenger provider rejected the message."
+}
+```
+
+## 6. Live Messenger Auto-Reply Test
+
+1. Confirm Messenger / Page API Settings are saved.
+2. Create an active Auto Reply rule with keyword `price`.
+3. Send a Messenger message containing `price` to the connected Facebook Page.
+4. Open `/whatsapp-logs`.
+5. Expected inbound log:
+   - Channel: `MESSENGER`
+   - Direction: `INBOUND`
+   - Status: `RECEIVED`
+6. Expected outbound auto-reply log:
+   - Channel: `MESSENGER`
+   - Direction: `OUTBOUND`
+   - Status: `SENT` if Meta accepts the Send API request
+   - Status: `FAILED` if Meta rejects the request or Page Access Token is missing
+
+Duplicate inbound provider message IDs are skipped so the same Messenger message should not trigger repeated auto replies.
+
+## 7. Safety
 
 - Never share the Page Access Token.
 - Never commit the Page Access Token.
@@ -95,10 +133,10 @@ The app does not fake Messenger send success. Real Messenger Send API delivery s
 - Do not log raw webhook payloads if they may contain customer data.
 - Do not fake provider success.
 
-## 7. Current Limitations
+## 8. Current Limitations
 
-- Messenger inbound webhook foundation is available.
-- Messenger inbound logs can appear in the existing logs viewer.
-- Messenger Send API is not fully active in this phase.
-- Messenger auto-reply is planned for a future Phase 2.
+- Messenger inbound webhook logging is available.
+- Messenger Send API is available for text messages when Meta settings are configured.
+- Messenger live auto-reply is available for active keyword rules.
+- Messenger logs appear in the existing logs viewer.
 - Page permissions and Meta app review may be required for production use.

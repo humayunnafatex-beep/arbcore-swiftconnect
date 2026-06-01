@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentCompany } from "@/lib/current-company";
+import { sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -73,6 +74,7 @@ export async function POST(request: Request) {
         ? await prisma.messageLog.findFirst({
             where: {
               companyId: company.id,
+              channel: "MESSENGER",
               direction: "INBOUND",
               providerMessageId: message.providerMessageId
             },
@@ -107,9 +109,49 @@ export async function POST(request: Request) {
           providerMessageId: message.providerMessageId
         }
       });
+
+      const matchedRule = await findMatchedAutoReplyRule(company.id, message.text);
+
+      if (!matchedRule) {
+        continue;
+      }
+
+      if (!company.messengerPageAccessToken) {
+        await prisma.messageLog.create({
+          data: {
+            companyId: company.id,
+            contactId: contact.id,
+            channel: "MESSENGER",
+            body: matchedRule.response,
+            direction: "OUTBOUND",
+            status: "FAILED",
+            errorMessage: "Messenger Page API is required to send real messages."
+          }
+        });
+        continue;
+      }
+
+      const autoReplyResult = await sendMessengerTextMessage({
+        pageAccessToken: company.messengerPageAccessToken,
+        recipientId: message.senderPsid,
+        body: matchedRule.response
+      });
+
+      await prisma.messageLog.create({
+        data: {
+          companyId: company.id,
+          contactId: contact.id,
+          channel: "MESSENGER",
+          body: matchedRule.response,
+          direction: "OUTBOUND",
+          status: autoReplyResult.success ? "SENT" : "FAILED",
+          providerMessageId: autoReplyResult.success ? autoReplyResult.providerMessageId : undefined,
+          errorMessage: autoReplyResult.success ? undefined : autoReplyResult.error,
+          sentAt: autoReplyResult.success ? new Date() : undefined
+        }
+      });
     }
 
-    // TODO: Messenger auto-reply Phase 2 should match rules and send only after Send API success.
     return NextResponse.json({ success: true, data: { received: true, messages: messages.length } });
   } catch {
     return NextResponse.json(
@@ -117,6 +159,38 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function findMatchedAutoReplyRule(companyId: string, inboundText: string) {
+  const normalizedInbound = normalizeText(inboundText);
+
+  if (!normalizedInbound) {
+    return null;
+  }
+
+  const rules = await prisma.autoReplyRule.findMany({
+    where: { companyId, isActive: true },
+    orderBy: [{ priority: "asc" }, { createdAt: "asc" }]
+  });
+
+  return rules.find((rule) => {
+    const keyword = normalizeText(rule.keyword);
+    if (!keyword) return false;
+
+    if (rule.matchMode === "EXACT") {
+      return normalizedInbound === keyword;
+    }
+
+    if (rule.matchMode === "STARTS_WITH") {
+      return normalizedInbound.startsWith(keyword);
+    }
+
+    return normalizedInbound.includes(keyword);
+  }) ?? null;
+}
+
+function normalizeText(value: string) {
+  return value.trim().toLowerCase();
 }
 
 function extractMessengerMessages(payload: MessengerPayload) {

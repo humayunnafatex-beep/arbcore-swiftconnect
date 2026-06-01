@@ -24,6 +24,7 @@ Before testing:
 5. Do not enter real WhatsApp access tokens unless the business has approved live API testing.
 6. Explain that real WhatsApp sending requires WhatsApp Cloud API.
 7. Use `META_WHATSAPP_SETUP_GUIDE.md` before any real end-to-end WhatsApp Cloud API test.
+8. Use `MESSENGER_SETUP_GUIDE.md` before any real Messenger/Facebook Page test.
 
 ## 3. Test Flow Checklist
 
@@ -131,6 +132,22 @@ Before testing:
 - [ ] Confirm it shows Enterprise Beta.
 - [ ] Confirm it says billing/license enforcement is not active in beta.
 
+### Messenger Page Test
+
+- [ ] Review `MESSENGER_SETUP_GUIDE.md`.
+- [ ] Save Facebook Page ID in Settings.
+- [ ] Save Page Access Token in Settings.
+- [ ] Save Messenger Verify Token in Settings.
+- [ ] Configure Meta webhook callback as `/api/messenger/webhook`.
+- [ ] Confirm webhook verification succeeds with the correct verify token.
+- [ ] Confirm webhook verification fails with a wrong token.
+- [ ] Create an active Auto Reply rule with keyword `price`.
+- [ ] Send a Messenger message containing `price` to the connected Facebook Page.
+- [ ] Open `/whatsapp-logs`.
+- [ ] Confirm inbound log shows `MESSENGER / INBOUND / RECEIVED`.
+- [ ] Confirm outbound auto reply shows `MESSENGER / OUTBOUND / SENT` if Meta accepts it, or `FAILED` if Meta rejects it.
+- [ ] Confirm the app does not claim Messenger send success unless Meta accepts the Send API request.
+
 ## 4. Feedback Collection Questions
 
 Ask each tester:
@@ -148,8 +165,10 @@ Ask each tester:
 - Full billing automation is not active.
 - License enforcement is not active.
 - Real WhatsApp sending requires WhatsApp Cloud API.
+- Real Messenger sending requires Meta Messenger Page API and a valid Page Access Token.
 - The production webhook path is `/api/whatsapp/webhook`.
 - Simple live auto replies are available for active keyword rules when WhatsApp Cloud API is configured.
+- Live Messenger auto replies are available for active keyword rules when Messenger Page API is configured.
 - Live auto replies support simple active keyword rules; advanced routing is future-phase work.
 - Advanced campaign scheduling is limited.
 - Advanced analytics can be improved in a later phase.
@@ -159,6 +178,7 @@ Ask each tester:
 
 - Do not enter real sensitive tokens unless approved.
 - WhatsApp Cloud API is required for real sending.
+- Messenger Page API is required for real Messenger sending.
 - Access tokens must be kept private.
 - Do not share access tokens in screenshots, chat messages, public docs, or feedback forms.
 - Use test contacts first.

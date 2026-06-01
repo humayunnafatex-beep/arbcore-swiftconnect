@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { getCurrentCompany } from "@/lib/current-company";
+import { sendMessengerTextMessage } from "@/lib/messenger-service";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -44,6 +46,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let companyId: string | undefined;
+  let contactId: string | undefined;
+  let messageBody = "";
+
   try {
     await requirePermission("messages.send");
     const payload = await request.json().catch(() => null);
@@ -57,26 +63,88 @@ export async function POST(request: Request) {
     }
 
     const company = await getCurrentCompany();
+    companyId = company.id;
     const configured = Boolean(company.messengerPageId && company.messengerPageAccessToken);
+    const input = parsed.data;
+    const recipientPsid = input.recipientPsid.trim();
+    messageBody = input.body.trim();
+
+    const contact = await prisma.contact.upsert({
+      where: { phone: recipientPsid },
+      update: { companyId: company.id },
+      create: {
+        companyId: company.id,
+        name: `Messenger ${recipientPsid}`,
+        phone: recipientPsid,
+        segment: "Messenger Test",
+        optedIn: true
+      }
+    });
+    contactId = contact.id;
 
     if (!configured) {
+      await createSafeMessengerLog({
+        companyId: company.id,
+        contactId: contact.id,
+        body: messageBody,
+        status: "FAILED",
+        errorMessage: MESSENGER_REQUIRED_MESSAGE
+      });
+
       return NextResponse.json(
         { success: false, status: "not_configured", error: MESSENGER_REQUIRED_MESSAGE },
         { status: 400 }
       );
     }
 
-    return NextResponse.json(
-      {
-        success: false,
-        status: "provider_error",
-        error: "Messenger Send API implementation is planned. No message was sent."
-      },
-      { status: 501 }
-    );
+    const providerResult = await sendMessengerTextMessage({
+      pageAccessToken: company.messengerPageAccessToken,
+      recipientId: recipientPsid,
+      body: messageBody
+    });
+
+    if (!providerResult.success) {
+      await createSafeMessengerLog({
+        companyId: company.id,
+        contactId: contact.id,
+        body: messageBody,
+        status: "FAILED",
+        errorMessage: providerResult.error
+      });
+
+      return NextResponse.json(
+        { success: false, status: "provider_error", error: "Messenger provider rejected the message." },
+        { status: 502 }
+      );
+    }
+
+    await createSafeMessengerLog({
+      companyId: company.id,
+      contactId: contact.id,
+      body: messageBody,
+      status: "SENT",
+      providerMessageId: providerResult.providerMessageId,
+      sentAt: new Date()
+    });
+
+    return NextResponse.json({
+      success: true,
+      status: "sent_successfully",
+      data: { providerMessageId: providerResult.providerMessageId }
+    });
   } catch (error) {
     if (error instanceof ApiError) {
       return handleApiError(error);
+    }
+
+    if (companyId && contactId && messageBody) {
+      await createSafeMessengerLog({
+        companyId,
+        contactId,
+        body: messageBody,
+        status: "FAILED",
+        errorMessage: "Messenger test send failed unexpectedly."
+      }).catch(() => undefined);
     }
 
     return NextResponse.json(
@@ -84,4 +152,28 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function createSafeMessengerLog(input: {
+  companyId: string;
+  contactId?: string;
+  body: string;
+  status: "SENT" | "FAILED";
+  providerMessageId?: string;
+  errorMessage?: string;
+  sentAt?: Date;
+}) {
+  return prisma.messageLog.create({
+    data: {
+      companyId: input.companyId,
+      contactId: input.contactId,
+      channel: "MESSENGER",
+      body: input.body,
+      direction: "OUTBOUND",
+      status: input.status,
+      providerMessageId: input.providerMessageId,
+      errorMessage: input.errorMessage,
+      sentAt: input.sentAt
+    }
+  });
 }

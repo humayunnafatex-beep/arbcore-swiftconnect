@@ -182,7 +182,13 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Messenger webhook POST with a sample Page message returns 200.
 - [ ] Messenger inbound messages appear in `/whatsapp-logs` with channel `MESSENGER`, direction `INBOUND`, and status `RECEIVED`.
 - [ ] `/api/messenger/test-send` without config returns `not_configured`.
-- [ ] Messenger sending is not claimed as successful until Send API is fully implemented.
+- [ ] `/api/messenger/test-send` with config logs `SENT` only after Meta accepts the Send API request.
+- [ ] Messenger provider errors log `FAILED` and show a safe provider error.
+- [ ] Create Auto Reply rule with keyword `price`.
+- [ ] Send Messenger message containing `price` to the connected Facebook Page.
+- [ ] Confirm `/whatsapp-logs` shows `MESSENGER / INBOUND / RECEIVED`.
+- [ ] Confirm `/whatsapp-logs` shows `MESSENGER / OUTBOUND / SENT` or `FAILED`.
+- [ ] Replayed duplicate Messenger provider message ID does not send a second auto reply.
 
 ## 10. Known Limitations
 
@@ -200,7 +206,7 @@ Connecting Welzz Stride real number `01958474577`:
 - Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
 - Meta webhook routes must remain public but verified.
 - Real WhatsApp sending requires Meta Cloud API credentials and webhook readiness.
-- Messenger inbound foundation is prepared, but Messenger Send API and Messenger auto-reply are future phases.
+- Messenger Send API and live Messenger auto-reply require Meta Page setup and may require Meta permissions/app review for production.
 - Payment/subscription automation is planned but not active.
 - Campaign sending requires approved templates and a completed production send workflow.
 - Saved access tokens are intentionally hidden after refresh.

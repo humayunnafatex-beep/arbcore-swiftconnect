@@ -110,6 +110,7 @@ export function WhatsAppLogsModulePage() {
       <section className="rounded-[24px] border border-blue-100 bg-blue-50 p-5 text-sm font-semibold leading-6 text-slate-600 shadow-panel">
         <p className="font-black text-royal">Connected channel reminder</p>
         <p className="mt-1">ARBCore receives WhatsApp messages only for the number connected to the saved Meta Phone Number ID. Messenger logs appear only after a Facebook Page webhook is configured and receives Page messages.</p>
+        <p className="mt-1">Messenger messages are identified by Facebook PSID, not phone number.</p>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">

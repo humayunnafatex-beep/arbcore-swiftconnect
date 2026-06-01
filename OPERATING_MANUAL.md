@@ -180,7 +180,7 @@ Use `MESSENGER_SETUP_GUIDE.md`. The Messenger webhook URL is:
 https://YOUR_DOMAIN/api/messenger/webhook
 ```
 
-Messenger Send API and Messenger auto-reply are not fully active in this phase. The app does not fake Messenger sending success.
+Messenger Send API can send text messages when Page settings are configured. Messenger live auto-reply can respond to active keyword rules. The app does not fake Messenger sending success and logs `SENT` only after Meta accepts the request.
 
 ## 9. License
 
@@ -250,7 +250,10 @@ Messenger foundation test flow:
 4. Send a message to the connected Facebook Page.
 5. Open `/whatsapp-logs`.
 6. Confirm the inbound log shows channel `MESSENGER`, direction `INBOUND`, and status `RECEIVED`.
-7. Use `/api/messenger/test-send` only as a configuration placeholder. It does not fake real Messenger sending.
+7. Create an active Auto Reply rule with keyword `price`.
+8. Send a Messenger message containing `price` to the connected Facebook Page.
+9. Confirm the outbound auto reply logs `MESSENGER`, `OUTBOUND`, and either `SENT` or `FAILED`.
+10. Use `/api/messenger/test-send` for controlled provider-backed text sending. It does not fake real Messenger sending.
 
 ## 12. Token And Privacy Warning
 
@@ -283,4 +286,4 @@ Known limitations:
 5. Access tokens are saved but intentionally not displayed after refresh.
 6. Current beta is single-company/demo-auth mode; before onboarding external clients, real auth and company isolation must be implemented so each client sees only its own contacts, messages, settings, auto replies, and logs.
 7. Webhook routes must remain public for Meta provider callbacks, but they must stay verified by provider tokens/signatures.
-8. Messenger inbound foundation is prepared, but Messenger Send API and Messenger auto-reply are future phases.
+8. Messenger Send API and live Messenger auto-reply require a configured Page Access Token and may require Meta permissions/app review for production.
