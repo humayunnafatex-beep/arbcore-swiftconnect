@@ -55,6 +55,11 @@ For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` be
 - [ ] Rule deactivate asks for confirmation.
 - [ ] Rule activate works.
 - [ ] Rule delete asks for confirmation and works.
+- [ ] Active rule with keyword `price` matches an inbound WhatsApp message containing `price`.
+- [ ] Matching inbound message logs `INBOUND - RECEIVED`.
+- [ ] Auto reply logs `OUTBOUND - SENT` only when Meta accepts the send.
+- [ ] Auto reply logs `OUTBOUND - FAILED` when Meta rejects the send.
+- [ ] Replayed duplicate inbound provider message does not send a second auto reply.
 
 ## 7. Send Messages QA
 
@@ -94,6 +99,14 @@ Message log status meanings:
 - `FAILED`: provider rejected the send or the attempt failed.
 - `RECEIVED`: inbound webhook message was received.
 - `ATTEMPTED`: attempted-only state if used by a future workflow.
+
+Live auto-reply test:
+
+1. Create an active Auto Reply rule with keyword `price`.
+2. Send a WhatsApp message containing `price` to the connected number.
+3. Check `/whatsapp-logs`.
+4. Expect inbound `RECEIVED`.
+5. Expect outbound `SENT` or `FAILED`.
 
 ## 10. Known Limitations
 

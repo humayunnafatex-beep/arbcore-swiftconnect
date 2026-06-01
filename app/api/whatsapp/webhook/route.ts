@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ensureDefaultWorkspace } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parseWebhookEvent, validateSignature } from "@/lib/whatsapp-service";
+import { parseWebhookEvent, sendWhatsAppTextMessage, validateSignature } from "@/lib/whatsapp-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,6 +71,19 @@ export async function POST(request: Request) {
         }
       });
 
+      const existingInboundLog = await prisma.messageLog.findFirst({
+        where: {
+          companyId: company.id,
+          direction: "INBOUND",
+          providerMessageId: message.id
+        },
+        select: { id: true }
+      });
+
+      if (existingInboundLog) {
+        continue;
+      }
+
       await prisma.messageLog.create({
         data: {
           companyId: company.id,
@@ -82,7 +95,35 @@ export async function POST(request: Request) {
         }
       });
 
-      // TODO: Match active auto-reply rules here and send replies only after webhook routing is multi-workspace safe.
+      if (!message.text) {
+        continue;
+      }
+
+      const matchedRule = await findMatchedAutoReplyRule(company.id, message.text);
+
+      if (!matchedRule) {
+        continue;
+      }
+
+      const autoReplyResult = await sendWhatsAppTextMessage({
+        phoneNumberId: company.whatsappPhoneNumberId,
+        accessToken: company.whatsappAccessToken,
+        to: message.from,
+        body: matchedRule.response
+      });
+
+      await prisma.messageLog.create({
+        data: {
+          companyId: company.id,
+          contactId: contact.id,
+          body: matchedRule.response,
+          direction: "OUTBOUND",
+          status: autoReplyResult.success ? "SENT" : "FAILED",
+          providerMessageId: autoReplyResult.success ? autoReplyResult.providerMessageId : undefined,
+          errorMessage: autoReplyResult.success ? undefined : autoReplyResult.error,
+          sentAt: autoReplyResult.success ? new Date() : undefined
+        }
+      });
     }
 
     return NextResponse.json({
@@ -95,6 +136,38 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function findMatchedAutoReplyRule(companyId: string, inboundText: string) {
+  const normalizedInbound = normalizeText(inboundText);
+
+  if (!normalizedInbound) {
+    return null;
+  }
+
+  const rules = await prisma.autoReplyRule.findMany({
+    where: { companyId, isActive: true },
+    orderBy: [{ priority: "asc" }, { createdAt: "asc" }]
+  });
+
+  return rules.find((rule) => {
+    const keyword = normalizeText(rule.keyword);
+    if (!keyword) return false;
+
+    if (rule.matchMode === "EXACT") {
+      return normalizedInbound === keyword;
+    }
+
+    if (rule.matchMode === "STARTS_WITH") {
+      return normalizedInbound.startsWith(keyword);
+    }
+
+    return normalizedInbound.includes(keyword);
+  }) ?? null;
+}
+
+function normalizeText(value: string) {
+  return value.trim().toLowerCase();
 }
 
 async function getWebhookCompany() {

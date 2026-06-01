@@ -63,7 +63,7 @@ After testing, open WhatsApp Logs to confirm the outbound message attempt, provi
 
 Auto Reply manages keyword-based replies. A rule contains a trigger keyword, reply message, match mode, priority, and active/inactive status.
 
-Use Auto Reply for common questions such as price, delivery, payment, order status, support, or unsubscribe requests. Active rules are ready to respond when webhook processing is connected.
+Use Auto Reply for common questions such as price, delivery, payment, order status, support, or unsubscribe requests. Active rules can send live replies when WhatsApp Cloud API is configured and an inbound webhook text message matches the rule.
 
 Basic Auto Reply workflow:
 
@@ -76,6 +76,16 @@ Basic Auto Reply workflow:
 7. Click Save Rule.
 8. Use the status button to activate or deactivate a rule.
 9. Delete only rules that are no longer needed.
+
+Live Auto Reply test workflow:
+
+1. Create an active rule with keyword `price`.
+2. Send a WhatsApp message containing `price` to the connected business number.
+3. Open WhatsApp Logs at `/whatsapp-logs`.
+4. Confirm the inbound customer message is logged as `INBOUND - RECEIVED`.
+5. Confirm the auto reply is logged as `OUTBOUND - SENT` if Meta accepts it, or `OUTBOUND - FAILED` if Meta rejects it.
+
+The app does not fake auto-reply success. It logs `SENT` only after Meta returns success.
 
 ## 6. CRM
 
@@ -184,7 +194,7 @@ For support issues, collect the affected module, approximate time, user action, 
 Known limitations:
 
 1. Real WhatsApp sending is blocked until WhatsApp Cloud API credentials and server environment variables are configured.
-2. Inbound WhatsApp messages can be received through `/api/whatsapp/webhook`, but automatic reply sending from inbound rules is a next-phase safety item.
+2. Inbound WhatsApp messages can be received through `/api/whatsapp/webhook`, and simple live keyword auto replies are active when matching rules and WhatsApp Cloud API settings are ready.
 3. Campaign sending depends on approved WhatsApp templates and a completed production send flow.
 4. Authentication is demo-cookie based for MVP testing.
 5. Access tokens are saved but intentionally not displayed after refresh.

@@ -166,9 +166,34 @@ After webhook verification succeeds:
 6. Confirm the webhook appears in Recent Webhook Events.
 7. If the UI does not show the expected record, verify it in the database or server logs.
 
-Inbound auto-reply sending is a future phase unless it has been explicitly enabled and tested.
+Simple live keyword auto replies are enabled when WhatsApp Cloud API settings are configured and an active rule matches the inbound text.
 
-## 7. Troubleshooting Common Meta Errors
+## 7. First Live Auto Reply Test
+
+After outbound and inbound tests pass:
+
+1. Open Auto Reply.
+2. Create an active rule with keyword:
+
+```text
+price
+```
+
+3. Use a simple reply message, such as:
+
+```text
+Thanks for your interest. Our team will share the latest price details shortly.
+```
+
+4. Send a WhatsApp message containing `price` to the connected business or test number.
+5. Open WhatsApp Logs.
+6. Confirm the inbound message appears as `INBOUND - RECEIVED`.
+7. Confirm the auto reply appears as `OUTBOUND - SENT` if Meta accepts it.
+8. If Meta rejects the auto reply, confirm it appears as `OUTBOUND - FAILED` with a safe error message.
+
+ARBCore SwiftConnect does not fake auto-reply success. Auto replies are logged as `SENT` only when Meta API returns success.
+
+## 8. Troubleshooting Common Meta Errors
 
 ### Invalid OAuth Access Token
 
@@ -206,7 +231,7 @@ Temporary Meta tokens expire. Use a fresh temporary token for testing or set up 
 
 Outside the 24-hour customer service window, WhatsApp may require an approved message template. Free-form text messages may be rejected until the customer has recently messaged the business.
 
-## 8. Safety Notes
+## 9. Safety Notes
 
 1. Never share the WhatsApp access token.
 2. Never commit the access token to Git.
@@ -214,16 +239,17 @@ Outside the 24-hour customer service window, WhatsApp may require an approved me
 4. Use a permanent token only when the business is ready for controlled live testing.
 5. Rotate the token immediately if it is exposed.
 6. Keep production credentials in protected settings or platform secrets.
+7. Test auto replies with a small controlled group before using live customer traffic.
 
-## 9. Current Limitations
+## 10. Current Limitations
 
-1. Auto-reply from inbound webhook messages is prepared as a TODO/future phase unless fully activated and tested.
+1. Auto-reply from inbound webhook messages supports simple active keyword rules. More advanced routing and template logic can be added in a future phase.
 2. Advanced campaign sending is not final.
 3. Billing and license enforcement are beta only.
 4. Multi-company webhook routing may need future hardening if multiple companies share one callback path.
 5. Delivery and read-receipt UI may need additional refinement after live Meta testing.
 
-## 10. Live Test Record
+## 11. Live Test Record
 
 For every live test, record:
 
@@ -232,5 +258,6 @@ For every live test, record:
 3. Meta app and phone number label, without tokens.
 4. Outbound test result.
 5. Inbound webhook result.
-6. Any Meta error message, without secrets.
-7. Whether Settings, Send Messages, WhatsApp Logs, and message logs behaved correctly.
+6. Auto Reply rule keyword used and result.
+7. Any Meta error message, without secrets.
+8. Whether Settings, Send Messages, Auto Reply, WhatsApp Logs, and message logs behaved correctly.

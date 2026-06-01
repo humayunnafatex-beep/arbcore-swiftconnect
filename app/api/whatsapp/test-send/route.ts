@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentAuthContext } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendWhatsAppTextMessage } from "@/lib/whatsapp-service";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -12,7 +13,6 @@ const testSendSchema = z.object({
 });
 
 const WHATSAPP_REQUIRED_MESSAGE = "WhatsApp Cloud API is required to send real messages.";
-const WHATSAPP_API_VERSION = "v20.0";
 
 export async function GET() {
   try {
@@ -113,56 +113,46 @@ export async function POST(request: Request) {
       );
     }
 
-    const providerResponse = await fetch(`https://graph.facebook.com/${WHATSAPP_API_VERSION}/${company.whatsappPhoneNumberId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${company.whatsappAccessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: normalizedPhone,
-        type: "text",
-        text: { body: messageBody }
-      })
+    const providerResult = await sendWhatsAppTextMessage({
+      phoneNumberId: company.whatsappPhoneNumberId,
+      accessToken: company.whatsappAccessToken,
+      to: normalizedPhone,
+      body: messageBody
     });
 
-    const providerBody = await providerResponse.json().catch(() => ({}));
-
-    if (!providerResponse.ok) {
+    if (!providerResult.success) {
       await createSafeMessageLog({
         companyId: company.id,
         contactId: contact.id,
         body: messageBody,
         status: "FAILED",
-        errorMessage: "WhatsApp provider rejected the message."
+        errorMessage: providerResult.error
       });
 
       return NextResponse.json(
         {
           success: false,
           status: "provider_error",
-          error: "WhatsApp provider rejected the message.",
-          data: { providerStatus: providerResponse.status }
+          error: providerResult.error,
+          data: { providerStatus: providerResult.providerStatus }
         },
         { status: 502 }
       );
     }
 
-    const providerMessageId = getProviderMessageId(providerBody);
     await createSafeMessageLog({
       companyId: company.id,
       contactId: contact.id,
       body: messageBody,
       status: "SENT",
-      providerMessageId,
+      providerMessageId: providerResult.providerMessageId,
       sentAt: new Date()
     });
 
     return NextResponse.json({
       success: true,
       status: "sent_successfully",
-      data: { providerMessageId }
+      data: { providerMessageId: providerResult.providerMessageId }
     });
   } catch (error) {
     if (companyId && contactId && messageBody) {
@@ -203,13 +193,4 @@ async function createSafeMessageLog(input: {
       sentAt: input.sentAt
     }
   });
-}
-
-function getProviderMessageId(payload: unknown) {
-  if (!payload || typeof payload !== "object" || !("messages" in payload) || !Array.isArray(payload.messages)) {
-    return undefined;
-  }
-
-  const first = payload.messages[0];
-  return first && typeof first === "object" && "id" in first && typeof first.id === "string" ? first.id : undefined;
 }

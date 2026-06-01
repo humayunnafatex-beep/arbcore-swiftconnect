@@ -60,6 +60,63 @@ export async function sendTextMessage(to: string, body: string) {
   });
 }
 
+export async function sendWhatsAppTextMessage({
+  phoneNumberId,
+  accessToken,
+  to,
+  body,
+  apiVersion = "v20.0"
+}: {
+  phoneNumberId: string;
+  accessToken: string;
+  to: string;
+  body: string;
+  apiVersion?: string;
+}): Promise<{ success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number }> {
+  const normalizedPhone = normalizePhone(to);
+
+  if (!phoneNumberId || !accessToken) {
+    return { success: false, error: "WhatsApp Cloud API is not configured." };
+  }
+
+  if (!/^\d{8,16}$/.test(normalizedPhone) || !body.trim()) {
+    return { success: false, error: "Please check phone number and message." };
+  }
+
+  try {
+    const response = await fetch(`https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: normalizedPhone,
+        type: "text",
+        text: { body: body.trim() }
+      })
+    });
+
+    const responseBody = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: "WhatsApp provider rejected the message.",
+        providerStatus: response.status
+      };
+    }
+
+    return {
+      success: true,
+      providerMessageId: getProviderMessageId(responseBody)
+    };
+  } catch {
+    return { success: false, error: "WhatsApp provider rejected the message." };
+  }
+}
+
 export async function sendTemplateMessage(
   to: string,
   templateName: string,
@@ -186,6 +243,15 @@ async function sendWhatsAppMessage(payload: Record<string, unknown>) {
 
 function normalizePhone(phone: string) {
   return phone.replace(/[^\d]/g, "");
+}
+
+function getProviderMessageId(payload: unknown) {
+  if (!isRecord(payload) || !Array.isArray(payload.messages)) {
+    return undefined;
+  }
+
+  const first = payload.messages[0];
+  return isRecord(first) && typeof first.id === "string" ? first.id : undefined;
 }
 
 function safeCompare(a: string, b: string) {

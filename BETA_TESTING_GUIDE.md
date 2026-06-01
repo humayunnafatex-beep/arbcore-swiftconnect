@@ -76,6 +76,17 @@ Before testing:
 - [ ] Activate it again if needed.
 - [ ] Delete the test rule.
 
+### Live Auto Reply Test
+
+- [ ] Confirm WhatsApp Cloud API settings are configured.
+- [ ] Create an active rule with keyword `price`.
+- [ ] Send a WhatsApp message containing `price` to the connected business number.
+- [ ] Open `/whatsapp-logs`.
+- [ ] Confirm the inbound message appears as `INBOUND - RECEIVED`.
+- [ ] Confirm the auto reply appears as `OUTBOUND - SENT` if Meta accepts it.
+- [ ] If Meta rejects the message, confirm the auto reply appears as `OUTBOUND - FAILED`.
+- [ ] Confirm the app does not claim success unless Meta accepts the send.
+
 ### Send Messages Without WhatsApp API
 
 - [ ] Open Send Messages.
@@ -123,8 +134,8 @@ Ask each tester:
 - License enforcement is not active.
 - Real WhatsApp sending requires WhatsApp Cloud API.
 - The production webhook path is `/api/whatsapp/webhook`.
-- Advanced auto-reply sending from inbound webhook messages is a next-phase safety item.
-- Complete inbound WhatsApp webhook automation is not final.
+- Simple live auto replies are available for active keyword rules when WhatsApp Cloud API is configured.
+- Live auto replies support simple active keyword rules; advanced routing is future-phase work.
 - Advanced campaign scheduling is limited.
 - Advanced analytics can be improved in a later phase.
 - Production-grade enterprise auth and multi-workspace permissions are future-phase items.

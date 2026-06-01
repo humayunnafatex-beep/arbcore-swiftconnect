@@ -190,6 +190,7 @@ export function AutoReplyModulePage() {
               <p className="text-xs font-black uppercase text-royal">Automation Studio</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Auto Reply Rules</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Manage keyword replies, rule status, and AI-assisted response drafts for this workspace.</p>
+              <p className="mt-2 max-w-3xl text-xs font-bold leading-5 text-slate-500">Live auto replies are sent only when WhatsApp Cloud API is configured and an active rule matches an inbound message.</p>
             </div>
           </div>
           <button className={primaryButtonClassName} onClick={() => openCreate()}>
