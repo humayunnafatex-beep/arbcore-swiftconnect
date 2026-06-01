@@ -39,6 +39,9 @@ export async function GET(
 
     const orderedMessages = recentMessages.reverse();
     const firstMessage = orderedMessages[0] ?? null;
+    const contact = conversation.channel === "WHATSAPP"
+      ? await findMatchingContact(company.id, conversation.contactKey)
+      : null;
 
     return NextResponse.json({
       success: true,
@@ -46,7 +49,8 @@ export async function GET(
         conversation: {
           channel: conversation.channel,
           contactKey: conversation.contactKey,
-          displayName: firstMessage ? getDisplayName(firstMessage) : null
+          displayName: contact?.name ?? (firstMessage ? getDisplayName(firstMessage) : null),
+          contact
         },
         messages: orderedMessages.map((message) => ({
           id: message.id,
@@ -126,6 +130,55 @@ function isConversationChannel(value: string | undefined): value is Conversation
 
 function getDisplayName(message: MessageWithRelations) {
   return message.contact?.name ?? message.whatsappAccount?.businessName ?? null;
+}
+
+async function findMatchingContact(companyId: string, contactKey: string) {
+  const candidates = phoneMatchCandidates(contactKey);
+  const contacts = await prisma.contact.findMany({
+    where: { companyId },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      stage: true,
+      tags: true
+    }
+  });
+  const contact = contacts.find((item) => {
+    return Array.from(phoneMatchCandidates(item.phone)).some((candidate) => candidates.has(candidate));
+  }) ?? null;
+
+  return contact
+    ? {
+        id: contact.id,
+        name: contact.name,
+        phone: contact.phone,
+        email: contact.email,
+        status: contact.stage,
+        tags: contact.tags
+      }
+    : null;
+}
+
+function phoneMatchCandidates(phone: string) {
+  const normalized = normalizePhoneForMatch(phone);
+  const candidates = new Set<string>();
+  if (normalized) candidates.add(normalized);
+
+  if (normalized.startsWith("8801") && normalized.length === 13) {
+    candidates.add(`0${normalized.slice(3)}`);
+  }
+
+  if (normalized.startsWith("01") && normalized.length === 11) {
+    candidates.add(`880${normalized.slice(1)}`);
+  }
+
+  return candidates;
+}
+
+function normalizePhoneForMatch(phone: string) {
+  return phone.replace(/[^\d]/g, "");
 }
 
 function previewText(value: string, maxLength = 140) {

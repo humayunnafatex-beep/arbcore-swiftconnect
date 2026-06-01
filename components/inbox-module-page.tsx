@@ -19,12 +19,22 @@ type ChannelFilter = "ALL" | "WHATSAPP" | "MESSENGER";
 type ConversationStatus = "OPEN" | "PENDING" | "CLOSED";
 type StatusFilter = "ALL" | ConversationStatus;
 type ReplyStatus = "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
+type ContactStage = "NEW_LEAD" | "INTERESTED" | "FOLLOW_UP" | "WON" | "LOST";
 
 type Assignee = {
   id: string;
   name: string;
   email: string;
   role: string;
+};
+
+type LinkedContact = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  status: ContactStage | string | null;
+  tags: string | null;
 };
 
 type ConversationSummary = {
@@ -38,6 +48,7 @@ type ConversationSummary = {
   lastMessageAt: string;
   status: ConversationStatus;
   assignedTo: Assignee | null;
+  contact: LinkedContact | null;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -70,6 +81,7 @@ type ConversationDetailResponse = {
       channel: "WHATSAPP" | "MESSENGER";
       contactKey: string;
       displayName: string | null;
+      contact: LinkedContact | null;
     };
     messages: InboxMessage[];
   };
@@ -97,6 +109,38 @@ type StateResponse = {
     assignedTo: Assignee | null;
   };
   error?: string;
+};
+
+type ContactResponse = {
+  success: boolean;
+  data?: {
+    contact: LinkedContact;
+  };
+  error?: string;
+};
+
+type ContactForm = {
+  name: string;
+  email: string;
+  status: ContactStage;
+  tags: string;
+};
+
+const emptyContactForm: ContactForm = {
+  name: "",
+  email: "",
+  status: "NEW_LEAD",
+  tags: ""
+};
+
+const contactStages: ContactStage[] = ["NEW_LEAD", "INTERESTED", "FOLLOW_UP", "WON", "LOST"];
+
+const contactStageLabels: Record<ContactStage, string> = {
+  NEW_LEAD: "New Lead",
+  INTERESTED: "Interested",
+  FOLLOW_UP: "Follow-up",
+  WON: "Won",
+  LOST: "Lost"
 };
 
 const replyStatusText: Record<ReplyStatus, string> = {
@@ -129,6 +173,9 @@ export function InboxModulePage() {
   });
   const [stateSaving, setStateSaving] = useState(false);
   const [stateMessage, setStateMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [contactForm, setContactForm] = useState<ContactForm>(emptyContactForm);
+  const [contactSaving, setContactSaving] = useState(false);
+  const [contactMessage, setContactMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
   const selectedConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
@@ -238,6 +285,20 @@ export function InboxModulePage() {
     setStateMessage(null);
   }, [selectedConversation]);
 
+  useEffect(() => {
+    const contact = detail?.conversation.contact;
+
+    setContactMessage(null);
+    setContactForm(contact
+      ? {
+          name: contact.name,
+          email: contact.email ?? "",
+          status: isContactStage(contact.status) ? contact.status : "NEW_LEAD",
+          tags: contact.tags ?? ""
+        }
+      : emptyContactForm);
+  }, [detail?.conversation.contact]);
+
   async function sendReply() {
     if (!detail) return;
 
@@ -325,6 +386,59 @@ export function InboxModulePage() {
     }
   }
 
+  async function saveContactFromConversation() {
+    if (!selectedId || !detail) return;
+
+    const name = contactForm.name.trim();
+    const email = contactForm.email.trim();
+
+    setContactMessage(null);
+
+    if (!name) {
+      setContactMessage({ tone: "error", text: "Contact name is required." });
+      return;
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setContactMessage({ tone: "error", text: "Enter a valid email address or leave it blank." });
+      return;
+    }
+
+    setContactSaving(true);
+
+    try {
+      const linkedContact = detail.conversation.contact;
+      const payload = {
+        name,
+        email: email || null,
+        status: contactForm.status,
+        stage: contactForm.status,
+        tags: contactForm.tags.trim() || null
+      };
+      const response = await fetch(
+        linkedContact ? `/api/contacts/${linkedContact.id}` : `/api/inbox/conversations/${encodeURIComponent(selectedId)}/contact`,
+        {
+          method: linkedContact ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }
+      );
+      const result = (await response.json()) as ContactResponse;
+
+      if (!response.ok || result.success === false) {
+        throw new Error(typeof result.error === "string" ? result.error : "Failed to save contact.");
+      }
+
+      setContactMessage({ tone: "success", text: linkedContact ? "Contact updated." : "Contact created and linked." });
+      await loadConversationDetail(selectedId);
+      await loadConversations();
+    } catch (requestError) {
+      setContactMessage({ tone: "error", text: getApiErrorMessage(requestError) });
+    } finally {
+      setContactSaving(false);
+    }
+  }
+
   return (
     <AppShell>
       <section className="rounded-[28px] border border-blue-100 bg-white/95 p-5 shadow-panel sm:p-7">
@@ -337,7 +451,7 @@ export function InboxModulePage() {
               <p className="text-xs font-black uppercase text-royal">Unified Inbox</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Customer Conversations</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                Read, assign, update status, and reply to WhatsApp and Messenger customer conversations in one place.
+                Read, link contacts, assign, update status, and reply to WhatsApp and Messenger customer conversations in one place.
               </p>
             </div>
           </div>
@@ -464,6 +578,56 @@ export function InboxModulePage() {
                       <StatusPill label={`${selectedConversation.messageCount} messages`} tone="gray" />
                       <StatusPill label={`${selectedConversation.inboundCount} inbound`} tone="green" />
                       <StatusPill label={`${selectedConversation.outboundCount} outbound`} tone="blue" />
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-ink">Contact Profile</h3>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">
+                        {detail.conversation.contact
+                          ? "This conversation is linked to a contact record."
+                          : detail.conversation.channel === "WHATSAPP"
+                            ? "No contact linked yet. Create one from this WhatsApp phone number."
+                            : "Messenger conversations use PSID. Full contact linking may require a future Messenger PSID field."}
+                      </p>
+                    </div>
+                    <Link className="text-xs font-black text-royal hover:underline" href="/contacts">
+                      Open Contacts
+                    </Link>
+                  </div>
+                  {detail.conversation.contact ? (
+                    <div className="mt-4 grid gap-3 lg:grid-cols-4">
+                      <ContactField label="Name" value={detail.conversation.contact.name} />
+                      <ContactField label="Phone" value={detail.conversation.contact.phone ?? "-"} />
+                      <ContactField label="Email" value={detail.conversation.contact.email ?? "-"} />
+                      <ContactField label="Status" value={formatContactStage(detail.conversation.contact.status)} />
+                    </div>
+                  ) : null}
+                  {detail.conversation.channel === "WHATSAPP" || detail.conversation.contact ? (
+                    <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_180px_1fr_auto]">
+                      <input className={`${inputClassName} w-full`} value={contactForm.name} onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder="Contact name" />
+                      <input className={`${inputClassName} w-full`} value={contactForm.email} onChange={(event) => setContactForm((current) => ({ ...current, email: event.target.value }))} placeholder="Email optional" />
+                      <select className={`${inputClassName} w-full`} value={contactForm.status} onChange={(event) => setContactForm((current) => ({ ...current, status: event.target.value as ContactStage }))}>
+                        {contactStages.map((stage) => (
+                          <option key={stage} value={stage}>{contactStageLabels[stage]}</option>
+                        ))}
+                      </select>
+                      <input className={`${inputClassName} w-full`} value={contactForm.tags} onChange={(event) => setContactForm((current) => ({ ...current, tags: event.target.value }))} placeholder="Tags, comma separated" />
+                      <button className={`${primaryButtonClassName} whitespace-nowrap`} onClick={() => void saveContactFromConversation()} disabled={contactSaving}>
+                        {contactSaving ? "Saving..." : detail.conversation.contact ? "Save Contact" : "Create Contact"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-sm font-bold text-amber-800">
+                      Messenger contact linking requires a phone number or future Messenger PSID field.
+                    </div>
+                  )}
+                  {contactMessage ? (
+                    <div className={cn("mt-3 rounded-[14px] border p-3 text-sm font-bold", contactMessage.tone === "success" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-rose-100 bg-rose-50 text-rose-700")}>
+                      {contactMessage.text}
                     </div>
                   ) : null}
                 </div>
@@ -601,4 +765,21 @@ function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "
       {label}
     </span>
   );
+}
+
+function ContactField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[14px] border border-blue-100 bg-blue-50 px-3 py-2">
+      <p className="text-[11px] font-black uppercase text-royal">{label}</p>
+      <p className="mt-1 truncate text-sm font-bold text-slate-700">{value}</p>
+    </div>
+  );
+}
+
+function isContactStage(value: string | null | undefined): value is ContactStage {
+  return value === "NEW_LEAD" || value === "INTERESTED" || value === "FOLLOW_UP" || value === "WON" || value === "LOST";
+}
+
+function formatContactStage(value: string | null | undefined) {
+  return isContactStage(value) ? contactStageLabels[value] : value ?? "-";
 }

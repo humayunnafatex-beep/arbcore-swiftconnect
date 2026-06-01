@@ -52,6 +52,7 @@ export async function GET(request: Request) {
           lastMessageAt: message.createdAt.toISOString(),
           status: "OPEN",
           assignedTo: null,
+          contact: null,
           messageCount: 1,
           failedCount: message.status === "FAILED" ? 1 : 0,
           inboundCount: message.direction === "INBOUND" ? 1 : 0,
@@ -89,15 +90,32 @@ export async function GET(request: Request) {
         })
       : [];
     const stateMap = new Map(states.map((state) => [`${state.channel}:${state.contactKey}`, state]));
+    const contacts = await prisma.contact.findMany({
+      where: { companyId: company.id },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        stage: true,
+        tags: true
+      }
+    });
+    const contactMap = buildContactMatchMap(contacts);
 
     const filteredConversations = conversationItems
       .map((conversation) => {
         const state = stateMap.get(`${conversation.channel}:${conversation.contactKey}`);
+        const contact = conversation.channel === "WHATSAPP"
+          ? contactMap.get(normalizePhoneForMatch(conversation.contactKey)) ?? null
+          : null;
 
         return {
           ...conversation,
+          displayName: contact?.name ?? conversation.displayName,
           status: normalizeConversationStatus(state?.status),
-          assignedTo: state?.assignedTo ?? null
+          assignedTo: state?.assignedTo ?? null,
+          contact
         };
       })
       .filter((conversation) => status === "ALL" || conversation.status === status)
@@ -149,10 +167,20 @@ type ConversationSummary = {
     email: string;
     role: string;
   } | null;
+  contact: ContactSummary | null;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
   outboundCount: number;
+};
+
+type ContactSummary = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  status: string | null;
+  tags: string | null;
 };
 
 function buildMessageWhere({
@@ -210,6 +238,49 @@ function getContactKey(message: MessageWithRelations) {
 
 function getDisplayName(message: MessageWithRelations) {
   return message.contact?.name ?? message.whatsappAccount?.businessName ?? null;
+}
+
+function buildContactMatchMap(contacts: Array<{ id: string; name: string; phone: string; email: string | null; stage: string; tags: string | null }>) {
+  const map = new Map<string, ContactSummary>();
+
+  for (const contact of contacts) {
+    const summary = {
+      id: contact.id,
+      name: contact.name,
+      phone: contact.phone,
+      email: contact.email,
+      status: contact.stage,
+      tags: contact.tags
+    };
+
+    for (const candidate of phoneMatchCandidates(contact.phone)) {
+      if (!map.has(candidate)) {
+        map.set(candidate, summary);
+      }
+    }
+  }
+
+  return map;
+}
+
+function phoneMatchCandidates(phone: string) {
+  const normalized = normalizePhoneForMatch(phone);
+  const candidates = new Set<string>();
+  if (normalized) candidates.add(normalized);
+
+  if (normalized.startsWith("8801") && normalized.length === 13) {
+    candidates.add(`0${normalized.slice(3)}`);
+  }
+
+  if (normalized.startsWith("01") && normalized.length === 11) {
+    candidates.add(`880${normalized.slice(1)}`);
+  }
+
+  return candidates;
+}
+
+function normalizePhoneForMatch(phone: string) {
+  return phone.replace(/[^\d]/g, "");
 }
 
 function previewText(value: string, maxLength = 120) {

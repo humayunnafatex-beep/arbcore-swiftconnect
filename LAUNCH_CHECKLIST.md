@@ -73,6 +73,12 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Inbox assignee filter works for All, Unassigned, and team members.
 - [ ] Inbox status update saves and persists.
 - [ ] Inbox assign and unassign saves and persists.
+- [ ] WhatsApp conversation shows linked contact when phone matches an existing contact.
+- [ ] WhatsApp conversation can create a new contact from the Inbox contact card.
+- [ ] Inbox-created contact appears in the Contacts module.
+- [ ] Duplicate WhatsApp contact phone from Inbox shows a friendly error.
+- [ ] Linked contact quick edit saves name, email, status, and tags.
+- [ ] Messenger conversation explains PSID contact-linking limitation without pretending it is linked.
 - [ ] Team duplicate email returns a friendly error.
 
 ## 4A. Auth Mapping QA
