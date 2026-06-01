@@ -1,28 +1,103 @@
+import type { UserRole } from "@prisma/client";
+
 export const appRoles = ["OWNER", "ADMIN", "MANAGER", "AGENT", "VIEWER"] as const;
 
-export type AppRole = (typeof appRoles)[number];
+export type RoleName = UserRole | "VIEWER";
 
-export type AppPermission =
-  | "dashboard:read"
-  | "contacts:read"
-  | "contacts:write"
-  | "messages:send"
-  | "auto-reply:manage"
-  | "whatsapp-logs:read"
-  | "settings:manage"
-  | "team:manage"
-  | "license:read"
-  | "billing:manage";
+export type Permission =
+  | "dashboard.view"
+  | "contacts.view"
+  | "contacts.manage"
+  | "messages.send"
+  | "messages.viewLogs"
+  | "autoReply.view"
+  | "autoReply.manage"
+  | "settings.view"
+  | "settings.manage"
+  | "team.view"
+  | "team.manage"
+  | "license.view"
+  | "billing.manage"
+  | "whatsapp.manage"
+  | "messenger.manage";
 
-export const rolePermissions: Record<AppRole, AppPermission[]> = {
-  OWNER: ["dashboard:read", "contacts:read", "contacts:write", "messages:send", "auto-reply:manage", "whatsapp-logs:read", "settings:manage", "team:manage", "license:read", "billing:manage"],
-  ADMIN: ["dashboard:read", "contacts:read", "contacts:write", "messages:send", "auto-reply:manage", "whatsapp-logs:read", "settings:manage", "team:manage", "license:read", "billing:manage"],
-  MANAGER: ["dashboard:read", "contacts:read", "contacts:write", "messages:send", "auto-reply:manage", "whatsapp-logs:read", "license:read"],
-  AGENT: ["dashboard:read", "contacts:read", "contacts:write", "messages:send", "whatsapp-logs:read", "license:read"],
-  VIEWER: ["dashboard:read", "contacts:read", "whatsapp-logs:read", "license:read"]
+export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
+  OWNER: [
+    "dashboard.view",
+    "contacts.view",
+    "contacts.manage",
+    "messages.send",
+    "messages.viewLogs",
+    "autoReply.view",
+    "autoReply.manage",
+    "settings.view",
+    "settings.manage",
+    "team.view",
+    "team.manage",
+    "license.view",
+    "billing.manage",
+    "whatsapp.manage",
+    "messenger.manage"
+  ],
+  ADMIN: [
+    "dashboard.view",
+    "contacts.view",
+    "contacts.manage",
+    "messages.send",
+    "messages.viewLogs",
+    "autoReply.view",
+    "autoReply.manage",
+    "settings.view",
+    "settings.manage",
+    "team.view",
+    "team.manage",
+    "license.view",
+    "billing.manage",
+    "whatsapp.manage",
+    "messenger.manage"
+  ],
+  MANAGER: [
+    "dashboard.view",
+    "contacts.view",
+    "contacts.manage",
+    "messages.send",
+    "messages.viewLogs",
+    "autoReply.view",
+    "autoReply.manage",
+    "license.view"
+  ],
+  AGENT: [
+    "dashboard.view",
+    "contacts.view",
+    "contacts.manage",
+    "messages.send",
+    "messages.viewLogs",
+    "autoReply.view",
+    "license.view"
+  ],
+  VIEWER: [
+    "dashboard.view",
+    "contacts.view",
+    "messages.viewLogs",
+    "autoReply.view",
+    "license.view"
+  ]
 };
 
-export function hasPermission(role: AppRole, permission: AppPermission) {
-  // TODO: Enforce this from real authenticated user sessions after beta auth is replaced.
-  return rolePermissions[role]?.includes(permission) ?? false;
+export function hasPermission(role: RoleName | string | null | undefined, permission: Permission) {
+  if (!role || !isRoleName(role)) return false;
+  return ROLE_PERMISSIONS[role].includes(permission);
+}
+
+export function getPermissionsForRole(role: RoleName | string | null | undefined) {
+  if (!role || !isRoleName(role)) return [];
+  return ROLE_PERMISSIONS[role];
+}
+
+export function isPermissionsEnforced() {
+  return process.env.PERMISSIONS_ENFORCED === "true";
+}
+
+export function isRoleName(role: string): role is RoleName {
+  return appRoles.includes(role as RoleName);
 }

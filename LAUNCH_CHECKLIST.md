@@ -18,6 +18,8 @@ For controlled auth enforcement testing, review `AUTH_IMPLEMENTATION_PHASE_3.md`
 
 Before enabling auth enforcement, review `AUTH_IMPLEMENTATION_PHASE_4.md`, `AUTH_IMPLEMENTATION_PHASE_5.md`, `AUTH_IMPLEMENTATION_PHASE_6.md`, `AUTH_ENFORCEMENT_TEST_CHECKLIST.md`, and `SUPABASE_ADMIN_USER_MAPPING.md`.
 
+Before enabling permission enforcement, review `AUTH_IMPLEMENTATION_PHASE_7.md`.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -65,6 +67,10 @@ Before enabling auth enforcement, review `AUTH_IMPLEMENTATION_PHASE_4.md`, `AUTH
 - [ ] Confirm role, company name, and company plan are correct.
 - [ ] Confirm `/auth/status` says local/staging enforcement testing is safe only for a mapped `OWNER` or `ADMIN`.
 - [ ] Complete `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` in local or staging before production enforcement.
+- [ ] Open `/auth/permissions`.
+- [ ] Confirm `/api/auth/permissions` returns safe JSON only.
+- [ ] Confirm `PERMISSIONS_ENFORCED=false` for current Enterprise Beta unless a staging test is planned.
+- [ ] Confirm the current role permission list is correct.
 - [ ] Confirm no tokens, cookies, raw sessions, or service-role keys are displayed.
 - [ ] Confirm public WhatsApp webhook routes remain public.
 
@@ -160,6 +166,7 @@ Connecting Welzz Stride real number `01958474577`:
 - `AUTH_ENFORCED` defaults to false; set it to true only after a real admin Supabase user is tested.
 - Use `AUTH_IMPLEMENTATION_PHASE_5.md` and `/auth/status` before enabling `AUTH_ENFORCED=true`.
 - Use `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` for local/staging enforcement tests.
+- Use `AUTH_IMPLEMENTATION_PHASE_7.md` and `/auth/permissions` before role permission blocking.
 - Supabase Auth users must map to Prisma `User` records and the correct `companyId` before external client onboarding.
 - Current beta is single-company/demo-auth mode; Phase 1 adds foundation only and real login enforcement comes later.
 - Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.

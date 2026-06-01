@@ -6,7 +6,7 @@ ARBCore SwiftConnect currently uses a demo-cookie auth flow for beta operation. 
 
 This is acceptable for the current single-company Enterprise Beta, but it is not enough for onboarding external client businesses.
 
-Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`. Controlled Phase 3 route protection is tracked in `AUTH_IMPLEMENTATION_PHASE_3.md`. Supabase Auth user mapping is tracked in `AUTH_IMPLEMENTATION_PHASE_4.md`. Safe admin mapping verification is tracked in `AUTH_IMPLEMENTATION_PHASE_5.md`. Local and staging enforcement test readiness is tracked in `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md`.
+Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`. Controlled Phase 3 route protection is tracked in `AUTH_IMPLEMENTATION_PHASE_3.md`. Supabase Auth user mapping is tracked in `AUTH_IMPLEMENTATION_PHASE_4.md`. Safe admin mapping verification is tracked in `AUTH_IMPLEMENTATION_PHASE_5.md`. Local and staging enforcement test readiness is tracked in `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md`. Role permission readiness is tracked in `AUTH_IMPLEMENTATION_PHASE_7.md`.
 
 Current behavior:
 
@@ -20,6 +20,7 @@ Current behavior:
 - Phase 4 links Supabase Auth users to Prisma users through nullable `User.supabaseAuthId`.
 - Phase 5 adds `/auth/status` so admins can verify Supabase Auth to Prisma User to Company mapping without exposing tokens, cookies, or raw sessions.
 - Phase 6 documents safe local/staging `AUTH_ENFORCED=true` testing while production Enterprise Beta remains non-blocking by default.
+- Phase 7 adds `/auth/permissions`, `/api/auth/permissions`, `PERMISSIONS_ENFORCED`, and non-breaking permission helpers for future route protection.
 - There is no real user invite/password reset/session lifecycle yet.
 
 ## 2. Current Company / Workspace Selection Behavior
@@ -157,6 +158,8 @@ Future roles:
 Current Phase 5 admin verification has been added separately in `AUTH_IMPLEMENTATION_PHASE_5.md`. Before role enforcement, use `/auth/status` and `/api/auth/me` to confirm the first mapped admin user.
 
 Before enabling enforced auth in any environment, complete `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md`.
+
+Before enabling role blocking, complete `AUTH_IMPLEMENTATION_PHASE_7.md` and verify `/auth/permissions`.
 
 - Convert route-level access from informal patterns to shared permission helpers.
 - Add `VIEWER` through migration if needed.

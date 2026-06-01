@@ -81,10 +81,11 @@ export function LicenseModulePage() {
             <Info label="Workspace/company" value="ARBCore AI" />
             <Info label="Access mode" value="Single-company beta" />
             <Info label="Auth enforcement" value="Off unless AUTH_ENFORCED=true" />
+            <Info label="Permission enforcement" value="Off unless PERMISSIONS_ENFORCED=true" />
             <Info label="Future mode" value="Multi-client SaaS with role-based access" />
             <Info label="Billing/license enforcement" value="Not active in this beta" />
             <p className="rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-800">
-              Billing records and payment collection are not enforced by the app yet. Future paid plans will support client workspaces and channel-based automation, but payment success must not be claimed until manual verification or gateway confirmation.
+              Billing records, payment collection, and role permission blocking are not enforced by the app yet. Future paid plans will support client workspaces and channel-based automation, but payment success must not be claimed until manual verification or gateway confirmation.
             </p>
           </div>
         </section>

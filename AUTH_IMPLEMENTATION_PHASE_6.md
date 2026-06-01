@@ -68,5 +68,6 @@ Before production enforcement, also confirm:
 
 - `/auth/status` shows a mapped admin user.
 - `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` is complete.
+- `AUTH_IMPLEMENTATION_PHASE_7.md` and `/auth/permissions` have been reviewed before role permission blocking.
 - WhatsApp webhook routes remain public and verified.
 - No access tokens, cookies, raw sessions, or service-role keys are exposed.
