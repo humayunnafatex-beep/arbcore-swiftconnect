@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import type { UserRole } from "@prisma/client";
+import type { User } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api";
 import { DEMO_EMAIL, DEMO_PASSWORD, DEFAULT_COMPANY_ID, DEFAULT_USER_ID, AUTH_COOKIE_NAME, isDemoSession } from "@/lib/auth-constants";
 import { prisma } from "@/lib/prisma";
@@ -47,15 +48,17 @@ export function isAuthEnforced() {
 }
 
 export async function getCurrentUser() {
-  const supabaseUser = await getSupabaseAuthUser();
+  const mappedUser = await getMappedPrismaUserForSupabaseSession();
 
-  if (supabaseUser?.email) {
-    const user = await prisma.user.findUnique({ where: { email: supabaseUser.email.toLowerCase() } });
-    if (user) return user;
+  if (mappedUser) {
+    return mappedUser;
   }
 
-  // Phase 2 foundation only: return the existing beta/default owner when auth is not enforced.
-  // TODO: Resolve the current user from Supabase Auth session cookies.
+  if (isAuthEnforced()) {
+    throw new ApiError(401, "UNAUTHENTICATED", "You must be logged in to access this resource.");
+  }
+
+  // Phase 4 foundation: keep beta/default owner fallback while auth is not enforced.
   return (await ensureDefaultWorkspace()).user;
 }
 
@@ -64,8 +67,7 @@ export async function getCurrentUserRole() {
 }
 
 export async function requireCurrentUser() {
-  // Phase 2 foundation only: do not block access beyond the existing beta flow.
-  // TODO: Throw UNAUTHENTICATED when real auth enforcement is enabled.
+  // Phase 4 foundation: blocks only when AUTH_ENFORCED=true and no mapped user exists.
   return getCurrentUser();
 }
 
@@ -123,17 +125,10 @@ export async function ensureDefaultWorkspace() {
 }
 
 export async function getCurrentAuthContext() {
-  const supabaseUser = await getSupabaseAuthUser();
+  const mappedUser = await getMappedPrismaUserForSupabaseSession({ includeCompany: true });
 
-  if (supabaseUser?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: supabaseUser.email.toLowerCase() },
-      include: { company: true }
-    });
-
-    if (user?.company) {
-      return { user, company: user.company };
-    }
+  if (mappedUser?.company) {
+    return { user: mappedUser, company: mappedUser.company };
   }
 
   const session = cookies().get(AUTH_COOKIE_NAME)?.value;
@@ -154,4 +149,64 @@ async function getSupabaseAuthUser() {
 
   const { data } = await supabase.auth.getUser();
   return data.user;
+}
+
+async function getMappedPrismaUserForSupabaseSession(options?: { includeCompany?: false }): Promise<Awaited<ReturnType<typeof prisma.user.findUnique>>>;
+async function getMappedPrismaUserForSupabaseSession(options: { includeCompany: true }): Promise<Awaited<ReturnType<typeof prisma.user.findUnique<{ where: { id: string }; include: { company: true } }>>>>;
+async function getMappedPrismaUserForSupabaseSession(options?: { includeCompany?: boolean }) {
+  const supabaseUser = await getSupabaseAuthUser();
+
+  if (!supabaseUser) {
+    return null;
+  }
+
+  const mappedUser = await findOrAttachSupabaseUser(supabaseUser);
+
+  if (!mappedUser) {
+    return null;
+  }
+
+  if (options?.includeCompany) {
+    return prisma.user.findUnique({
+      where: { id: mappedUser.id },
+      include: { company: true }
+    });
+  }
+
+  return mappedUser;
+}
+
+async function findOrAttachSupabaseUser(supabaseUser: User) {
+  const byAuthId = await prisma.user.findUnique({
+    where: { supabaseAuthId: supabaseUser.id }
+  });
+
+  if (byAuthId) {
+    return byAuthId;
+  }
+
+  const email = supabaseUser.email?.trim().toLowerCase();
+
+  if (!email) {
+    return null;
+  }
+
+  const byEmail = await prisma.user.findUnique({ where: { email } });
+
+  if (!byEmail) {
+    return null;
+  }
+
+  if (byEmail.supabaseAuthId && byEmail.supabaseAuthId !== supabaseUser.id) {
+    return byEmail;
+  }
+
+  if (byEmail.supabaseAuthId === supabaseUser.id) {
+    return byEmail;
+  }
+
+  return prisma.user.update({
+    where: { id: byEmail.id },
+    data: { supabaseAuthId: supabaseUser.id }
+  });
 }

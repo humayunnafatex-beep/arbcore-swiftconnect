@@ -22,6 +22,8 @@ Phase 2 adds Supabase Auth helpers plus login/logout routes, but current Enterpr
 
 Phase 3 adds the `AUTH_ENFORCED` flag for controlled route protection testing. It defaults off, and public Meta webhook routes must remain accessible.
 
+Phase 4 adds Supabase Auth user mapping to Prisma users and companies. Use `AUTH_IMPLEMENTATION_PHASE_4.md` and `SUPABASE_ADMIN_USER_MAPPING.md` before enabling enforced login.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.

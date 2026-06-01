@@ -56,6 +56,8 @@ Phase 2 adds Supabase Auth browser/server helpers and a login/logout surface whi
 
 Phase 3 route protection readiness is documented in `AUTH_IMPLEMENTATION_PHASE_3.md`; enforcement remains off unless `AUTH_ENFORCED=true`.
 
+Phase 4 Supabase Auth to Prisma user/company mapping is documented in `AUTH_IMPLEMENTATION_PHASE_4.md` and `SUPABASE_ADMIN_USER_MAPPING.md`.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

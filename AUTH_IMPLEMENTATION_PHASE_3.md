@@ -23,6 +23,8 @@ Behavior:
 
 Do not enable this in production until a real admin Supabase user is created, tested, and mapped to the correct company.
 
+For the user mapping step, use `AUTH_IMPLEMENTATION_PHASE_4.md` and `SUPABASE_ADMIN_USER_MAPPING.md`.
+
 ## 3. Protected Routes
 
 Protected app routes when `AUTH_ENFORCED=true`:

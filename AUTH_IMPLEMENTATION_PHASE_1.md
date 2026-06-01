@@ -4,7 +4,7 @@
 
 Phase 1 prepares ARBCore SwiftConnect for real authentication without disrupting the current single-company Enterprise Beta.
 
-This phase adds documentation, route classification, and non-breaking helper stubs. Phase 2 adds Supabase Auth client/server helpers and login UI. Phase 3 adds an `AUTH_ENFORCED` route protection flag, but the flag defaults off.
+This phase adds documentation, route classification, and non-breaking helper stubs. Phase 2 adds Supabase Auth client/server helpers and login UI. Phase 3 adds an `AUTH_ENFORCED` route protection flag, but the flag defaults off. Phase 4 maps Supabase Auth users to Prisma `User` and `Company` records.
 
 ## 2. Why Login Is Not Enforced Yet
 
@@ -31,6 +31,7 @@ Current auth behavior:
 - `isAuthEnforced()` returns `false` for now.
 - Phase 3 updates `isAuthEnforced()` to read `AUTH_ENFORCED`, returning true only when the value is exactly `true`.
 - Phase 2 adds Supabase session lookup first; if no mapped Supabase user exists and auth is not enforced, the beta/default owner fallback remains.
+- Phase 4 adds `User.supabaseAuthId` and maps Supabase users by auth ID first, then by matching email.
 
 ## 4. Recommended Future Provider
 

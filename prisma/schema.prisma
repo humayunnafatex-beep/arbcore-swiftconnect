@@ -117,6 +117,7 @@ model Company {
 
 model User {
   id           String   @id @default(cuid())
+  supabaseAuthId String? @unique
   email        String   @unique
   name         String
   role         UserRole @default(AGENT)

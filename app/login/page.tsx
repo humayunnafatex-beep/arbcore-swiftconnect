@@ -127,7 +127,7 @@ export default function LoginPage() {
         <div className="flex flex-col justify-center p-6 sm:p-8">
           <div>
             <h2 className="text-2xl font-black text-ink">Welcome back</h2>
-            <p className="mt-2 text-sm font-medium text-slate-500">Login is being prepared for SaaS mode. Current Enterprise Beta may still use demo access until auth enforcement is enabled.</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">Login is being prepared for SaaS mode. Use the same email as your ARBCore team user so Supabase Auth can map you to the correct workspace. Current Enterprise Beta may still use demo access while AUTH_ENFORCED=false.</p>
             {supabaseAuthenticated ? (
               <button className="mt-3 text-sm font-black text-royal" onClick={() => router.push("/")}>
                 You are signed in. Go to dashboard
@@ -198,7 +198,7 @@ export default function LoginPage() {
           <div className="mt-6 rounded-[16px] bg-blue-50 p-4 text-sm font-semibold text-slate-600">
             <p>Email: admin@arbcore.ai</p>
             <p>Password: demo1234</p>
-            <p className="mt-2">Dashboard remains available during Phase 2 auth preparation.</p>
+            <p className="mt-2">Dashboard remains available during auth preparation. Supabase users are mapped by auth ID first, then matching email.</p>
           </div>
 
           <button className="mt-4 text-sm font-black text-royal" onClick={() => router.push("/")}>

@@ -16,6 +16,8 @@ Phase 2 Supabase Auth helpers and login UI may exist, but app-route login enforc
 
 For controlled auth enforcement testing, review `AUTH_IMPLEMENTATION_PHASE_3.md`.
 
+Before enabling auth enforcement, review `AUTH_IMPLEMENTATION_PHASE_4.md` and `SUPABASE_ADMIN_USER_MAPPING.md`.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -142,6 +144,7 @@ Connecting Welzz Stride real number `01958474577`:
 - Demo cookie auth remains in place until production auth is implemented.
 - Supabase Auth helpers are preparation only; real login enforcement comes in a later phase.
 - `AUTH_ENFORCED` defaults to false; set it to true only after a real admin Supabase user is tested.
+- Supabase Auth users must map to Prisma `User` records and the correct `companyId` before external client onboarding.
 - Current beta is single-company/demo-auth mode; Phase 1 adds foundation only and real login enforcement comes later.
 - Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
 - Meta webhook routes must remain public but verified.
