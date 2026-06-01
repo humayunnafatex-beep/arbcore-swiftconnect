@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
@@ -6,15 +7,32 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+const channels = ["ALL", "WHATSAPP", "MESSENGER"] as const;
+const directions = ["ALL", "INBOUND", "OUTBOUND"] as const;
+const statuses = ["ALL", "SENT", "FAILED", "RECEIVED", "ATTEMPTED"] as const;
+
+export async function GET(request: Request) {
   try {
     const { context } = await requirePermission("messages.viewLogs");
     const { company } = context;
+    const { searchParams } = new URL(request.url);
+    const channel = parseOption(searchParams.get("channel"), channels, "ALL");
+    const direction = parseOption(searchParams.get("direction"), directions, "ALL");
+    const status = parseOption(searchParams.get("status"), statuses, "ALL");
+    const search = searchParams.get("search")?.trim();
+    const limit = parseLimit(searchParams.get("limit"));
+    const where = buildMessageWhere({
+      companyId: company.id,
+      channel,
+      direction,
+      status,
+      search
+    });
 
     const [messages, webhookEvents] = await Promise.all([
       prisma.messageLog.findMany({
-        where: { companyId: company.id },
-        take: 50,
+        where,
+        take: limit,
         orderBy: { createdAt: "desc" },
         include: { contact: true, whatsappAccount: true }
       }),
@@ -68,6 +86,52 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+function buildMessageWhere({
+  companyId,
+  channel,
+  direction,
+  status,
+  search
+}: {
+  companyId: string;
+  channel: (typeof channels)[number];
+  direction: (typeof directions)[number];
+  status: (typeof statuses)[number];
+  search?: string;
+}): Prisma.MessageLogWhereInput {
+  return {
+    companyId,
+    ...(channel === "ALL" ? {} : { channel }),
+    ...(direction === "ALL" ? {} : { direction }),
+    ...(status === "ALL"
+      ? {}
+      : status === "ATTEMPTED"
+        ? { status: "QUEUED" }
+        : { status }),
+    ...(search
+      ? {
+          OR: [
+            { body: { contains: search, mode: "insensitive" } },
+            { providerMessageId: { contains: search, mode: "insensitive" } },
+            { contact: { phone: { contains: search, mode: "insensitive" } } },
+            { whatsappAccount: { phoneNumber: { contains: search, mode: "insensitive" } } }
+          ]
+        }
+      : {})
+  };
+}
+
+function parseOption<const T extends readonly string[]>(value: string | null, options: T, fallback: T[number]): T[number] {
+  const normalized = value?.trim().toUpperCase();
+  return options.includes(normalized ?? "") ? normalized as T[number] : fallback;
+}
+
+function parseLimit(value: string | null) {
+  const parsed = Number(value ?? 50);
+  if (!Number.isFinite(parsed)) return 50;
+  return Math.min(Math.max(Math.floor(parsed), 1), 100);
 }
 
 function previewText(value: string, maxLength = 140) {

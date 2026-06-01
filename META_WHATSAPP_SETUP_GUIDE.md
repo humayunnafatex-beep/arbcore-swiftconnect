@@ -167,6 +167,8 @@ Use Channel Center to jump to Send Messages and Logs during this test.
 
 WhatsApp test sending remains in `/send-messages`; Channel Center only links to it.
 
+The logs page supports filtering by channel `WHATSAPP`, direction, status, and search. Use `/whatsapp-logs` or `/message-logs` for verification.
+
 Failure state meanings:
 
 | Status | Meaning |

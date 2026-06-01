@@ -167,7 +167,7 @@ export function ChannelsModulePage() {
                 actions={[
                   { label: "Settings", href: "/settings", icon: Settings },
                   { label: "Send Messages", href: data.whatsapp.sendTestPath, icon: Send },
-                  { label: "Logs", href: data.whatsapp.logsPath, icon: ClipboardList }
+                  { label: "Message Logs", href: data.whatsapp.logsPath, icon: ClipboardList }
                 ]}
               />
 
@@ -186,7 +186,7 @@ export function ChannelsModulePage() {
                 onCopyWebhook={copyWebhook}
                 actions={[
                   { label: "Settings", href: "/settings", icon: Settings },
-                  { label: "Logs", href: data.messenger.logsPath, icon: ClipboardList }
+                  { label: "Message Logs", href: data.messenger.logsPath, icon: ClipboardList }
                 ]}
               />
             </section>

@@ -140,6 +140,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Test send succeeds only after provider success.
 - [ ] Send Messages shows one of the safe states: `not_configured`, `validation_failed`, `provider_error`, or `sent_successfully`.
 - [ ] WhatsApp Logs opens at `/whatsapp-logs`.
+- [ ] Message Logs alias opens at `/message-logs`.
+- [ ] Logs filters work for channel, direction, status, search, and limit.
 - [ ] Channel Center links to Settings, Send Messages, and Logs.
 - [ ] Channel Center WhatsApp button opens `/send-messages`.
 - [ ] Outbound send attempts appear in WhatsApp Logs with `SENT` or `FAILED` status.
@@ -188,6 +190,7 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Messenger webhook GET verification fails with the wrong verify token.
 - [ ] Messenger webhook POST with a sample Page message returns 200.
 - [ ] Messenger inbound messages appear in `/whatsapp-logs` with channel `MESSENGER`, direction `INBOUND`, and status `RECEIVED`.
+- [ ] Messenger logs can be filtered by channel `MESSENGER`.
 - [ ] Channel Center shows Messenger Page ID, Page Access Token, and Verify Token presence as Yes/No only.
 - [ ] Channel Center Messenger test-send form explains PSID is required, not phone number.
 - [ ] Channel Center Messenger test-send without config returns `not_configured`.

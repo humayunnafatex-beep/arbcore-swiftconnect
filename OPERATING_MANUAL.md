@@ -34,7 +34,7 @@ Phase 8 applies permission guards to selected APIs in report-only mode. Use `AUT
 
 Phase 9 adds limited local/staging permission enforcement test support. Use `AUTH_IMPLEMENTATION_PHASE_9.md` and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md` before testing `AUTH_ENFORCED=true` with `PERMISSIONS_ENFORCED=true`.
 
-Channel Center at `/channels` gives a safe status view for WhatsApp and Messenger setup. It shows whether IDs, tokens, and verify tokens are present, but it never displays access tokens. It also includes diagnostics, webhook URL copy helpers, a Messenger PSID test-send form, and links to Send Messages and Logs.
+Channel Center at `/channels` gives a safe status view for WhatsApp and Messenger setup. It shows whether IDs, tokens, and verify tokens are present, but it never displays access tokens. It also includes diagnostics, webhook URL copy helpers, a Messenger PSID test-send form, and links to Send Messages and Message Logs.
 
 ## 1. Dashboard
 
@@ -158,9 +158,9 @@ Use `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md` as the step-by-step operationa
 10. Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
 11. Create an Auto Reply rule and test a live reply.
 
-## 8. WhatsApp / Messenger Logs
+## 8. Message Logs
 
-WhatsApp Logs is the admin-facing test view for recent WhatsApp and Messenger foundation activity. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
+Message Logs is the admin-facing test view for recent WhatsApp and Messenger activity. The existing route remains `/whatsapp-logs`, and `/message-logs` is also available as an alias. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
 
 `INBOUND` means a customer messaged the connected WhatsApp API number or configured Facebook Page. `OUTBOUND` means ARBCore sent through a configured provider. If a customer messages another WhatsApp number or unconnected Facebook Page, ARBCore will not receive it.
 
@@ -176,6 +176,8 @@ Use WhatsApp Logs during beta testing to verify:
 Channel Center links to Logs for inbound/outbound verification across both channels.
 
 Use the diagnostics section in Channel Center to see outbound readiness, webhook readiness, and missing setup items for WhatsApp and Messenger.
+
+The logs page supports filters by channel, direction, status, result limit, and search. Search can be used for phone number, Messenger PSID, message preview, or provider message ID.
 
 Message log status meanings:
 

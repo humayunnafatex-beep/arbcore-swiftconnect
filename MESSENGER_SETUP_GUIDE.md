@@ -71,6 +71,8 @@ https://arbcore-swiftconnect.vercel.app/api/messenger/webhook
 6. Recent webhook events should show a Messenger event summary.
 7. Channel Center links to Logs for this verification step.
 
+The logs page supports filtering by channel `MESSENGER`, direction, status, and search. Messenger entries use Facebook PSID, not phone number. Use `/whatsapp-logs` or `/message-logs` for verification.
+
 ## 5. Real Send API Test
 
 ARBCore includes:

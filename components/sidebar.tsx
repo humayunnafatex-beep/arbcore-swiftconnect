@@ -28,7 +28,7 @@ const navigation = [
   { label: "Contacts", icon: ContactRound, href: "/contacts" },
   { label: "Campaigns", icon: Send, href: "/campaigns" },
   { label: "Send Messages", icon: MessagesSquare, href: "/send-messages" },
-  { label: "WhatsApp Logs", icon: ClipboardList, href: "/whatsapp-logs" },
+  { label: "Message Logs", icon: ClipboardList, href: "/whatsapp-logs" },
   { label: "AI Studio", icon: Bot, href: "/ai-studio", badge: "AI" },
   { label: "Auto Reply", icon: BriefcaseBusiness, href: "/auto-reply" },
   { label: "CRM", icon: Megaphone, href: "/crm" },

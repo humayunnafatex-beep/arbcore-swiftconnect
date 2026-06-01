@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertCircle, ClipboardList, RefreshCw, Send } from "lucide-react";
+import { AlertCircle, ClipboardList, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { AppShell } from "./app-shell";
 import {
   DataState,
   EmptyState,
   Toast,
   formatDate,
+  inputClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
   useToast
@@ -51,13 +52,31 @@ export function WhatsAppLogsModulePage() {
   const [webhookEvents, setWebhookEvents] = useState<WhatsAppWebhookEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    channel: "ALL",
+    direction: "ALL",
+    status: "ALL",
+    search: "",
+    limit: "50"
+  });
 
   async function loadLogs() {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/whatsapp/logs");
+      const params = new URLSearchParams({
+        channel: filters.channel,
+        direction: filters.direction,
+        status: filters.status,
+        limit: filters.limit
+      });
+
+      if (filters.search.trim()) {
+        params.set("search", filters.search.trim());
+      }
+
+      const response = await fetch(`/api/whatsapp/logs?${params.toString()}`);
       const result = (await response.json()) as WhatsAppLogsResponse;
 
       if (!response.ok || !result.success) {
@@ -78,6 +97,16 @@ export function WhatsAppLogsModulePage() {
   useEffect(() => {
     void loadLogs();
   }, []);
+
+  function clearFilters() {
+    setFilters({
+      channel: "ALL",
+      direction: "ALL",
+      status: "ALL",
+      search: "",
+      limit: "50"
+    });
+  }
 
   return (
     <AppShell>
@@ -113,6 +142,35 @@ export function WhatsAppLogsModulePage() {
         <p className="mt-1">Messenger messages are identified by Facebook PSID, not phone number.</p>
       </section>
 
+      <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+        <div className="grid gap-3 xl:grid-cols-[160px_160px_160px_1fr_120px_auto_auto]">
+          <FilterSelect label="Channel" value={filters.channel} options={["ALL", "WHATSAPP", "MESSENGER"]} onChange={(value) => setFilters({ ...filters, channel: value })} />
+          <FilterSelect label="Direction" value={filters.direction} options={["ALL", "INBOUND", "OUTBOUND"]} onChange={(value) => setFilters({ ...filters, direction: value })} />
+          <FilterSelect label="Status" value={filters.status} options={["ALL", "SENT", "FAILED", "RECEIVED", "ATTEMPTED"]} onChange={(value) => setFilters({ ...filters, status: value })} />
+          <label className="grid gap-1.5 text-xs font-black text-slate-500">
+            Search
+            <span className="flex h-11 items-center gap-2 rounded-[14px] border border-blue-100 bg-white px-3 focus-within:border-royal focus-within:ring-4 focus-within:ring-blue-100">
+              <Search className="h-4 w-4 text-slate-400" />
+              <input
+                className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-700 outline-none"
+                value={filters.search}
+                onChange={(event) => setFilters({ ...filters, search: event.target.value })}
+                placeholder="phone, PSID, message, provider ID"
+              />
+            </span>
+          </label>
+          <FilterSelect label="Limit" value={filters.limit} options={["25", "50", "100"]} onChange={(value) => setFilters({ ...filters, limit: value })} />
+          <button className={`${primaryButtonClassName} self-end`} onClick={() => void loadLogs()} disabled={loading}>
+            <RefreshCw className="h-4 w-4" />
+            Apply
+          </button>
+          <button className={`${secondaryButtonClassName} self-end`} onClick={clearFilters} disabled={loading}>
+            <XCircle className="h-4 w-4" />
+            Clear
+          </button>
+        </div>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
         <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -122,14 +180,15 @@ export function WhatsAppLogsModulePage() {
             </div>
           </div>
 
-          <DataState loading={loading} error={error} empty={!messages.length} emptyText="No message logs yet. Use Send Messages for WhatsApp testing or configure Messenger webhooks for Page messages.">
+          <DataState loading={loading} error={error} empty={!messages.length} emptyText="No message logs match the current filters. Clear filters or run a channel test.">
             <div className="space-y-3">
               {messages.map((message) => (
                 <article key={message.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black uppercase text-royal ring-1 ring-blue-100">{message.direction}</span>
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black uppercase text-royal ring-1 ring-blue-100">{message.channel}</span>
+                        <span className="rounded-full bg-cyan-50 px-3 py-1 text-[11px] font-black uppercase text-cyan-700 ring-1 ring-cyan-100">{message.direction}</span>
                         <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-black uppercase text-slate-600 ring-1 ring-slate-100">{message.status}</span>
                         <span className="text-xs font-bold text-slate-400">{formatDate(message.createdAt)}</span>
                       </div>
@@ -182,5 +241,28 @@ export function WhatsAppLogsModulePage() {
 
       {toast ? <Toast {...toast} /> : null}
     </AppShell>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="grid gap-1.5 text-xs font-black text-slate-500">
+      {label}
+      <select className={inputClassName} value={value} onChange={(event) => onChange(event.target.value)}>
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </label>
   );
 }
