@@ -41,9 +41,9 @@ export function assertRole(context: AuthContext, roles: UserRole[]) {
 }
 
 export function isAuthEnforced() {
-  // Phase 1 foundation only: keep beta behavior and do not enforce full real login yet.
-  // TODO: Return true after Supabase Auth or NextAuth sessions are fully wired and tested.
-  return false;
+  // Phase 3 controlled switch. Default is false to protect current Enterprise Beta behavior.
+  // TODO: Enable in production only after a real admin Supabase user is created and tested.
+  return process.env.AUTH_ENFORCED === "true";
 }
 
 export async function getCurrentUser() {

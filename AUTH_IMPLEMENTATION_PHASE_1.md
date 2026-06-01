@@ -4,7 +4,7 @@
 
 Phase 1 prepares ARBCore SwiftConnect for real authentication without disrupting the current single-company Enterprise Beta.
 
-This phase adds documentation, route classification, and non-breaking helper stubs. Phase 2 adds Supabase Auth client/server helpers and login UI, but still does not block current app pages behind real login.
+This phase adds documentation, route classification, and non-breaking helper stubs. Phase 2 adds Supabase Auth client/server helpers and login UI. Phase 3 adds an `AUTH_ENFORCED` route protection flag, but the flag defaults off.
 
 ## 2. Why Login Is Not Enforced Yet
 
@@ -29,6 +29,7 @@ Current auth behavior:
 - `getCurrentAuthContext()` still checks for the demo cookie and returns the default workspace context.
 - `getCurrentUser()`, `getCurrentUserRole()`, and `requireCurrentUser()` are Phase 1 helper stubs that return the current beta/default owner without enforcing real login.
 - `isAuthEnforced()` returns `false` for now.
+- Phase 3 updates `isAuthEnforced()` to read `AUTH_ENFORCED`, returning true only when the value is exactly `true`.
 - Phase 2 adds Supabase session lookup first; if no mapped Supabase user exists and auth is not enforced, the beta/default owner fallback remains.
 
 ## 4. Recommended Future Provider
@@ -134,7 +135,8 @@ Future SaaS behavior:
 
 ### Phase 3: Protect Pages
 
-- Protect Dashboard, Contacts, Send Messages, Auto Reply, WhatsApp Logs, Settings, and License.
+- Add controlled route protection through `AUTH_ENFORCED`.
+- Protect Dashboard, Contacts, Send Messages, Auto Reply, WhatsApp Logs, Settings, and License only when the flag is true.
 - Keep provider webhook routes public.
 
 ### Phase 4: Enforce API Company Scoping

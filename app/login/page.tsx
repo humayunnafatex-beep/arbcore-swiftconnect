@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole, LogIn, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { RobotAvatar } from "@/components/robot-avatar";
@@ -15,7 +15,17 @@ export default function LoginPage() {
   const [magicLoading, setMagicLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [supabaseAuthenticated, setSupabaseAuthenticated] = useState(false);
   const supabaseConfigured = isSupabaseBrowserConfigured();
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) return;
+
+    supabase.auth.getUser().then(({ data }) => {
+      setSupabaseAuthenticated(Boolean(data.user));
+    });
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,6 +128,11 @@ export default function LoginPage() {
           <div>
             <h2 className="text-2xl font-black text-ink">Welcome back</h2>
             <p className="mt-2 text-sm font-medium text-slate-500">Login is being prepared for SaaS mode. Current Enterprise Beta may still use demo access until auth enforcement is enabled.</p>
+            {supabaseAuthenticated ? (
+              <button className="mt-3 text-sm font-black text-royal" onClick={() => router.push("/")}>
+                You are signed in. Go to dashboard
+              </button>
+            ) : null}
           </div>
 
           <form onSubmit={submit} className="mt-8 space-y-4">

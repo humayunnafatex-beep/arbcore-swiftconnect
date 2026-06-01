@@ -54,6 +54,8 @@ For the first non-breaking auth foundation step, use `AUTH_IMPLEMENTATION_PHASE_
 
 Phase 2 adds Supabase Auth browser/server helpers and a login/logout surface while keeping auth enforcement disabled until route protection is rolled out safely.
 
+Phase 3 route protection readiness is documented in `AUTH_IMPLEMENTATION_PHASE_3.md`; enforcement remains off unless `AUTH_ENFORCED=true`.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

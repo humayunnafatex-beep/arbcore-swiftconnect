@@ -3,11 +3,18 @@ export const PUBLIC_API_ROUTES = [
   "/api/webhooks/whatsapp"
 ] as const;
 
+export const PUBLIC_APP_ROUTES = [
+  "/login",
+  "/auth/callback",
+  "/auth/logout"
+] as const;
+
 export const FUTURE_PUBLIC_API_ROUTES = [
   "/api/messenger/webhook"
 ] as const;
 
-export const FUTURE_PROTECTED_APP_ROUTES = [
+export const PROTECTED_APP_ROUTES = [
+  "/",
   "/dashboard",
   "/contacts",
   "/send-messages",
@@ -16,6 +23,8 @@ export const FUTURE_PROTECTED_APP_ROUTES = [
   "/settings",
   "/license"
 ] as const;
+
+export const FUTURE_PROTECTED_APP_ROUTES = PROTECTED_APP_ROUTES;
 
 export const FUTURE_PROTECTED_API_PREFIXES = [
   "/api/contacts",
@@ -31,8 +40,12 @@ export function isPublicApiRoute(pathname: string) {
   return PUBLIC_API_ROUTES.some((route) => pathname === route);
 }
 
+export function isPublicAppRoute(pathname: string) {
+  return PUBLIC_APP_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
+
 export function isFutureProtectedAppRoute(pathname: string) {
-  return FUTURE_PROTECTED_APP_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  return PROTECTED_APP_ROUTES.some((route) => route === "/" ? pathname === "/" : pathname === route || pathname.startsWith(`${route}/`));
 }
 
 export function isFutureProtectedApiRoute(pathname: string) {

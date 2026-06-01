@@ -20,6 +20,8 @@ For Phase 1 auth foundation details, use `AUTH_IMPLEMENTATION_PHASE_1.md`. Curre
 
 Phase 2 adds Supabase Auth helpers plus login/logout routes, but current Enterprise Beta access remains non-blocking until route protection is enabled in a later phase.
 
+Phase 3 adds the `AUTH_ENFORCED` flag for controlled route protection testing. It defaults off, and public Meta webhook routes must remain accessible.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
