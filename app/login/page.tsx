@@ -199,11 +199,17 @@ export default function LoginPage() {
             <p>Email: admin@arbcore.ai</p>
             <p>Password: demo1234</p>
             <p className="mt-2">Dashboard remains available during auth preparation. Supabase users are mapped by auth ID first, then matching email.</p>
+            <p className="mt-2">After login, open Auth Status to verify Supabase → ARBCore user mapping.</p>
           </div>
 
-          <button className="mt-4 text-sm font-black text-royal" onClick={() => router.push("/")}>
-            Back to dashboard
-          </button>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button className="text-sm font-black text-royal" onClick={() => router.push("/")}>
+              Back to dashboard
+            </button>
+            <button className="text-sm font-black text-royal" onClick={() => router.push("/auth/status")}>
+              Auth Status
+            </button>
+          </div>
         </div>
       </section>
     </main>

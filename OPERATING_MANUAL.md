@@ -24,6 +24,8 @@ Phase 3 adds the `AUTH_ENFORCED` flag for controlled route protection testing. I
 
 Phase 4 adds Supabase Auth user mapping to Prisma users and companies. Use `AUTH_IMPLEMENTATION_PHASE_4.md` and `SUPABASE_ADMIN_USER_MAPPING.md` before enabling enforced login.
 
+Phase 5 adds safe admin mapping verification. Use `AUTH_IMPLEMENTATION_PHASE_5.md`, `/auth/status`, and `/api/auth/me` to confirm Supabase Auth user to Prisma User to Company mapping before enabling `AUTH_ENFORCED=true`.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -222,6 +224,8 @@ The Settings page accepts a WhatsApp access token for launch setup, but the toke
 ## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.
+
+For auth readiness, open `/auth/status` after Supabase login and confirm the mode is `supabase_mapped`. The backing `/api/auth/me` endpoint returns safe status fields only and must not expose tokens, cookies, or raw Supabase sessions.
 
 For support issues, collect the affected module, approximate time, user action, friendly error message, and whether the issue happened before or after a deployment. Do not collect or share raw access tokens or database connection strings.
 

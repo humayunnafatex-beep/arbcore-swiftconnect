@@ -55,6 +55,9 @@ With Supabase Auth configured:
 4. Confirm redirect to Dashboard.
 5. Confirm the matching Prisma `User` row now has `supabaseAuthId`.
 6. Confirm Settings, WhatsApp Logs, Send Messages, and Auto Reply still work.
+7. Open `/auth/status` and confirm `/api/auth/me` reports `mode = supabase_mapped`.
+
+Phase 5 verification details are tracked in `AUTH_IMPLEMENTATION_PHASE_5.md`.
 
 ## 6. When To Enable `AUTH_ENFORCED=true`
 
@@ -67,6 +70,8 @@ Enable only after:
 - Webhook routes are confirmed public and verified.
 
 Do not enable in production before this checklist is complete.
+
+Before enabling production enforcement, also complete `AUTH_IMPLEMENTATION_PHASE_5.md` and confirm `/auth/status` shows a mapped admin user.
 
 ## 7. Rollback
 

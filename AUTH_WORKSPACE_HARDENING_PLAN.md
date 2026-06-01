@@ -6,18 +6,19 @@ ARBCore SwiftConnect currently uses a demo-cookie auth flow for beta operation. 
 
 This is acceptable for the current single-company Enterprise Beta, but it is not enough for onboarding external client businesses.
 
-Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`. Controlled Phase 3 route protection is tracked in `AUTH_IMPLEMENTATION_PHASE_3.md`. Supabase Auth user mapping is tracked in `AUTH_IMPLEMENTATION_PHASE_4.md`.
+Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`. Controlled Phase 3 route protection is tracked in `AUTH_IMPLEMENTATION_PHASE_3.md`. Supabase Auth user mapping is tracked in `AUTH_IMPLEMENTATION_PHASE_4.md`. Safe admin mapping verification is tracked in `AUTH_IMPLEMENTATION_PHASE_5.md`.
 
 Current behavior:
 
 - Demo login route exists.
 - Demo logout route exists.
-- `/api/auth/me` returns the current demo auth context.
+- `/api/auth/me` returns a safe auth mapping status for `/auth/status`.
 - The default user is seeded as `OWNER`.
 - Auth is not yet backed by Supabase Auth, NextAuth, or a production identity provider.
 - Supabase Auth helpers and login UI are present for Phase 2 preparation, but login is not enforced yet.
 - `AUTH_ENFORCED` controls Phase 3 route protection and defaults off.
 - Phase 4 links Supabase Auth users to Prisma users through nullable `User.supabaseAuthId`.
+- Phase 5 adds `/auth/status` so admins can verify Supabase Auth to Prisma User to Company mapping without exposing tokens, cookies, or raw sessions.
 - There is no real user invite/password reset/session lifecycle yet.
 
 ## 2. Current Company / Workspace Selection Behavior
@@ -151,6 +152,8 @@ Future roles:
 - Add provider-specific webhook routing for external callbacks.
 
 ### Phase 5: Add Role Permission Checks
+
+Current Phase 5 admin verification has been added separately in `AUTH_IMPLEMENTATION_PHASE_5.md`. Before role enforcement, use `/auth/status` and `/api/auth/me` to confirm the first mapped admin user.
 
 - Convert route-level access from informal patterns to shared permission helpers.
 - Add `VIEWER` through migration if needed.

@@ -140,6 +140,94 @@ export async function getCurrentAuthContext() {
   return ensureDefaultWorkspace();
 }
 
+export async function getSafeAuthStatus() {
+  const authEnforced = isAuthEnforced();
+  const supabaseUser = await getSupabaseAuthUser();
+  const mappedUser = supabaseUser ? await getMappedPrismaUserForSupabaseSession({ includeCompany: true }) : null;
+
+  if (supabaseUser && mappedUser?.company) {
+    return {
+      authEnforced,
+      supabaseUser: {
+        exists: true,
+        idPresent: Boolean(supabaseUser.id),
+        email: supabaseUser.email ?? null
+      },
+      prismaUser: {
+        exists: true,
+        id: mappedUser.id,
+        email: mappedUser.email,
+        role: mappedUser.role,
+        companyId: mappedUser.companyId,
+        hasSupabaseAuthId: Boolean(mappedUser.supabaseAuthId)
+      },
+      company: {
+        exists: true,
+        id: mappedUser.company.id,
+        name: mappedUser.company.name,
+        slug: mappedUser.company.slug,
+        plan: mappedUser.company.plan
+      },
+      mode: "supabase_mapped" as const
+    };
+  }
+
+  if (supabaseUser) {
+    return {
+      authEnforced,
+      supabaseUser: {
+        exists: true,
+        idPresent: Boolean(supabaseUser.id),
+        email: supabaseUser.email ?? null
+      },
+      prismaUser: emptyPrismaUserStatus(),
+      company: emptyCompanyStatus(),
+      mode: "unmapped" as const
+    };
+  }
+
+  if (!authEnforced) {
+    const { user, company } = await ensureDefaultWorkspace();
+
+    return {
+      authEnforced,
+      supabaseUser: {
+        exists: false,
+        idPresent: false,
+        email: null
+      },
+      prismaUser: {
+        exists: true,
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId,
+        hasSupabaseAuthId: Boolean(user.supabaseAuthId)
+      },
+      company: {
+        exists: true,
+        id: company.id,
+        name: company.name,
+        slug: company.slug,
+        plan: company.plan
+      },
+      mode: "beta_fallback" as const
+    };
+  }
+
+  return {
+    authEnforced,
+    supabaseUser: {
+      exists: false,
+      idPresent: false,
+      email: null
+    },
+    prismaUser: emptyPrismaUserStatus(),
+    company: emptyCompanyStatus(),
+    mode: "unauthenticated" as const
+  };
+}
+
 async function getSupabaseAuthUser() {
   const supabase = createSupabaseServerClient();
 
@@ -198,7 +286,7 @@ async function findOrAttachSupabaseUser(supabaseUser: User) {
   }
 
   if (byEmail.supabaseAuthId && byEmail.supabaseAuthId !== supabaseUser.id) {
-    return byEmail;
+    return null;
   }
 
   if (byEmail.supabaseAuthId === supabaseUser.id) {
@@ -209,4 +297,25 @@ async function findOrAttachSupabaseUser(supabaseUser: User) {
     where: { id: byEmail.id },
     data: { supabaseAuthId: supabaseUser.id }
   });
+}
+
+function emptyPrismaUserStatus() {
+  return {
+    exists: false,
+    id: null,
+    email: null,
+    role: null,
+    companyId: null,
+    hasSupabaseAuthId: false
+  };
+}
+
+function emptyCompanyStatus() {
+  return {
+    exists: false,
+    id: null,
+    name: null,
+    slug: null,
+    plan: null
+  };
 }

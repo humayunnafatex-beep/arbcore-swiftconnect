@@ -48,6 +48,15 @@ Check the Prisma `User` row:
 - `role` is correct, usually `OWNER` for the first admin.
 - `isActive` is true.
 
+You can also verify the mapping safely from the app:
+
+1. Open `/auth/status`.
+2. Confirm the page reads `/api/auth/me` successfully.
+3. Confirm `mode = supabase_mapped`.
+4. Confirm the Prisma user, role, company name, and company plan are correct.
+
+For the full verification flow, use `AUTH_IMPLEMENTATION_PHASE_5.md`.
+
 ## 5. Before Enabling Auth Enforcement
 
 Do not set `AUTH_ENFORCED=true` until:
