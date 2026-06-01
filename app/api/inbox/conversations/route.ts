@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 const channels = ["ALL", "WHATSAPP", "MESSENGER"] as const;
 const directions = ["ALL", "INBOUND", "OUTBOUND"] as const;
+const statuses = ["ALL", "OPEN", "PENDING", "CLOSED"] as const;
 const validConversationChannels = ["WHATSAPP", "MESSENGER"] as const;
 
 export async function GET(request: Request) {
@@ -18,6 +19,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const channel = parseOption(searchParams.get("channel"), channels, "ALL");
     const direction = parseOption(searchParams.get("direction"), directions, "ALL");
+    const status = parseOption(searchParams.get("status"), statuses, "ALL");
+    const assignedTo = searchParams.get("assignedTo")?.trim() || "ALL";
     const search = searchParams.get("search")?.trim();
     const limit = parseLimit(searchParams.get("limit"));
     const where = buildMessageWhere({ companyId: company.id, channel, direction, search });
@@ -47,6 +50,8 @@ export async function GET(request: Request) {
           lastDirection: message.direction,
           lastStatus: message.status,
           lastMessageAt: message.createdAt.toISOString(),
+          status: "OPEN",
+          assignedTo: null,
           messageCount: 1,
           failedCount: message.status === "FAILED" ? 1 : 0,
           inboundCount: message.direction === "INBOUND" ? 1 : 0,
@@ -61,10 +66,51 @@ export async function GET(request: Request) {
       existing.outboundCount += message.direction === "OUTBOUND" ? 1 : 0;
     }
 
+    const conversationItems = Array.from(conversations.values());
+    const states = conversationItems.length
+      ? await prisma.conversationState.findMany({
+          where: {
+            companyId: company.id,
+            OR: conversationItems.map((conversation) => ({
+              channel: conversation.channel,
+              contactKey: conversation.contactKey
+            }))
+          },
+          include: {
+            assignedTo: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
+              }
+            }
+          }
+        })
+      : [];
+    const stateMap = new Map(states.map((state) => [`${state.channel}:${state.contactKey}`, state]));
+
+    const filteredConversations = conversationItems
+      .map((conversation) => {
+        const state = stateMap.get(`${conversation.channel}:${conversation.contactKey}`);
+
+        return {
+          ...conversation,
+          status: normalizeConversationStatus(state?.status),
+          assignedTo: state?.assignedTo ?? null
+        };
+      })
+      .filter((conversation) => status === "ALL" || conversation.status === status)
+      .filter((conversation) => {
+        if (assignedTo === "ALL") return true;
+        if (assignedTo === "UNASSIGNED") return !conversation.assignedTo;
+        return conversation.assignedTo?.id === assignedTo;
+      });
+
     return NextResponse.json({
       success: true,
       data: {
-        conversations: Array.from(conversations.values()).slice(0, limit)
+        conversations: filteredConversations.slice(0, limit)
       }
     });
   } catch (error) {
@@ -96,6 +142,13 @@ type ConversationSummary = {
   lastDirection: "INBOUND" | "OUTBOUND";
   lastStatus: string;
   lastMessageAt: string;
+  status: "OPEN" | "PENDING" | "CLOSED";
+  assignedTo: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -145,6 +198,10 @@ function parseLimit(value: string | null) {
 
 function normalizeChannel(value: string): ConversationChannel {
   return value === "MESSENGER" ? "MESSENGER" : "WHATSAPP";
+}
+
+function normalizeConversationStatus(value: string | null | undefined): "OPEN" | "PENDING" | "CLOSED" {
+  return value === "PENDING" || value === "CLOSED" ? value : "OPEN";
 }
 
 function getContactKey(message: MessageWithRelations) {

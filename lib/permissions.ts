@@ -8,6 +8,7 @@ export type Permission =
   | "dashboard.view"
   | "contacts.view"
   | "contacts.manage"
+  | "inbox.manage"
   | "messages.send"
   | "messages.viewLogs"
   | "autoReply.view"
@@ -26,6 +27,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "dashboard.view",
     "contacts.view",
     "contacts.manage",
+    "inbox.manage",
     "messages.send",
     "messages.viewLogs",
     "autoReply.view",
@@ -43,6 +45,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "dashboard.view",
     "contacts.view",
     "contacts.manage",
+    "inbox.manage",
     "messages.send",
     "messages.viewLogs",
     "autoReply.view",
@@ -60,6 +63,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "dashboard.view",
     "contacts.view",
     "contacts.manage",
+    "inbox.manage",
     "messages.send",
     "messages.viewLogs",
     "autoReply.view",
@@ -70,6 +74,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "dashboard.view",
     "contacts.view",
     "contacts.manage",
+    "inbox.manage",
     "messages.send",
     "messages.viewLogs",
     "autoReply.view",

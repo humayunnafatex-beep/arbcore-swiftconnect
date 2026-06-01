@@ -117,6 +117,7 @@ model Company {
   aiUsages        AIUsage[]
   messageTemplates MessageTemplate[]
   webhookEvents   WebhookEvent[]
+  conversationStates ConversationState[]
 }
 
 model User {
@@ -132,6 +133,24 @@ model User {
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assignedConversationStates ConversationState[]
+}
+
+model ConversationState {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  channel      String
+  contactKey   String
+  status       String   @default("OPEN")
+  assignedToId String?
+  assignedTo   User?    @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([companyId, channel, contactKey])
+  @@index([companyId, status])
+  @@index([assignedToId])
 }
 
 model WhatsAppAccount {

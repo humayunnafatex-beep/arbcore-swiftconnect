@@ -16,7 +16,16 @@ import {
 } from "./saas-page-utils";
 
 type ChannelFilter = "ALL" | "WHATSAPP" | "MESSENGER";
+type ConversationStatus = "OPEN" | "PENDING" | "CLOSED";
+type StatusFilter = "ALL" | ConversationStatus;
 type ReplyStatus = "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
+
+type Assignee = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
 
 type ConversationSummary = {
   id: string;
@@ -27,6 +36,8 @@ type ConversationSummary = {
   lastDirection: "INBOUND" | "OUTBOUND";
   lastStatus: string;
   lastMessageAt: string;
+  status: ConversationStatus;
+  assignedTo: Assignee | null;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -71,6 +82,23 @@ type ReplyResponse = {
   error?: string;
 };
 
+type AssigneesResponse = {
+  success: boolean;
+  data: {
+    users: Assignee[];
+  };
+  error?: string;
+};
+
+type StateResponse = {
+  success: boolean;
+  data: {
+    status: ConversationStatus;
+    assignedTo: Assignee | null;
+  };
+  error?: string;
+};
+
 const replyStatusText: Record<ReplyStatus, string> = {
   not_configured: "This channel is not configured for real replies.",
   validation_failed: "Please check the recipient and message.",
@@ -80,7 +108,10 @@ const replyStatusText: Record<ReplyStatus, string> = {
 
 export function InboxModulePage() {
   const [channel, setChannel] = useState<ChannelFilter>("ALL");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [assignedToFilter, setAssignedToFilter] = useState("ALL");
   const [search, setSearch] = useState("");
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<ConversationDetailResponse["data"] | null>(null);
@@ -92,6 +123,12 @@ export function InboxModulePage() {
   const [replyStatus, setReplyStatus] = useState<ReplyStatus | null>(null);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
+  const [draftState, setDraftState] = useState<{ status: ConversationStatus; assignedToId: string }>({
+    status: "OPEN",
+    assignedToId: "UNASSIGNED"
+  });
+  const [stateSaving, setStateSaving] = useState(false);
+  const [stateMessage, setStateMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
 
   const selectedConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
@@ -103,7 +140,7 @@ export function InboxModulePage() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({ channel, limit: "50" });
+      const params = new URLSearchParams({ channel, status: statusFilter, assignedTo: assignedToFilter, limit: "50" });
       if (search.trim()) params.set("search", search.trim());
 
       const response = await fetch(`/api/inbox/conversations?${params.toString()}`);
@@ -128,11 +165,31 @@ export function InboxModulePage() {
     } finally {
       setLoading(false);
     }
-  }, [channel, search]);
+  }, [assignedToFilter, channel, search, statusFilter]);
 
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/inbox/assignees")
+      .then(async (response) => {
+        const result = (await response.json()) as AssigneesResponse;
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || "Failed to load inbox assignees.");
+        }
+        if (active) setAssignees(result.data.users);
+      })
+      .catch(() => {
+        if (active) setAssignees([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const loadConversationDetail = useCallback(async (conversationId: string) => {
     const response = await fetch(`/api/inbox/conversations/${encodeURIComponent(conversationId)}`);
@@ -170,6 +227,16 @@ export function InboxModulePage() {
       active = false;
     };
   }, [loadConversationDetail, selectedId]);
+
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    setDraftState({
+      status: selectedConversation.status,
+      assignedToId: selectedConversation.assignedTo?.id ?? "UNASSIGNED"
+    });
+    setStateMessage(null);
+  }, [selectedConversation]);
 
   async function sendReply() {
     if (!detail) return;
@@ -223,7 +290,39 @@ export function InboxModulePage() {
 
   function clearFilters() {
     setChannel("ALL");
+    setStatusFilter("ALL");
+    setAssignedToFilter("ALL");
     setSearch("");
+  }
+
+  async function saveConversationState() {
+    if (!selectedId) return;
+
+    setStateSaving(true);
+    setStateMessage(null);
+
+    try {
+      const response = await fetch(`/api/inbox/conversations/${encodeURIComponent(selectedId)}/state`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: draftState.status,
+          assignedToId: draftState.assignedToId === "UNASSIGNED" ? null : draftState.assignedToId
+        })
+      });
+      const result = (await response.json()) as StateResponse;
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to update conversation state.");
+      }
+
+      setStateMessage({ tone: "success", text: "Conversation state updated." });
+      await loadConversations();
+    } catch (requestError) {
+      setStateMessage({ tone: "error", text: getApiErrorMessage(requestError) });
+    } finally {
+      setStateSaving(false);
+    }
   }
 
   return (
@@ -238,7 +337,7 @@ export function InboxModulePage() {
               <p className="text-xs font-black uppercase text-royal">Unified Inbox</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Customer Conversations</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                Read WhatsApp and Messenger customer conversations in one place. Phase 1 is read-only; replies still happen through Send Messages or live Auto Reply.
+                Read, assign, update status, and reply to WhatsApp and Messenger customer conversations in one place.
               </p>
             </div>
           </div>
@@ -256,11 +355,24 @@ export function InboxModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
-        <div className="grid gap-3 lg:grid-cols-[220px_1fr_auto_auto]">
+        <div className="grid gap-3 lg:grid-cols-[180px_180px_220px_1fr_auto_auto]">
           <select className={`${inputClassName} w-full`} value={channel} onChange={(event) => setChannel(event.target.value as ChannelFilter)}>
             <option value="ALL">All channels</option>
             <option value="WHATSAPP">WhatsApp</option>
             <option value="MESSENGER">Messenger</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
+            <option value="ALL">All statuses</option>
+            <option value="OPEN">Open</option>
+            <option value="PENDING">Pending</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={assignedToFilter} onChange={(event) => setAssignedToFilter(event.target.value)}>
+            <option value="ALL">All assignees</option>
+            <option value="UNASSIGNED">Unassigned</option>
+            {assignees.map((user) => (
+              <option key={user.id} value={user.id}>{user.name}</option>
+            ))}
           </select>
           <label className="relative min-w-0">
             <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
@@ -320,10 +432,14 @@ export function InboxModulePage() {
                       <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-slate-600">{conversation.lastMessagePreview || "No message preview"}</p>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <StatusPill label={conversation.channel} tone={conversation.channel === "WHATSAPP" ? "blue" : "purple"} />
+                        <StatusPill label={conversation.status} tone={conversation.status === "OPEN" ? "green" : conversation.status === "PENDING" ? "blue" : "gray"} />
                         <StatusPill label={conversation.lastDirection} tone={conversation.lastDirection === "INBOUND" ? "green" : "blue"} />
                         <StatusPill label={conversation.lastStatus} tone={conversation.lastStatus === "FAILED" ? "red" : "gray"} />
                         {conversation.failedCount ? <StatusPill label={`${conversation.failedCount} failed`} tone="red" /> : null}
                       </div>
+                      <p className="mt-2 truncate text-[11px] font-bold text-slate-400">
+                        {conversation.assignedTo ? `Assigned to ${conversation.assignedTo.name}` : "Unassigned"}
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -344,9 +460,43 @@ export function InboxModulePage() {
                   </div>
                   {selectedConversation ? (
                     <div className="flex flex-wrap gap-2">
+                      <StatusPill label={selectedConversation.status} tone={selectedConversation.status === "OPEN" ? "green" : selectedConversation.status === "PENDING" ? "blue" : "gray"} />
                       <StatusPill label={`${selectedConversation.messageCount} messages`} tone="gray" />
                       <StatusPill label={`${selectedConversation.inboundCount} inbound`} tone="green" />
                       <StatusPill label={`${selectedConversation.outboundCount} outbound`} tone="blue" />
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="grid gap-3 lg:grid-cols-[180px_1fr_auto]">
+                    <label className="grid gap-1">
+                      <span className="text-xs font-black uppercase text-slate-500">Status</span>
+                      <select className={`${inputClassName} w-full`} value={draftState.status} onChange={(event) => setDraftState((current) => ({ ...current, status: event.target.value as ConversationStatus }))}>
+                        <option value="OPEN">Open</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="CLOSED">Closed</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="text-xs font-black uppercase text-slate-500">Assignee</span>
+                      <select className={`${inputClassName} w-full`} value={draftState.assignedToId} onChange={(event) => setDraftState((current) => ({ ...current, assignedToId: event.target.value }))}>
+                        <option value="UNASSIGNED">Unassigned</option>
+                        {assignees.map((user) => (
+                          <option key={user.id} value={user.id}>{user.name} - {user.role}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className={`${primaryButtonClassName} self-end`} onClick={() => void saveConversationState()} disabled={stateSaving}>
+                      {stateSaving ? "Saving..." : "Save State"}
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs font-semibold text-slate-500">
+                    Open means needs attention, Pending means waiting or follow-up, and Closed means handled.
+                  </p>
+                  {stateMessage ? (
+                    <div className={cn("mt-3 rounded-[14px] border p-3 text-sm font-bold", stateMessage.tone === "success" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-rose-100 bg-rose-50 text-rose-700")}>
+                      {stateMessage.text}
                     </div>
                   ) : null}
                 </div>

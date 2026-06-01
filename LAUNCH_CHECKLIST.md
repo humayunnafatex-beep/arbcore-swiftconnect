@@ -68,6 +68,11 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Webhook copy text contains only webhook URL/path and no secrets.
 - [ ] Inbox opens at `/inbox` and shows a conversation list when message logs exist.
 - [ ] Inbox reply composer appears when a conversation is selected.
+- [ ] Inbox conversations show `OPEN` by default when no saved state exists.
+- [ ] Inbox status filter works for All, Open, Pending, and Closed.
+- [ ] Inbox assignee filter works for All, Unassigned, and team members.
+- [ ] Inbox status update saves and persists.
+- [ ] Inbox assign and unassign saves and persists.
 - [ ] Team duplicate email returns a friendly error.
 
 ## 4A. Auth Mapping QA
@@ -152,6 +157,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Inbox Messenger reply logs `OUTBOUND / SENT` only after Meta accepts the send.
 - [ ] Inbox provider failures log `OUTBOUND / FAILED` with safe error text.
 - [ ] Inbox failed replies keep the draft text so the user can retry.
+- [ ] Inbox assignment helps team workflow while Message Logs remains the technical/debug view.
 - [ ] Channel Center links to Settings, Send Messages, and Logs.
 - [ ] Channel Center WhatsApp button opens `/send-messages`.
 - [ ] Outbound send attempts appear in WhatsApp Logs with `SENT` or `FAILED` status.
