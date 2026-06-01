@@ -117,7 +117,7 @@ Use CRM to move customers from new lead to interested, follow-up, won, or lost s
 
 ## 7. Settings
 
-Settings controls workspace configuration. Business Profile saves company name, workspace name, WhatsApp number, website, and timezone. WhatsApp/API Settings stores phone number ID, access token, verify token, and webhook URL. Notification and language preferences also save here.
+Settings controls workspace configuration. Business Profile saves company name, workspace name, WhatsApp number, website, and timezone. WhatsApp/API Settings stores phone number ID, access token, verify token, and webhook URL. Messenger / Page API Settings stores Facebook Page ID, Page Access Token, Messenger Verify Token, and Messenger Webhook URL. Notification and language preferences also save here.
 
 The Business Profile WhatsApp number is customer-facing business copy. Actual inbound and outbound WhatsApp API traffic uses the number connected in Meta for the saved Phone Number ID.
 
@@ -128,10 +128,11 @@ Basic Settings workflow:
 1. Open Settings.
 2. Update Business Profile fields and click Save.
 3. Add WhatsApp/API fields when available and click Save in that panel.
-4. Enter a new access token only when you want to save or replace it; saved tokens are not shown after refresh.
-5. Update notifications or language and save the relevant panel.
-6. Add team members with name, email, and role.
-7. If a duplicate email is entered, the app shows a friendly error.
+4. Add Messenger / Page API fields only when preparing Meta Messenger setup.
+5. Enter a new access token only when you want to save or replace it; saved WhatsApp and Messenger tokens are not shown after refresh.
+6. Update notifications or language and save the relevant panel.
+7. Add team members with name, email, and role.
+8. If a duplicate email is entered, the app shows a friendly error.
 
 Connecting Welzz Stride real number `01958474577`:
 
@@ -149,11 +150,11 @@ Use `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md` as the step-by-step operationa
 10. Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
 11. Create an Auto Reply rule and test a live reply.
 
-## 8. WhatsApp Logs
+## 8. WhatsApp / Messenger Logs
 
-WhatsApp Logs is the admin-facing test view for recent WhatsApp activity. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
+WhatsApp Logs is the admin-facing test view for recent WhatsApp and Messenger foundation activity. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
 
-`INBOUND` means a customer messaged the connected WhatsApp API number. `OUTBOUND` means ARBCore sent through the connected WhatsApp API number. If a customer messages another WhatsApp number, ARBCore will not receive it.
+`INBOUND` means a customer messaged the connected WhatsApp API number or configured Facebook Page. `OUTBOUND` means ARBCore sent through a configured provider. If a customer messages another WhatsApp number or unconnected Facebook Page, ARBCore will not receive it.
 
 Use WhatsApp Logs during beta testing to verify:
 
@@ -162,6 +163,7 @@ Use WhatsApp Logs during beta testing to verify:
 3. Inbound webhook messages.
 4. Webhook event summaries.
 5. Safe error messages.
+6. Messenger inbound Page messages after `/api/messenger/webhook` setup.
 
 Message log status meanings:
 
@@ -169,6 +171,16 @@ Message log status meanings:
 2. `FAILED`: the outbound message attempt failed.
 3. `RECEIVED`: an inbound WhatsApp message arrived through the webhook.
 4. `ATTEMPTED`: an attempted-only status if used by a future workflow.
+
+Messenger setup:
+
+Use `MESSENGER_SETUP_GUIDE.md`. The Messenger webhook URL is:
+
+```text
+https://YOUR_DOMAIN/api/messenger/webhook
+```
+
+Messenger Send API and Messenger auto-reply are not fully active in this phase. The app does not fake Messenger sending success.
 
 ## 9. License
 
@@ -180,7 +192,7 @@ Current status is Enterprise Beta. Billing/payment enforcement is not active yet
 
 ## 10. What Works Without WhatsApp API
 
-Without WhatsApp Cloud API, the app can still manage business settings, WhatsApp/API settings, contacts, team members, campaigns, CRM records, auto-reply rules, message drafts or attempted message logs, dashboard counts, and local AI-assisted text generation.
+Without WhatsApp Cloud API, the app can still manage business settings, WhatsApp/API settings, Messenger foundation settings, contacts, team members, campaigns, CRM records, auto-reply rules, message drafts or attempted message logs, dashboard counts, and local AI-assisted text generation.
 
 This is enough for preparing customer data, training the team, building message templates, and organizing the sales workflow.
 
@@ -194,6 +206,7 @@ Currently functional in beta:
 6. Auto Reply create, edit, activate, deactivate, delete, and AI draft assistance.
 7. Send Messages attempt logging and clear no-API warning.
 8. WhatsApp Logs view for safe message and webhook verification data already stored by the app.
+9. Messenger settings and inbound webhook foundation, without claiming Messenger send success.
 
 ## 11. What Requires WhatsApp Cloud API
 
@@ -223,11 +236,27 @@ Live end-to-end test flow:
 8. Confirm inbound logs show `RECEIVED`.
 9. Confirm the inbound webhook returns 200 and appears in Recent Webhook Events.
 
+## 11A. What Requires Messenger Page API
+
+Real Messenger sending requires a Meta App, Facebook Page, Messenger product, Page Access Token, webhook verification, and required Meta permissions.
+
+Before production Messenger testing, follow `MESSENGER_SETUP_GUIDE.md`.
+
+Messenger foundation test flow:
+
+1. Save Messenger / Page API Settings in ARBCore.
+2. Configure Meta webhook callback at `/api/messenger/webhook`.
+3. Subscribe to `messages`.
+4. Send a message to the connected Facebook Page.
+5. Open `/whatsapp-logs`.
+6. Confirm the inbound log shows channel `MESSENGER`, direction `INBOUND`, and status `RECEIVED`.
+7. Use `/api/messenger/test-send` only as a configuration placeholder. It does not fake real Messenger sending.
+
 ## 12. Token And Privacy Warning
 
-Treat WhatsApp access tokens, app secrets, database URLs, direct URLs, OpenAI keys, and session secrets as private credentials. Do not paste them into tickets, screenshots, public docs, or chat messages.
+Treat WhatsApp access tokens, Messenger Page Access Tokens, app secrets, database URLs, direct URLs, OpenAI keys, and session secrets as private credentials. Do not paste them into tickets, screenshots, public docs, or chat messages.
 
-The Settings page accepts a WhatsApp access token for launch setup, but the token is not displayed after refresh. If a token is exposed, rotate it in Meta and update the production environment immediately.
+The Settings page accepts WhatsApp and Messenger access tokens for launch setup, but tokens are not displayed after refresh. If a token is exposed, rotate it in Meta and update the production environment immediately.
 
 ## 13. Support And Maintenance
 
@@ -254,3 +283,4 @@ Known limitations:
 5. Access tokens are saved but intentionally not displayed after refresh.
 6. Current beta is single-company/demo-auth mode; before onboarding external clients, real auth and company isolation must be implemented so each client sees only its own contacts, messages, settings, auto replies, and logs.
 7. Webhook routes must remain public for Meta provider callbacks, but they must stay verified by provider tokens/signatures.
+8. Messenger inbound foundation is prepared, but Messenger Send API and Messenger auto-reply are future phases.

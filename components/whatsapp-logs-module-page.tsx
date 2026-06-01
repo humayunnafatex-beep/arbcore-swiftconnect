@@ -88,10 +88,10 @@ export function WhatsAppLogsModulePage() {
               <ClipboardList className="h-8 w-8" />
             </span>
             <div>
-              <p className="text-xs font-black uppercase text-royal">WhatsApp Testing</p>
-              <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">WhatsApp Logs</h1>
+              <p className="text-xs font-black uppercase text-royal">Channel Testing</p>
+              <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">WhatsApp / Messenger Logs</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Verify outbound sends, inbound webhooks, and provider errors without checking the database manually.</p>
-              <p className="mt-2 max-w-3xl text-xs font-bold leading-5 text-slate-500">INBOUND means a customer messaged the WhatsApp API number connected in Meta. OUTBOUND means ARBCore sent through that connected WhatsApp API number.</p>
+              <p className="mt-2 max-w-3xl text-xs font-bold leading-5 text-slate-500">INBOUND means a customer messaged the connected provider number or Page. OUTBOUND means ARBCore sent through the configured provider.</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -108,20 +108,20 @@ export function WhatsAppLogsModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-blue-50 p-5 text-sm font-semibold leading-6 text-slate-600 shadow-panel">
-        <p className="font-black text-royal">Connected WhatsApp number reminder</p>
-        <p className="mt-1">ARBCore only receives customer messages for the WhatsApp number connected to the saved Meta Phone Number ID. If a customer messages another WhatsApp number, ARBCore will not receive it.</p>
+        <p className="font-black text-royal">Connected channel reminder</p>
+        <p className="mt-1">ARBCore receives WhatsApp messages only for the number connected to the saved Meta Phone Number ID. Messenger logs appear only after a Facebook Page webhook is configured and receives Page messages.</p>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.3fr_0.7fr]">
         <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-black text-ink">Recent WhatsApp Message Logs</h2>
-              <p className="mt-1 text-xs font-semibold text-slate-500">Latest 50 safe message log entries.</p>
+              <h2 className="text-base font-black text-ink">Recent Message Logs</h2>
+              <p className="mt-1 text-xs font-semibold text-slate-500">Latest 50 safe WhatsApp and Messenger message log entries.</p>
             </div>
           </div>
 
-          <DataState loading={loading} error={error} empty={!messages.length} emptyText="No WhatsApp message logs yet. Use Send Messages to run an outbound test.">
+          <DataState loading={loading} error={error} empty={!messages.length} emptyText="No message logs yet. Use Send Messages for WhatsApp testing or configure Messenger webhooks for Page messages.">
             <div className="space-y-3">
               {messages.map((message) => (
                 <article key={message.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
@@ -155,9 +155,9 @@ export function WhatsAppLogsModulePage() {
 
         <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
           <h2 className="text-base font-black text-ink">Recent Webhook Events</h2>
-          <p className="mt-1 text-xs font-semibold text-slate-500">Latest 20 WhatsApp webhook summaries.</p>
+          <p className="mt-1 text-xs font-semibold text-slate-500">Latest 20 WhatsApp and Messenger webhook summaries.</p>
 
-          <DataState loading={loading} error={error} empty={!webhookEvents.length} emptyText="No WhatsApp webhook events yet. Send a WhatsApp message to the connected business number after Meta webhook setup.">
+          <DataState loading={loading} error={error} empty={!webhookEvents.length} emptyText="No webhook events yet. Send a WhatsApp message or Messenger Page message after Meta webhook setup.">
             <div className="mt-4 space-y-3">
               {webhookEvents.map((event) => (
                 <article key={event.id} className="rounded-[18px] border border-blue-100 bg-blue-50/60 p-4">
@@ -173,7 +173,7 @@ export function WhatsAppLogsModulePage() {
 
           {!loading && !error && !messages.length && !webhookEvents.length ? (
             <div className="mt-4">
-              <EmptyState text="Use Send Messages for outbound testing, then send a WhatsApp message to the connected number for inbound webhook testing." />
+              <EmptyState text="Use Send Messages for outbound WhatsApp testing, then send a WhatsApp or Messenger message to the connected channel for inbound webhook testing." />
             </div>
           ) : null}
         </section>

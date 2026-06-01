@@ -4,6 +4,8 @@
 
 This plan documents the future Meta Messenger/Facebook Page integration for ARBCore SwiftConnect. Messenger support should not be presented as active until a real Facebook Page, Meta App permissions, webhook verification, inbound logging, and provider-backed sending are working.
 
+Messenger Integration Foundation Phase 1 is documented in `MESSENGER_SETUP_GUIDE.md`.
+
 ## 2. Required Meta Setup
 
 Future setup will require:
@@ -16,9 +18,9 @@ Future setup will require:
 - `messages` webhook subscription.
 - Required Meta permissions and review for production use.
 
-## 3. Future ARBCore Settings Fields
+## 3. ARBCore Settings Fields
 
-Recommended future fields:
+Foundation fields:
 
 - `messengerPageId`
 - `messengerPageAccessToken`
@@ -27,17 +29,16 @@ Recommended future fields:
 
 Safety expectation: the Page Access Token must be saved securely, masked after refresh, and never returned in normal API responses.
 
-## 4. Future Routes
+## 4. Foundation Routes
 
-Recommended routes:
+Current foundation routes:
 
 ```text
 /api/messenger/webhook
 /api/messenger/test-send
-/api/messenger/logs
 ```
 
-`/api/messenger/logs` may be optional if the existing logs viewer becomes channel-aware.
+Messenger inbound logs appear in the existing `/whatsapp-logs` viewer because the message log is now channel-aware.
 
 ## 5. Auto Reply Integration
 
@@ -71,4 +72,4 @@ Future Auto Reply should become channel-aware so a business can choose whether a
 - Requires Meta App setup with Messenger product.
 - Requires webhook verification and `messages` subscription.
 - Requires Meta permissions and possible app review for production.
-- Should be implemented after WhatsApp beta stabilization and auth/workspace hardening.
+- Messenger Send API and Messenger auto-reply are planned for later phases.

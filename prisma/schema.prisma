@@ -100,6 +100,10 @@ model Company {
   whatsappAccessToken   String @default("")
   whatsappVerifyToken   String @default("")
   whatsappWebhookUrl    String @default("")
+  messengerPageId          String @default("")
+  messengerPageAccessToken String @default("")
+  messengerVerifyToken     String @default("")
+  messengerWebhookUrl      String @default("")
 
   users           User[]
   whatsappAccounts WhatsAppAccount[]
@@ -245,6 +249,7 @@ model ConversationMessage {
 
 model MessageLog {
   id                String           @id @default(cuid())
+  channel           String           @default("WHATSAPP")
   body              String
   direction         MessageDirection
   status            MessageStatus    @default(QUEUED)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Building2, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserMinus, Users } from "lucide-react";
+import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserMinus, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
@@ -24,6 +24,13 @@ type WhatsAppSettings = {
   webhookUrl: string;
 };
 
+type MessengerSettings = {
+  pageId: string;
+  pageAccessToken: string;
+  verifyToken: string;
+  webhookUrl: string;
+};
+
 export function SettingsModulePage() {
   const { toast, showToast } = useToast();
   const [profile, setProfile] = useState({
@@ -38,6 +45,12 @@ export function SettingsModulePage() {
   const [whatsapp, setWhatsapp] = useState<WhatsAppSettings>({
     phoneNumberId: "",
     accessToken: "",
+    verifyToken: "",
+    webhookUrl: ""
+  });
+  const [messenger, setMessenger] = useState<MessengerSettings>({
+    pageId: "",
+    pageAccessToken: "",
     verifyToken: "",
     webhookUrl: ""
   });
@@ -78,11 +91,17 @@ async function loadCompanySettings() {
       website: result.data.website || profile.website,
       timezone: result.data.timezone || profile.timezone,
     });
-     setWhatsapp({
+    setWhatsapp({
      phoneNumberId: result.data.whatsappPhoneNumberId || "",
      accessToken: result.data.whatsappAccessToken || "",
      verifyToken: result.data.whatsappVerifyToken || "",
      webhookUrl: result.data.whatsappWebhookUrl || "",
+    });
+    setMessenger({
+      pageId: result.data.messengerPageId || "",
+      pageAccessToken: result.data.messengerPageAccessToken || "",
+      verifyToken: result.data.messengerVerifyToken || "",
+      webhookUrl: result.data.messengerWebhookUrl || "",
     });
     if (result.data.language) {
       setLanguage(result.data.language);
@@ -126,7 +145,8 @@ async function save(section: string) {
   normalizedSection.includes("notification") ||
   normalizedSection.includes("language") ||
   normalizedSection.includes("api") ||
-  normalizedSection.includes("whatsapp");
+  normalizedSection.includes("whatsapp") ||
+  normalizedSection.includes("messenger");
   
     if (shouldPersist) {
       const response = await fetch("/api/settings/company", {
@@ -151,6 +171,10 @@ async function save(section: string) {
           whatsappAccessToken: whatsapp.accessToken.trim(),
           whatsappVerifyToken: whatsapp.verifyToken.trim(),
           whatsappWebhookUrl: whatsapp.webhookUrl.trim(),
+          messengerPageId: messenger.pageId.trim(),
+          messengerPageAccessToken: messenger.pageAccessToken.trim(),
+          messengerVerifyToken: messenger.verifyToken.trim(),
+          messengerWebhookUrl: messenger.webhookUrl.trim(),
         }),
       });
 
@@ -279,6 +303,23 @@ async function createTeamMember() {
           </div>
           <div className="mt-4 rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold text-slate-600">
             Access tokens are saved only when entered and are not displayed after refresh.
+          </div>
+        </Panel>
+
+        <Panel icon={<Facebook className="h-5 w-5" />} title="Messenger / Page API Settings" action={<button className={secondaryButtonClassName} onClick={() => save("Messenger")} disabled={savingSection !== null}><KeyRound className="h-4 w-4" />{savingSection === "Messenger" ? "Saving..." : "Save"}</button>}>
+          <div className="mb-4 rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
+            <p className="font-black text-royal">Messenger foundation</p>
+            <p className="mt-1">Messenger support is foundation-ready. Real Messenger receive/reply requires Meta Page webhook setup and Page Access Token.</p>
+            <p className="mt-1">ARBCore does not claim Messenger sending is active until Meta setup is configured and tested.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Facebook Page ID" value={messenger.pageId} onChange={(value) => setMessenger({ ...messenger, pageId: value })} />
+            <Field label="Page Access Token" value={messenger.pageAccessToken} onChange={(value) => setMessenger({ ...messenger, pageAccessToken: value })} />
+            <Field label="Messenger Verify Token" value={messenger.verifyToken} onChange={(value) => setMessenger({ ...messenger, verifyToken: value })} />
+            <Field label="Messenger Webhook URL" value={messenger.webhookUrl} onChange={(value) => setMessenger({ ...messenger, webhookUrl: value })} />
+          </div>
+          <div className="mt-4 rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold text-slate-600">
+            Page Access Tokens are saved only when entered and are not displayed after refresh.
           </div>
         </Panel>
 

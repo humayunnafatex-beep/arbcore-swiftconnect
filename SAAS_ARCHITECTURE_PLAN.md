@@ -31,10 +31,10 @@ Primary direction:
 
 The current schema already includes these useful SaaS foundations:
 
-- `Company`: workspace/business owner record with plan, profile, language, notifications, WhatsApp settings, and relations.
+- `Company`: workspace/business owner record with plan, profile, language, notifications, WhatsApp and Messenger foundation settings, and relations.
 - `User`: team member record with role and active status.
 - `Contact`: customer profile with company relation, phone, email, tags, stage, opt-in, and do-not-contact.
-- `MessageLog`: inbound/outbound log with status, provider message ID, errors, and company/contact/campaign relations.
+- `MessageLog`: inbound/outbound log with channel, status, provider message ID, errors, and company/contact/campaign relations.
 - `WebhookEvent`: raw provider webhook event storage with provider, event type, payload, and company relation.
 - `AutoReplyRule`: company-owned keyword, response, priority, active state, and match mode.
 - `Campaign`, `Conversation`, `CrmDeal`, `MessageTemplate`, `AIUsage`: helpful base models for the broader workspace.
@@ -42,7 +42,6 @@ The current schema already includes these useful SaaS foundations:
 
 Recommended future schema changes, not implemented in this pass:
 
-- Add `channel` to `MessageLog`, such as `WHATSAPP`, `MESSENGER`, and future channels.
 - Add channel-aware settings models instead of storing all provider settings directly on `Company`.
 - Add `Subscription`, `Invoice`, `Payment`, `Plan`, and `FeatureLimit`.
 - Add audit logs for sensitive admin actions and billing events.
@@ -88,10 +87,11 @@ Current status:
 - WhatsApp inbound webhook receive works.
 - WhatsApp Logs viewer works.
 - Live WhatsApp Auto Reply works.
+- Messenger foundation settings, `/api/messenger/webhook`, `/api/messenger/test-send`, and `MESSENGER` inbound logging are prepared.
 
 Future channel direction:
 
-- Messenger API should be added as a separate future channel.
+- Messenger Send API and auto-reply should be completed as separate future phases.
 - Auto Reply should become channel-agnostic: `WHATSAPP`, `MESSENGER`, and future channels.
 - `MessageLog` should support an explicit `channel` field.
 - Webhook routes should be separated by channel:
@@ -170,11 +170,11 @@ High-level steps:
 1. Connect a Meta Facebook Page.
 2. Add Messenger product to the Meta App.
 3. Store Page ID, Page Access Token, Verify Token, and Webhook URL safely.
-4. Add `/api/messenger/webhook`.
+4. Configure `/api/messenger/webhook`.
 5. Subscribe to Messenger `messages` webhook event.
 6. Log inbound Messenger messages.
-7. Match channel-aware Auto Reply rules.
-8. Send replies through Messenger Send API.
+7. Match channel-aware Auto Reply rules in a future phase.
+8. Send replies through Messenger Send API in a future phase.
 9. Log `SENT` only after provider success.
 10. Keep Page Access Token private and masked.
 

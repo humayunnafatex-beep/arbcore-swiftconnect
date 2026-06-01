@@ -40,6 +40,11 @@ export async function GET() {
         whatsappAccessTokenSaved: Boolean(company.whatsappAccessToken),
         whatsappVerifyToken: company.whatsappVerifyToken,
         whatsappWebhookUrl: company.whatsappWebhookUrl,
+        messengerPageId: company.messengerPageId,
+        messengerPageAccessToken: "",
+        messengerPageAccessTokenSaved: Boolean(company.messengerPageAccessToken),
+        messengerVerifyToken: company.messengerVerifyToken,
+        messengerWebhookUrl: company.messengerWebhookUrl,
       },
     });
   } catch (error) {
@@ -72,6 +77,7 @@ export async function POST(request: NextRequest) {
     const businessName = String(body.businessName ?? "").trim();
     const workspace = String(body.workspace ?? "").trim();
     const whatsappAccessToken = typeof body.whatsappAccessToken === "string" ? body.whatsappAccessToken.trim() : undefined;
+    const messengerPageAccessToken = typeof body.messengerPageAccessToken === "string" ? body.messengerPageAccessToken.trim() : undefined;
 
     const company = await prisma.company.update({
       where: { id: existingCompany.id },
@@ -90,6 +96,10 @@ export async function POST(request: NextRequest) {
         ...(whatsappAccessToken ? { whatsappAccessToken } : {}),
         whatsappVerifyToken: String(body.whatsappVerifyToken ?? "").trim(),
         whatsappWebhookUrl: String(body.whatsappWebhookUrl ?? "").trim(),
+        messengerPageId: String(body.messengerPageId ?? "").trim(),
+        ...(messengerPageAccessToken ? { messengerPageAccessToken } : {}),
+        messengerVerifyToken: String(body.messengerVerifyToken ?? "").trim(),
+        messengerWebhookUrl: String(body.messengerWebhookUrl ?? "").trim(),
       },
     });
 
@@ -113,6 +123,11 @@ export async function POST(request: NextRequest) {
         whatsappAccessTokenSaved: Boolean(company.whatsappAccessToken),
         whatsappVerifyToken: company.whatsappVerifyToken,
         whatsappWebhookUrl: company.whatsappWebhookUrl,
+        messengerPageId: company.messengerPageId,
+        messengerPageAccessToken: "",
+        messengerPageAccessTokenSaved: Boolean(company.messengerPageAccessToken),
+        messengerVerifyToken: company.messengerVerifyToken,
+        messengerWebhookUrl: company.messengerWebhookUrl,
       },
     });
   } catch (error) {

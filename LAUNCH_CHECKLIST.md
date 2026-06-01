@@ -8,6 +8,8 @@ For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHE
 
 For SaaS, Messenger, and payment readiness, review `SAAS_ARCHITECTURE_PLAN.md`, `MESSENGER_INTEGRATION_PLAN.md`, and `PAYMENT_SUBSCRIPTION_PLAN.md`.
 
+For Messenger/Facebook Page setup, follow `MESSENGER_SETUP_GUIDE.md`.
+
 Before onboarding external clients, review `AUTH_WORKSPACE_HARDENING_PLAN.md`.
 
 For Phase 1 auth foundation scope, review `AUTH_IMPLEMENTATION_PHASE_1.md`.
@@ -35,6 +37,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `WHATSAPP_PHONE_NUMBER_ID` matches the Meta phone number.
 - [ ] `WHATSAPP_VERIFY_TOKEN` matches the token configured in Meta webhooks, or the saved Settings verify token is used.
 - [ ] `WHATSAPP_APP_SECRET` is set before trusting webhook signatures.
+- [ ] `MESSENGER_VERIFY_TOKEN` is set only if using environment fallback for Messenger webhook verification.
 - [ ] No real values are committed to Git.
 
 ## 2. Vercel Deployment
@@ -168,6 +171,21 @@ Connecting Welzz Stride real number `01958474577`:
 
 ## 10. Known Limitations
 
+## 9A. Messenger Foundation QA
+
+- [ ] `MESSENGER_SETUP_GUIDE.md` has been reviewed.
+- [ ] Messenger / Page API Settings save and persist after refresh.
+- [ ] Saved Page Access Token is not returned or displayed after refresh.
+- [ ] Meta callback URL is `https://YOUR_DOMAIN/api/messenger/webhook`.
+- [ ] Messenger webhook GET verification succeeds with the correct verify token.
+- [ ] Messenger webhook GET verification fails with the wrong verify token.
+- [ ] Messenger webhook POST with a sample Page message returns 200.
+- [ ] Messenger inbound messages appear in `/whatsapp-logs` with channel `MESSENGER`, direction `INBOUND`, and status `RECEIVED`.
+- [ ] `/api/messenger/test-send` without config returns `not_configured`.
+- [ ] Messenger sending is not claimed as successful until Send API is fully implemented.
+
+## 10. Known Limitations
+
 - Billing/license enforcement is not active in beta.
 - Demo cookie auth remains in place until production auth is implemented.
 - Supabase Auth helpers are preparation only; real login enforcement comes in a later phase.
@@ -182,7 +200,7 @@ Connecting Welzz Stride real number `01958474577`:
 - Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.
 - Meta webhook routes must remain public but verified.
 - Real WhatsApp sending requires Meta Cloud API credentials and webhook readiness.
-- Messenger automation is planned but not active.
+- Messenger inbound foundation is prepared, but Messenger Send API and Messenger auto-reply are future phases.
 - Payment/subscription automation is planned but not active.
 - Campaign sending requires approved templates and a completed production send workflow.
 - Saved access tokens are intentionally hidden after refresh.

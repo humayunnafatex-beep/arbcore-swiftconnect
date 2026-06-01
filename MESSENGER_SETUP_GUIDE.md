@@ -1,0 +1,104 @@
+# Messenger Setup Guide
+
+Use this guide to prepare Meta Messenger/Facebook Page receive and future reply support in ARBCore SwiftConnect.
+
+Messenger support is foundation-ready. Do not claim Messenger sending or auto-reply is active until Meta setup is complete and provider-backed tests pass.
+
+## 1. Prerequisites
+
+- Meta Developer App.
+- Facebook Page owned or managed by the business.
+- Messenger product added to the Meta App.
+- Page Access Token.
+- Webhook URL.
+- Verify Token.
+- Admin access to ARBCore SwiftConnect Settings.
+
+Production use may require Meta permissions and app review.
+
+## 2. ARBCore Settings Mapping
+
+Open ARBCore Settings and use the Messenger / Page API Settings section:
+
+- Page ID -> Facebook Page ID
+- Page Access Token -> Page Access Token
+- Verify Token -> Messenger Verify Token
+- Webhook URL -> Messenger Webhook URL
+
+Use this webhook URL:
+
+```text
+https://arbcore-swiftconnect.vercel.app/api/messenger/webhook
+```
+
+For another production domain, replace the domain and keep the same path:
+
+```text
+https://YOUR_DOMAIN/api/messenger/webhook
+```
+
+## 3. Meta Webhook Setup
+
+1. Open Meta Developer Dashboard.
+2. Open the app connected to the Facebook Page.
+3. Add or open the Messenger product.
+4. Configure the webhook callback URL:
+
+```text
+https://arbcore-swiftconnect.vercel.app/api/messenger/webhook
+```
+
+5. Enter the same Verify Token saved in ARBCore Settings.
+6. Subscribe to Messenger webhook events:
+   - `messages`
+   - `messaging_postbacks` if planned for a future phase
+7. Save and verify the webhook.
+
+## 4. First Inbound Test
+
+1. Save Messenger / Page API Settings in ARBCore.
+2. Send a message to the connected Facebook Page.
+3. Open `/whatsapp-logs`.
+4. Refresh logs.
+5. Expected message log:
+   - Channel: `MESSENGER`
+   - Direction: `INBOUND`
+   - Status: `RECEIVED`
+6. Recent webhook events should show a Messenger event summary.
+
+## 5. Test Send Placeholder
+
+ARBCore includes:
+
+```text
+/api/messenger/test-send
+```
+
+If Messenger settings are missing, it returns:
+
+```json
+{
+  "success": false,
+  "status": "not_configured",
+  "error": "Messenger Page API is required to send real messages."
+}
+```
+
+The app does not fake Messenger send success. Real Messenger Send API delivery should be implemented in a later phase and should log `SENT` only after Meta accepts the request.
+
+## 6. Safety
+
+- Never share the Page Access Token.
+- Never commit the Page Access Token.
+- Do not paste tokens into screenshots, tickets, public docs, or chat.
+- Rotate the token if it is exposed.
+- Do not log raw webhook payloads if they may contain customer data.
+- Do not fake provider success.
+
+## 7. Current Limitations
+
+- Messenger inbound webhook foundation is available.
+- Messenger inbound logs can appear in the existing logs viewer.
+- Messenger Send API is not fully active in this phase.
+- Messenger auto-reply is planned for a future Phase 2.
+- Page permissions and Meta app review may be required for production use.

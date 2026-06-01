@@ -19,7 +19,7 @@ export async function GET() {
         include: { contact: true, whatsappAccount: true }
       }),
       prisma.webhookEvent.findMany({
-        where: { companyId: company.id, provider: "whatsapp" },
+        where: { companyId: company.id, provider: { in: ["whatsapp", "messenger"] } },
         take: 20,
         orderBy: { createdAt: "desc" },
         select: {
@@ -38,7 +38,7 @@ export async function GET() {
         messages: messages.map((message) => ({
           id: message.id,
           direction: message.direction,
-          channel: "whatsapp",
+          channel: message.channel,
           phone: message.contact?.phone ?? message.whatsappAccount?.phoneNumber ?? "",
           bodyPreview: previewText(message.body),
           status: message.status,
@@ -86,6 +86,9 @@ function summarizeWebhookPayload(payload: unknown) {
   }
 
   const value = payload as {
+    provider?: string;
+    messageCount?: number;
+    senderCount?: number;
     entry?: Array<{
       changes?: Array<{
         field?: string;
@@ -97,6 +100,14 @@ function summarizeWebhookPayload(payload: unknown) {
       }>;
     }>;
   };
+
+  if (value.provider === "messenger") {
+    const messageCount = value.messageCount ?? 0;
+    const senderCount = value.senderCount ?? 0;
+    return messageCount
+      ? `Messenger webhook received: ${messageCount} message event${messageCount === 1 ? "" : "s"} from ${senderCount} sender${senderCount === 1 ? "" : "s"}.`
+      : "Messenger webhook event received.";
+  }
 
   const changes = value.entry?.flatMap((entry) => entry.changes ?? []) ?? [];
   const messageCount = changes.reduce((total, change) => total + (change.value?.messages?.length ?? 0), 0);
