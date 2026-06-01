@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { ApiError, handleApiError } from "@/lib/api";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppTextMessage } from "@/lib/whatsapp-service";
 import { z } from "zod";
@@ -16,7 +17,8 @@ const WHATSAPP_REQUIRED_MESSAGE = "WhatsApp Cloud API is required to send real m
 
 export async function GET() {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("messages.send");
+    const { company } = context;
     const configured = Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken);
 
     return NextResponse.json({
@@ -32,6 +34,10 @@ export async function GET() {
       }
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return handleApiError(error);
+    }
+
     return NextResponse.json(
       { success: false, status: "provider_error", error: "Unable to load WhatsApp configuration." },
       { status: 500 }
@@ -57,7 +63,8 @@ export async function POST(request: Request) {
     }
 
     const input = parsed.data;
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("messages.send");
+    const { company } = context;
     companyId = company.id;
     messageBody = input.body.trim();
     normalizedPhone = input.to.trim().replace(/[^\d]/g, "");
@@ -155,6 +162,10 @@ export async function POST(request: Request) {
       data: { providerMessageId: providerResult.providerMessageId }
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return handleApiError(error);
+    }
+
     if (companyId && contactId && messageBody) {
       await createSafeMessageLog({
         companyId,

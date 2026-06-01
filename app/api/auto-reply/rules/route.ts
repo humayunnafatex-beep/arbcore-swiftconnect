@@ -1,5 +1,5 @@
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { autoReplyRuleCreateSchema } from "@/lib/validators";
 
@@ -11,7 +11,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const { page, pageSize, skip, take } = getPagination(searchParams);
     const isActive = searchParams.get("isActive");
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("autoReply.view");
+    const { company } = context;
 
     const where =
       isActive === null
@@ -35,7 +36,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, autoReplyRuleCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("autoReply.manage");
+    const { company } = context;
     const rule = await prisma.autoReplyRule.create({
       data: {
         companyId: company.id,

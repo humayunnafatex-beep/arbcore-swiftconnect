@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { ApiError, handleApiError } from "@/lib/api";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -7,7 +8,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("messages.viewLogs");
+    const { company } = context;
 
     const [messages, webhookEvents] = await Promise.all([
       prisma.messageLog.findMany({
@@ -55,6 +57,10 @@ export async function GET() {
       }
     });
   } catch (error) {
+    if (error instanceof ApiError) {
+      return handleApiError(error);
+    }
+
     console.error("WhatsApp logs GET error:", error);
 
     return NextResponse.json(

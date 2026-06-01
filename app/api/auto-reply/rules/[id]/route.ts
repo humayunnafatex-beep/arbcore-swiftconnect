@@ -1,5 +1,5 @@
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { autoReplyRuleUpdateSchema } from "@/lib/validators";
 
@@ -12,7 +12,8 @@ type Context = {
 
 export async function GET(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("autoReply.view");
+    const { company } = context;
     const rule = await prisma.autoReplyRule.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!rule) {
@@ -28,7 +29,8 @@ export async function GET(_request: Request, { params }: Context) {
 export async function PUT(request: Request, { params }: Context) {
   try {
     const input = await parseJson(request, autoReplyRuleUpdateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("autoReply.manage");
+    const { company } = context;
     const existing = await prisma.autoReplyRule.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {
@@ -54,7 +56,8 @@ export async function PUT(request: Request, { params }: Context) {
 
 export async function DELETE(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("autoReply.manage");
+    const { company } = context;
     const existing = await prisma.autoReplyRule.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {

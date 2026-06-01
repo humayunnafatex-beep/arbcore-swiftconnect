@@ -1,5 +1,5 @@
 import { handleApiError, ok } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -9,7 +9,8 @@ export async function GET() {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("dashboard.view");
+    const { company } = context;
     const companyId = company.id;
 
     const [

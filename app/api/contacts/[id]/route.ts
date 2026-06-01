@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { contactUpdateSchema, normalizeTags } from "@/lib/validators";
 
@@ -13,7 +13,8 @@ type Context = {
 
 export async function GET(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("contacts.view");
+    const { company } = context;
     const contact = await prisma.contact.findFirst({
       where: { id: params.id, companyId: company.id },
       include: { crmDeals: true, conversations: { orderBy: { updatedAt: "desc" }, take: 10 } }
@@ -32,7 +33,8 @@ export async function GET(_request: Request, { params }: Context) {
 export async function PUT(request: Request, { params }: Context) {
   try {
     const input = await parseJson(request, contactUpdateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("contacts.manage");
+    const { company } = context;
     const existing = await prisma.contact.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {
@@ -74,7 +76,8 @@ export async function PUT(request: Request, { params }: Context) {
 
 export async function DELETE(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("contacts.manage");
+    const { company } = context;
     const existing = await prisma.contact.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {

@@ -20,6 +20,8 @@ Before enabling auth enforcement, review `AUTH_IMPLEMENTATION_PHASE_4.md`, `AUTH
 
 Before enabling permission enforcement, review `AUTH_IMPLEMENTATION_PHASE_7.md`.
 
+For report-only guarded API rollout, review `AUTH_IMPLEMENTATION_PHASE_8.md`.
+
 ## 1. Environment Variables
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
@@ -71,6 +73,8 @@ Before enabling permission enforcement, review `AUTH_IMPLEMENTATION_PHASE_7.md`.
 - [ ] Confirm `/api/auth/permissions` returns safe JSON only.
 - [ ] Confirm `PERMISSIONS_ENFORCED=false` for current Enterprise Beta unless a staging test is planned.
 - [ ] Confirm the current role permission list is correct.
+- [ ] Confirm guarded APIs still work in report-only mode: Dashboard statistics, WhatsApp Logs, Contacts, Auto Reply, and Send Messages.
+- [ ] Confirm `/api/auth/permissions` remains available for diagnostics.
 - [ ] Confirm no tokens, cookies, raw sessions, or service-role keys are displayed.
 - [ ] Confirm public WhatsApp webhook routes remain public.
 
@@ -167,6 +171,7 @@ Connecting Welzz Stride real number `01958474577`:
 - Use `AUTH_IMPLEMENTATION_PHASE_5.md` and `/auth/status` before enabling `AUTH_ENFORCED=true`.
 - Use `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` for local/staging enforcement tests.
 - Use `AUTH_IMPLEMENTATION_PHASE_7.md` and `/auth/permissions` before role permission blocking.
+- Phase 8 guards selected APIs in report-only mode. Keep `PERMISSIONS_ENFORCED=false` until limited-role staging tests pass.
 - Supabase Auth users must map to Prisma `User` records and the correct `companyId` before external client onboarding.
 - Current beta is single-company/demo-auth mode; Phase 1 adds foundation only and real login enforcement comes later.
 - Each external client must only see its own contacts, messages, settings, auto replies, and logs after real auth/company isolation is implemented.

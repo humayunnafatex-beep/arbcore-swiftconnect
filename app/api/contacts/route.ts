@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { contactCreateSchema, normalizeTags } from "@/lib/validators";
 
@@ -14,7 +14,8 @@ export async function GET(request: Request) {
     const q = searchParams.get("q")?.trim();
     const segment = searchParams.get("segment")?.trim();
     const stage = searchParams.get("stage")?.trim();
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("contacts.view");
+    const { company } = context;
 
     const where = {
       companyId: company.id,
@@ -45,7 +46,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, contactCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("contacts.manage");
+    const { company } = context;
     const phone = input.phone.trim();
     const existingContact = await prisma.contact.findUnique({
       where: { phone },

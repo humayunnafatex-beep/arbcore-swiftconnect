@@ -98,6 +98,8 @@ Current non-breaking behavior:
 
 Do not apply this to every route until production auth and staging tests are ready.
 
+Phase 8 applies these guards to selected low-risk APIs in report-only mode. See `AUTH_IMPLEMENTATION_PHASE_8.md`.
+
 ## 8. Permission Status Tools
 
 Use these tools for safe verification:
@@ -106,6 +108,8 @@ Use these tools for safe verification:
 - `/auth/permissions`: admin-facing page that displays the same information.
 
 Neither tool returns tokens, cookies, raw Supabase sessions, service-role keys, or WhatsApp credentials.
+
+`/api/auth/permissions` remains unguarded in Phase 8 so it can keep serving as a diagnostic endpoint during permission rollout.
 
 ## 9. Rollback
 
