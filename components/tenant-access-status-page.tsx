@@ -92,6 +92,10 @@ export function TenantAccessStatusPage() {
           Do not enable tenant membership enforcement in production until mapped admin and workspace access are verified.
         </div>
 
+        <div className="mt-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-bold leading-6 text-slate-600">
+          Before staging enforcement or paid client go-live, review TENANT_ENFORCEMENT_STAGING_CHECKLIST.md, PAID_CLIENT_GO_LIVE_GATE.md, and ENFORCEMENT_FLAGS_REFERENCE.md.
+        </div>
+
         {loading ? (
           <div className="mt-5 rounded-[18px] bg-blue-50 p-5 text-sm font-bold text-royal">Loading tenant access status...</div>
         ) : error ? (

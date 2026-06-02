@@ -82,3 +82,13 @@ The beta selected workspace cookie is useful for admin testing, but it is not te
 /auth/permissions
 /admin/workspaces
 ```
+
+## Phase 9 Staging And Go-Live Gate
+
+Use these documents before moving from report-only readiness to enforcement testing or paid client onboarding:
+
+- `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`
+- `PAID_CLIENT_GO_LIVE_GATE.md`
+- `ENFORCEMENT_FLAGS_REFERENCE.md`
+
+Do not enable `TENANT_MEMBERSHIP_ENFORCED=true` in production until staging confirms mapped admin access, role permissions, tenant membership, workspace isolation, and strict provider routing behavior.

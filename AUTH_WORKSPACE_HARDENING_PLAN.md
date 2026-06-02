@@ -16,6 +16,8 @@ Client workspace Phase 3 audit is documented in `WORKSPACE_ISOLATION_QA_REPORT.m
 
 Client workspace Phase 8 tenant membership readiness is documented in `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`. Use `/auth/tenant-access` and `/api/auth/tenant-access` to verify report-only user-company access before any production enforcement.
 
+Client workspace Phase 9 staging enforcement and paid-client approval are documented in `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`, `PAID_CLIENT_GO_LIVE_GATE.md`, and `ENFORCEMENT_FLAGS_REFERENCE.md`.
+
 Current behavior:
 
 - Demo login route exists.
@@ -191,6 +193,8 @@ Review `AUTH_IMPLEMENTATION_PHASE_8.md` before expanding guards beyond the selec
 - Keep duplicate email handling friendly.
 
 Before inviting paid client users, confirm `/auth/status`, `/auth/permissions`, `/auth/tenant-access`, and `/admin/workspaces` show the expected Prisma user, role, company mapping, and tenant membership readiness.
+
+Also complete `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md` and `PAID_CLIENT_GO_LIVE_GATE.md` before paid external client access.
 
 ### Phase 7: Billing / License Enforcement
 

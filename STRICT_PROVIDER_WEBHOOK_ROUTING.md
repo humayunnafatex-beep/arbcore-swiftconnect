@@ -112,3 +112,7 @@ Before enabling strict mode, also review `PROVIDER_ID_UNIQUENESS_PLAN.md` and co
 ## Settings Save Guardrail
 
 Settings now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed. This helps keep strict routing readiness clean, but database unique constraints are still future work.
+
+## Phase 9 Gate
+
+Before testing `STRICT_PROVIDER_WEBHOOK_ROUTING=true` with auth, permission, and tenant enforcement, complete `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`. Before paid external client onboarding, complete `PAID_CLIENT_GO_LIVE_GATE.md` and review `ENFORCEMENT_FLAGS_REFERENCE.md`.

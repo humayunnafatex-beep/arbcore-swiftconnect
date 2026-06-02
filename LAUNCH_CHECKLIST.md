@@ -18,6 +18,8 @@ For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `W
 
 For tenant membership readiness, review `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`, `/auth/tenant-access`, and `/api/auth/tenant-access`.
 
+For staging enforcement tests and paid client approval, review `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`, `PAID_CLIENT_GO_LIVE_GATE.md`, and `ENFORCEMENT_FLAGS_REFERENCE.md`.
+
 For provider webhook routing, review `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 
 For strict provider routing readiness, review `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
@@ -180,6 +182,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm `/api/auth/tenant-access` returns safe JSON only.
 - [ ] Confirm tenant membership is report-only with `TENANT_MEMBERSHIP_ENFORCED=false`.
 - [ ] Confirm paid client access is not enabled until user-company membership validation is enforced.
+- [ ] Complete `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md` before any enforcement flag is tested outside local/staging.
+- [ ] Complete `PAID_CLIENT_GO_LIVE_GATE.md` before onboarding a paid external client.
+- [ ] Review `ENFORCEMENT_FLAGS_REFERENCE.md` before changing enforcement flags.
 - [ ] Confirm production SaaS switching is still blocked until user/company membership validation is implemented.
 - [ ] Confirm WhatsApp inbound webhook routing matches by Phone Number ID when available.
 - [ ] Confirm Messenger inbound webhook routing matches by Page ID when available.

@@ -69,6 +69,8 @@ Client workspace Phase 2 adds beta/admin workspace selection with a cookie that 
 
 Client workspace Phase 8 adds report-only tenant membership readiness through `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`, `/auth/tenant-access`, and `/api/auth/tenant-access`. `TENANT_MEMBERSHIP_ENFORCED=false` remains the beta default; future production must enforce user-company access before paid client login.
 
+Client workspace Phase 9 adds `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`, `PAID_CLIENT_GO_LIVE_GATE.md`, and `ENFORCEMENT_FLAGS_REFERENCE.md` so enforcement testing and paid-client onboarding have explicit gates.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:

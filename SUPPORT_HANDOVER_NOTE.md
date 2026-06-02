@@ -67,6 +67,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` when verifying production migrations.
 - Use `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces` before creating a separate client workspace.
 - Use `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md` and `/auth/tenant-access` before enabling paid client access.
+- Use `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`, `PAID_CLIENT_GO_LIVE_GATE.md`, and `ENFORCEMENT_FLAGS_REFERENCE.md` before changing enforcement flags or approving paid external client access.
 - Use the Select Workspace and Clear Selected Workspace actions only for admin beta testing.
 - Use `WORKSPACE_ISOLATION_QA_REPORT.md` and `WORKSPACE_SWITCHING_TEST_CHECKLIST.md` before claiming workspace separation is ready for beta client testing.
 - Use `PROVIDER_WEBHOOK_ROUTING_PLAN.md` when testing inbound WhatsApp/Messenger routing across more than one workspace.
@@ -190,6 +191,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not enable `AUTH_ENFORCED=true` until a mapped admin is verified.
 - Do not enable `PERMISSIONS_ENFORCED=true` until permission staging tests pass.
 - Do not enable `TENANT_MEMBERSHIP_ENFORCED=true` until tenant membership staging tests pass.
+- Do not onboard paid external clients until `PAID_CLIENT_GO_LIVE_GATE.md` is signed off.
 - Do not onboard paid clients until workspace mapping and company isolation are verified.
 - Do not use beta workspace selection for untrusted client access.
 - Do not claim provider success unless Message Logs show `SENT`.

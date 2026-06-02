@@ -153,3 +153,5 @@ Provider ID uniqueness readiness is documented in `PROVIDER_ID_UNIQUENESS_PLAN.m
 Settings now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed for workspaces that are not connected to Meta yet. Database unique constraints are still future work.
 
 Tenant membership readiness is documented in `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`. Use `/auth/tenant-access` and `/api/auth/tenant-access` to verify report-only user-to-company membership status before paid client access. The beta selected workspace cookie is not tenant security.
+
+Before any paid client onboarding, complete `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md` and `PAID_CLIENT_GO_LIVE_GATE.md`. Review `ENFORCEMENT_FLAGS_REFERENCE.md` before changing auth, permission, tenant membership, or strict provider routing flags.

@@ -15,6 +15,7 @@
 - License page for beta plan visibility.
 - Billing page for manual subscription tracking, billing summary metrics, report-only plan usage, payment history, and printable manual receipts.
 - Supabase Auth and permission readiness routes, not enforced by default.
+- Tenant membership readiness and paid-client go-live checklists, not enforced by default.
 
 ## Not Yet Fully Active
 
@@ -23,6 +24,8 @@
 - Messenger production app review and final Meta permissions.
 - `AUTH_ENFORCED=true` in production.
 - `PERMISSIONS_ENFORCED=true` in production.
+- `TENANT_MEMBERSHIP_ENFORCED=true` in production.
+- `STRICT_PROVIDER_WEBHOOK_ROUTING=true` in production.
 - Advanced campaign sending with approved templates.
 - Bulk campaign sending, broadcast automation, and campaign delivery metrics.
 
@@ -43,12 +46,14 @@
 - Confirm Plan Usage shows limits without blocking over-limit usage.
 - Open a manual receipt from Payment History and confirm it does not show secrets or card data.
 - Open Auth Status and Auth Permissions for readiness metadata only.
+- Open Tenant Access Status for report-only tenant membership readiness.
 - Use `CLIENT_ONBOARDING_GUIDE.md` before onboarding each beta business.
 - Run `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md` before paid client onboarding.
 - Collect structured tester feedback with `BETA_FEEDBACK_FORM.md`.
 - Use `SUPPORT_HANDOVER_NOTE.md` for support URLs, common issue checks, and escalation.
 - Complete `PRODUCTION_DEPLOYMENT_VERIFICATION.md` and `PRODUCTION_MANUAL_QA_CHECKLIST.md` after each production deployment.
 - Use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` to verify production migration readiness.
+- Use `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`, `PAID_CLIENT_GO_LIVE_GATE.md`, and `ENFORCEMENT_FLAGS_REFERENCE.md` before enforcement tests or paid client onboarding.
 - Optionally run `npm.cmd run verify:production` for read-only route/API checks.
 
 ## Client Onboarding And Support Docs
@@ -60,6 +65,9 @@
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment guide for Vercel, Supabase, routes, APIs, webhooks, security, and rollback.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: checkbox-based manual QA checklist for production beta verification.
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: production migration verification checklist for Supabase.
+- `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`: staging checklist for auth, permission, tenant, and strict provider enforcement.
+- `PAID_CLIENT_GO_LIVE_GATE.md`: paid external client approval gate.
+- `ENFORCEMENT_FLAGS_REFERENCE.md`: enforcement flag behavior and rollback values.
 
 ## Rollback Notes
 

@@ -198,6 +198,9 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`: manual beta/admin workspace switching test steps.
 - `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`: report-only tenant membership readiness before production enforcement.
 - `/auth/tenant-access` and `/api/auth/tenant-access`: safe user-company membership diagnostics; no tokens, cookies, or raw sessions are exposed.
+- `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`: local/staging checklist for auth, permission, tenant, and strict provider enforcement tests.
+- `PAID_CLIENT_GO_LIVE_GATE.md`: minimum business, technical, security, Meta, and billing gate before paid client onboarding.
+- `ENFORCEMENT_FLAGS_REFERENCE.md`: safe reference for `AUTH_ENFORCED`, `PERMISSIONS_ENFORCED`, `TENANT_MEMBERSHIP_ENFORCED`, and `STRICT_PROVIDER_WEBHOOK_ROUTING`.
 - `PROVIDER_WEBHOOK_ROUTING_PLAN.md`: provider-based webhook routing foundation for WhatsApp and Messenger.
 - `STRICT_PROVIDER_WEBHOOK_ROUTING.md`: opt-in strict unmatched-provider webhook behavior.
 - `PROVIDER_ID_UNIQUENESS_PLAN.md`: provider ID duplicate diagnostics and future uniqueness plan.
