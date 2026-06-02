@@ -10,6 +10,8 @@ Before paid client onboarding, run the Welzz Stride internal beta flow in `WELZZ
 
 For creating and tracking a separate client workspace record, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and use `/admin/workspaces` only as an admin-assisted beta tool.
 
+For Beta v1.0 release scope and handover, review `BETA_V1_RELEASE_SUMMARY.md`, `EXECUTIVE_HANDOVER_SUMMARY.md`, and `TECHNICAL_HANDOVER_INDEX.md`.
+
 ## Who This Guide Is For
 
 - Welzz Stride internal team

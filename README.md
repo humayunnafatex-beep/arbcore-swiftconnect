@@ -2,6 +2,38 @@
 
 ARBCore SwiftConnect is a local MVP for an AI-powered WhatsApp marketing, CRM, and customer automation dashboard.
 
+## Current Beta v1.0 Status
+
+ARBCore SwiftConnect Enterprise Beta v1.0 is packaged for Welzz Stride internal beta operation and future paid-client preparation.
+
+Major active modules:
+
+- Dashboard CRM/support metrics.
+- Channel Center for WhatsApp and Messenger setup status.
+- WhatsApp and Messenger provider workflows when Meta credentials are configured.
+- Unified Inbox CRM, Contacts, Auto Reply, Message Logs, Campaign Drafts, Billing, License, Settings, and workspace readiness tools.
+
+Safe production-beta defaults remain:
+
+```env
+AUTH_ENFORCED=false
+PERMISSIONS_ENFORCED=false
+TENANT_MEMBERSHIP_ENFORCED=false
+STRICT_PROVIDER_WEBHOOK_ROUTING=false
+```
+
+Use the release package docs for handover:
+
+- `BETA_V1_RELEASE_SUMMARY.md`
+- `EXECUTIVE_HANDOVER_SUMMARY.md`
+- `TECHNICAL_HANDOVER_INDEX.md`
+
+Production read-only verification:
+
+```powershell
+npm.cmd run verify:production
+```
+
 ## Quick Start
 
 ```bash
@@ -186,6 +218,9 @@ Keep SQLite for local development only. Production deployments should use Postgr
 ## Project Docs
 
 - `OPERATING_MANUAL.md`: day-to-day module guide and current beta behavior.
+- `BETA_V1_RELEASE_SUMMARY.md`: Enterprise Beta v1.0 release scope, safe defaults, verification status, limitations, and next steps.
+- `EXECUTIVE_HANDOVER_SUMMARY.md`: non-technical business handover for decision makers.
+- `TECHNICAL_HANDOVER_INDEX.md`: grouped document index for developers, support, QA, and operations.
 - `LAUNCH_CHECKLIST.md`: production launch, QA, channel, auth, and rollback checklist.
 - `BETA_RELEASE_NOTES.md`: current Enterprise Beta status and testing scope.
 - `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.

@@ -36,6 +36,9 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 
 ## Critical Docs
 
+- `BETA_V1_RELEASE_SUMMARY.md`
+- `EXECUTIVE_HANDOVER_SUMMARY.md`
+- `TECHNICAL_HANDOVER_INDEX.md`
 - `OPERATING_MANUAL.md`
 - `LAUNCH_CHECKLIST.md`
 - `BETA_RELEASE_NOTES.md`
