@@ -15,6 +15,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Messenger provider-backed test send and live auto-reply foundation exist.
 - Channel Center shows safe setup status without tokens.
 - Unified Inbox supports replies, status, assignment, contact linking, internal notes, and follow-up reminders.
+- Campaigns support draft planning only; bulk sending is not active.
 - Message Logs show WhatsApp and Messenger status safely.
 - Auth and permission readiness exists, but enforcement is off by default.
 - Manual subscription and payment tracking exists for paid beta clients, but gateway automation and billing enforcement are not active.
@@ -57,6 +58,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use Billing Summary to review confirmed totals, pending totals, last payment, and period status.
 - Use Plan Usage to review report-only limits for contacts, team members, auto replies, monthly messages, inbox conversations, and channels.
 - Use View Receipt from Payment History for printable manual receipts.
+- Check Campaigns for draft name, channel, status, audience note, message body, schedule date, and internal notes.
 - Investigate a failed message by reviewing status, provider ID, safe error text, and channel settings.
 - Confirm Auto Reply rule status, keyword, match mode, and channel configuration.
 - Verify webhook callback URL and verify token match Meta settings.
@@ -93,6 +95,13 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Confirm the correct channel is configured.
 - Check whether a duplicate provider message was ignored.
 - Check Message Logs for inbound `RECEIVED` and outbound `SENT` or `FAILED`.
+
+### Campaign Sending Confusion
+
+- Campaigns are draft planning only in this phase.
+- There is no bulk sending, broadcast automation, or fake delivery metric.
+- WhatsApp broadcast sending may require approved templates and Meta policy compliance in a future phase.
+- Messenger broadcast has platform limitations and permission requirements.
 
 ### Token Expired
 

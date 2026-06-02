@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
+import { CampaignStatus, Prisma } from "@prisma/client";
 import { created, getPagination, handleApiError, ok, parseDate, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { campaignCreateSchema } from "@/lib/validators";
 
@@ -12,19 +12,33 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const { page, pageSize, skip, take } = getPagination(searchParams);
     const status = searchParams.get("status")?.trim();
-    const { company } = await getCurrentAuthContext();
+    const channel = searchParams.get("channel")?.trim();
+    const search = searchParams.get("search")?.trim();
+    const { context } = await requirePermission("campaign.view");
+    const { company } = context;
 
     const where = {
       companyId: company.id,
-      ...(status ? { status: status as "DRAFT" | "SCHEDULED" | "RUNNING" | "SENT" | "PAUSED" | "FAILED" } : {})
-    };
+      ...(status && status !== "ALL" ? { status: status as CampaignStatus } : {}),
+      ...(channel && channel !== "ALL" ? { channel } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search } },
+              { audienceNote: { contains: search } },
+              { messageBody: { contains: search } },
+              { templateName: { contains: search } }
+            ]
+          }
+        : {})
+    } satisfies Prisma.CampaignWhereInput;
+
     const [items, total] = await Promise.all([
       prisma.campaign.findMany({
         where,
         skip,
         take,
-        orderBy: { createdAt: "desc" },
-        include: { whatsappAccount: true, _count: { select: { messageLogs: true } } }
+        orderBy: { updatedAt: "desc" }
       }),
       prisma.campaign.count({ where })
     ]);
@@ -38,17 +52,22 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, campaignCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context } = await requirePermission("campaign.manage");
+    const { company } = context;
     const campaign = await prisma.campaign.create({
       data: {
         companyId: company.id,
         name: input.name,
-        templateName: input.templateName,
+        channel: input.channel ?? "WHATSAPP",
+        status: (input.status ?? "DRAFT") as CampaignStatus,
+        audienceNote: input.audienceNote ?? "",
+        messageBody: input.messageBody,
+        templateName: input.templateName ?? "",
         templateVariables: input.templateVariables as Prisma.InputJsonValue | undefined,
         targetSegment: input.targetSegment ?? undefined,
         whatsappAccountId: input.whatsappAccountId ?? undefined,
         scheduledAt: parseDate(input.scheduledAt),
-        status: input.scheduledAt ? "SCHEDULED" : "DRAFT"
+        notes: input.notes ?? ""
       }
     });
 

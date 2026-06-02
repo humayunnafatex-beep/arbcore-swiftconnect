@@ -7,6 +7,7 @@
 - WhatsApp outbound send, inbound webhook receive, and live auto-reply.
 - Messenger inbound webhook, provider-backed test send, and live auto-reply foundation.
 - Unified Inbox with conversation grouping, replies, status, assignment, contact linking, internal notes, and follow-up reminders.
+- Campaign draft planning for WhatsApp and Messenger, without bulk sending.
 - Contacts create, edit, delete, import, search, filters, and duplicate-phone handling.
 - Auto Reply rule create, edit, activate, deactivate, delete, and live matching.
 - Message Logs for WhatsApp and Messenger filtering and provider status checks.
@@ -23,6 +24,7 @@
 - `AUTH_ENFORCED=true` in production.
 - `PERMISSIONS_ENFORCED=true` in production.
 - Advanced campaign sending with approved templates.
+- Bulk campaign sending, broadcast automation, and campaign delivery metrics.
 
 ## Testing Checklist
 
@@ -32,6 +34,7 @@
 - Open Message Logs and test channel/status/direction/search filters.
 - Open Contacts and confirm duplicate phone messages remain friendly.
 - Open Auto Reply and confirm active rule workflow.
+- Open Campaigns and confirm draft create/edit/archive works without any send button.
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
 - Open Settings and confirm saved access tokens remain hidden after refresh.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.

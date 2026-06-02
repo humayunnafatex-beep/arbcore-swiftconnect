@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Bot, CheckCircle2, Clock, CreditCard, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, CreditCard, FileText, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
 import { kpis } from "@/data/dashboard";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,9 @@ type DashboardStatistics = {
   inboundMessages: number;
   outboundMessages: number;
   activeCampaigns: number;
+  draftCampaigns: number;
+  readyCampaigns: number;
+  totalCampaigns: number;
   contacts: number;
   totalContacts: number;
   hotLeads: number;
@@ -116,7 +119,7 @@ export function MetricGrid() {
         ...kpis[3],
         label: "Active Auto Replies",
         value: stats.activeAutoReplyRules.toLocaleString(),
-        helper: `${stats.activeCampaigns.toLocaleString()} active campaign(s)`
+        helper: `${stats.draftCampaigns.toLocaleString()} draft campaign(s)`
       },
       {
         ...kpis[0],
@@ -197,6 +200,9 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     messengerMessages: 0,
     inboundMessages: 0,
     outboundMessages: 0,
+    draftCampaigns: 0,
+    readyCampaigns: 0,
+    totalCampaigns: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
     billing: {
@@ -272,6 +278,17 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Subscription", value: 1, href: "/billing", icon: CheckCircle2, tone: data.billing.status === "PAST_DUE" ? "red" : "green", displayValue: data.billing.status },
           { label: "Pending payments", value: data.billing.pendingPaymentCount, href: "/billing", icon: AlertTriangle, tone: data.billing.pendingPaymentCount ? "red" : "gray", badge: `${data.billing.currency} ${data.billing.pendingPaymentAmount.toLocaleString()}` },
           { label: "Last payment", value: data.billing.lastPaymentAmount ?? 0, href: "/billing", icon: CreditCard, tone: "purple", displayValue: data.billing.lastPaymentDate ? new Date(data.billing.lastPaymentDate).toLocaleDateString("en") : "-" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Campaign Drafts"
+        helper="Campaigns are planning drafts only. No bulk sending is active."
+        items={[
+          { label: "Drafts", value: data.draftCampaigns, href: "/campaigns?status=DRAFT", icon: FileText, tone: "blue" },
+          { label: "Ready", value: data.readyCampaigns, href: "/campaigns?status=READY", icon: CheckCircle2, tone: "green" },
+          { label: "Total", value: data.totalCampaigns, href: "/campaigns", icon: CreditCard, tone: "purple" },
+          { label: "Open Campaigns", value: 1, href: "/campaigns", icon: LinkIcon, tone: "blue", displayValue: "Open" }
         ]}
         loading={loading}
       />

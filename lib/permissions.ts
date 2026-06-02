@@ -13,6 +13,8 @@ export type Permission =
   | "messages.viewLogs"
   | "autoReply.view"
   | "autoReply.manage"
+  | "campaign.view"
+  | "campaign.manage"
   | "settings.view"
   | "settings.manage"
   | "team.view"
@@ -32,6 +34,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "messages.viewLogs",
     "autoReply.view",
     "autoReply.manage",
+    "campaign.view",
+    "campaign.manage",
     "settings.view",
     "settings.manage",
     "team.view",
@@ -50,6 +54,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "messages.viewLogs",
     "autoReply.view",
     "autoReply.manage",
+    "campaign.view",
+    "campaign.manage",
     "settings.view",
     "settings.manage",
     "team.view",
@@ -68,6 +74,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "messages.viewLogs",
     "autoReply.view",
     "autoReply.manage",
+    "campaign.view",
+    "campaign.manage",
     "license.view"
   ],
   AGENT: [
@@ -78,6 +86,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "messages.send",
     "messages.viewLogs",
     "autoReply.view",
+    "campaign.view",
     "license.view"
   ],
   VIEWER: [
@@ -85,6 +94,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "contacts.view",
     "messages.viewLogs",
     "autoReply.view",
+    "campaign.view",
     "license.view"
   ]
 };

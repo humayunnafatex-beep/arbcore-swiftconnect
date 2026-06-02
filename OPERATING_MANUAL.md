@@ -65,9 +65,9 @@ Basic Contacts workflow:
 
 ## 3. Campaigns
 
-Campaigns is for planning bulk or segmented WhatsApp outreach. A campaign stores the campaign name, template, target segment, schedule, and sending status.
+Campaigns is for planning WhatsApp or Messenger outreach drafts. A campaign stores the campaign name, channel, draft status, audience note, message body, optional template name, optional schedule date, and internal notes.
 
-Use Campaigns to organize promotional messages, follow-up lists, and customer announcements before sending through a real WhatsApp Cloud API setup.
+Campaigns Phase 1 is draft planning only. There is no bulk sending, no broadcast automation, and no fake sent or delivered metrics. Future WhatsApp broadcast sending may require approved templates and Meta policy compliance. Messenger broadcast has platform limitations and permission requirements.
 
 ## 4. Send Messages
 

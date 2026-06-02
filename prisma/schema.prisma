@@ -25,11 +25,13 @@ enum ContactStage {
 
 enum CampaignStatus {
   DRAFT
+  READY
   SCHEDULED
   RUNNING
   SENT
   PAUSED
   FAILED
+  ARCHIVED
 }
 
 enum MessageDirection {
@@ -204,12 +206,16 @@ model Contact {
 model Campaign {
   id                String         @id @default(cuid())
   name              String
+  channel           String         @default("WHATSAPP")
   templateName      String
   templateVariables Json?
   targetSegment     String?
+  audienceNote      String         @default("")
+  messageBody       String         @default("")
   status            CampaignStatus @default(DRAFT)
   scheduledAt       DateTime?
   sentAt            DateTime?
+  notes             String         @default("")
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 

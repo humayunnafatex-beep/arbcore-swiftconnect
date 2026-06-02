@@ -367,7 +367,8 @@ function CampaignsLive({ showToast }: { showToast: (message: string, tone?: Toas
   const [form, setForm] = useState({
     name: "New Campaign",
     templateName: "Welcome Offer",
-    targetSegment: "New Leads"
+    targetSegment: "New Leads",
+    messageBody: "Draft message only. Bulk sending is not active."
   });
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -377,20 +378,7 @@ function CampaignsLive({ showToast }: { showToast: (message: string, tone?: Toas
         method: "POST",
         body: JSON.stringify(form)
       });
-      showToast("Campaign created.");
-      campaigns.reload();
-    } catch (error) {
-      showToast(getApiErrorMessage(error), "error");
-    }
-  }
-
-  async function sendCampaign(campaign: Campaign) {
-    try {
-      const response = await apiRequest<{ sentCount: number }>(`/api/campaigns/${campaign.id}/send`, {
-        method: "POST",
-        body: JSON.stringify({ messageBody: `Template: ${campaign.templateName}`, limit: 100 })
-      });
-      showToast(`Campaign sent to ${response.sentCount} contact(s).`);
+      showToast("Campaign draft created.");
       campaigns.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
@@ -398,25 +386,20 @@ function CampaignsLive({ showToast }: { showToast: (message: string, tone?: Toas
   }
 
   return (
-    <Panel title="Live Campaigns">
-      <FormGrid onSubmit={submit} submitLabel="Create campaign">
+    <Panel title="Campaign Drafts">
+      <FormGrid onSubmit={submit} submitLabel="Create draft">
         <TextInput label="Name" value={form.name} onChange={(value) => setForm({ ...form, name: value })} />
         <TextInput label="Template" value={form.templateName} onChange={(value) => setForm({ ...form, templateName: value })} />
         <TextInput label="Target segment" value={form.targetSegment} onChange={(value) => setForm({ ...form, targetSegment: value })} />
+        <TextInput label="Message body" value={form.messageBody} onChange={(value) => setForm({ ...form, messageBody: value })} />
       </FormGrid>
       <DataState loading={campaigns.loading} error={campaigns.error} empty={!campaigns.data?.items.length} emptyText="No campaigns yet.">
         <ActionTable
-          columns={["Name", "Template", "Segment", "Status", "Actions"]}
+          columns={["Name", "Template", "Segment", "Status", "Phase"]}
           rows={(campaigns.data?.items ?? []).map((campaign) => ({
             id: campaign.id,
             cells: [campaign.name, campaign.templateName, campaign.targetSegment ?? "-", campaign.status],
-            actions: (
-              <SmallButton onClick={() => sendCampaign(campaign)}>
-                <span className="inline-flex items-center gap-1">
-                  <Send className="h-3.5 w-3.5" /> Send
-                </span>
-              </SmallButton>
-            )
+            actions: <span className="text-xs font-bold text-slate-500">Draft only</span>
           }))}
         />
       </DataState>

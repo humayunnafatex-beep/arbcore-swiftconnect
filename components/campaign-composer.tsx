@@ -1,13 +1,13 @@
 "use client";
 
-import { CalendarClock, CheckCheck, ChevronDown, Gift, Send, Sparkles } from "lucide-react";
+import { CalendarClock, CheckCheck, ChevronDown, FileText, Gift, Sparkles } from "lucide-react";
 import { Panel } from "./panel";
 
 export function CampaignComposer() {
   return (
     <Panel
       title="Campaign Composer"
-      action={<button className="h-8 rounded-full px-3 text-xs font-semibold text-royal hover:bg-blue-50">New Campaign</button>}
+      action={<button className="h-8 rounded-full px-3 text-xs font-semibold text-royal hover:bg-blue-50">Draft Only</button>}
       className="xl:col-span-5"
     >
       <div className="space-y-4">
@@ -43,11 +43,11 @@ export function CampaignComposer() {
         <div className="grid gap-3 sm:grid-cols-2">
           <button className="flex h-12 items-center justify-center gap-2 rounded-[14px] border border-blue-200 bg-white text-sm font-bold text-royal transition hover:bg-blue-50">
             <CalendarClock className="h-4 w-4" />
-            Schedule
+            Plan Date
           </button>
           <button className="flex h-12 items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-royal to-electric text-sm font-bold text-white shadow-glow transition hover:brightness-105">
-            <Send className="h-4 w-4" />
-            Send Now
+            <FileText className="h-4 w-4" />
+            Save Draft
           </button>
         </div>
       </div>

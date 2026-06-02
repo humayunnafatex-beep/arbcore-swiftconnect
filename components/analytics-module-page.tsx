@@ -60,10 +60,10 @@ export function AnalyticsModulePage() {
     { name: "Won", value: totals?.wonDeals ?? 96, fill: "#10b981" }
   ];
   const topRows = [
-    ["Promo - Special Offer", "VIP Buyers", "94.8%", "32.4%", "BDT 840k"],
-    ["Catalog Follow-up", "Interested", "92.1%", "24.9%", "BDT 420k"],
-    ["Payment Reminder", "Pending Orders", "89.4%", "18.2%", "BDT 210k"],
-    ["Winback Offer", "Inactive 60d", "83.6%", "14.8%", "BDT 180k"]
+    ["Promo - Special Offer", "VIP Buyers", "Draft", "Needs approved template review", "Phase 1"],
+    ["Catalog Follow-up", "Interested", "Ready", "Audience note prepared", "Phase 1"],
+    ["Payment Reminder", "Pending Orders", "Paused", "Policy wording review", "Phase 1"],
+    ["Winback Offer", "Inactive 60d", "Draft", "No bulk sending active", "Phase 1"]
   ];
 
   return (
@@ -142,12 +142,12 @@ export function AnalyticsModulePage() {
         <section className="overflow-hidden rounded-[24px] border border-blue-100 bg-white/95 shadow-panel">
           <div className="flex items-center gap-3 border-b border-blue-100 p-5">
             <TrendingUp className="h-5 w-5 text-royal" />
-            <h2 className="text-lg font-black text-ink">Top Templates & Campaigns</h2>
+            <h2 className="text-lg font-black text-ink">Template And Draft Planning Notes</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-[760px] w-full text-left">
               <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
-                <tr>{["Template", "Audience", "Delivered", "Reply Rate", "Revenue"].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}</tr>
+                <tr>{["Template", "Audience", "Draft Status", "Planning Note", "Phase"].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-blue-50">
                 {topRows.map((row) => <tr key={row[0]} className="text-sm font-semibold text-slate-600">{row.map((cell) => <td key={cell} className="px-4 py-4">{cell}</td>)}</tr>)}

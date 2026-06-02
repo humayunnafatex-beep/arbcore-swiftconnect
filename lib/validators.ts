@@ -21,11 +21,20 @@ export const contactUpdateSchema = contactCreateSchema.partial();
 
 export const campaignCreateSchema = z.object({
   name: z.string().trim().min(1).max(160),
-  templateName: z.string().trim().min(1).max(160),
+  channel: z.enum(["WHATSAPP", "MESSENGER"]).optional(),
+  status: z.enum(["DRAFT", "READY", "PAUSED", "ARCHIVED"]).optional(),
+  audienceNote: optionalText,
+  messageBody: z.string().trim().min(1).max(4000),
+  templateName: z.string().trim().max(160).optional().default(""),
   templateVariables: z.record(z.string(), z.unknown()).optional(),
   targetSegment: optionalText,
+  notes: optionalText,
   whatsappAccountId: optionalText,
   scheduledAt: optionalText
+});
+
+export const campaignUpdateSchema = campaignCreateSchema.partial().extend({
+  messageBody: z.string().trim().min(1).max(4000).optional()
 });
 
 export const campaignSendSchema = z.object({

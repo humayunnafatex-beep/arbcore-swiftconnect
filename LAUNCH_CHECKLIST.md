@@ -170,6 +170,19 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Auto reply logs `OUTBOUND - FAILED` when Meta rejects the send.
 - [ ] Replayed duplicate inbound provider message does not send a second auto reply.
 
+## 6A. Campaign Draft QA
+
+- [ ] Campaigns opens at `/campaigns`.
+- [ ] Campaign draft create works.
+- [ ] Campaign draft edit works.
+- [ ] Campaign archive works.
+- [ ] Filters work for status, channel, and search.
+- [ ] No send button exists on the Campaigns page.
+- [ ] Existing campaign send endpoint returns disabled/safe response.
+- [ ] No bulk messages are sent.
+- [ ] No sent/delivered campaign metrics are faked.
+- [ ] Dashboard shows draft, ready, and total campaign counts only.
+
 ## 7. Send Messages QA
 
 - [ ] Phone and message are required.

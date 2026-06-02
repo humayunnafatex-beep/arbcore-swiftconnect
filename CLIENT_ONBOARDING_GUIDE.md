@@ -19,6 +19,7 @@ ARBCore SwiftConnect can receive customer messages only from channels connected 
 - [ ] WhatsApp setup is complete if WhatsApp testing is required.
 - [ ] Messenger setup is complete if Messenger testing is required.
 - [ ] Contacts are added or imported manually for now.
+- [ ] Campaign drafts are prepared only if the client needs outreach planning.
 - [ ] Auto Reply rules are created and activated.
 - [ ] Inbox workflow is tested with status, assignment, notes, and follow-up reminders.
 - [ ] Message Logs verification is completed for inbound and outbound messages.
@@ -39,12 +40,13 @@ https://arbcore-swiftconnect.vercel.app
 3. Configure WhatsApp/API Settings only if WhatsApp Cloud API testing is required.
 4. Configure Messenger/Page API Settings only if Messenger testing is required.
 5. Add or import contacts manually for now.
-6. Create Auto Reply rules for common keywords such as `price`, `delivery`, or `support`.
-7. Test one inbound message from a real allowed test user.
-8. Test one outbound reply from Inbox or Send Messages.
-9. Open Message Logs and confirm the status is `RECEIVED`, `SENT`, or `FAILED`.
-10. Use Inbox status, assignment, internal notes, and follow-up reminders for the test conversation.
-11. Review Dashboard metrics and quick links.
+6. Create campaign drafts for future outreach planning if needed.
+7. Create Auto Reply rules for common keywords such as `price`, `delivery`, or `support`.
+8. Test one inbound message from a real allowed test user.
+9. Test one outbound reply from Inbox or Send Messages.
+10. Open Message Logs and confirm the status is `RECEIVED`, `SENT`, or `FAILED`.
+11. Use Inbox status, assignment, internal notes, and follow-up reminders for the test conversation.
+12. Review Dashboard metrics and quick links.
 
 ## Welzz Stride-Specific Notes
 
@@ -77,6 +79,7 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - Manual receipts can be printed from Billing payment history after a record is created.
 - Plan limits are visible for beta planning but are report-only and do not block usage yet.
 - Gateway automation is not active in this beta phase.
+- Campaigns are draft planning only. Do not promise bulk sending, broadcast automation, or delivery metrics yet.
 
 ## Go-Live Checklist
 
