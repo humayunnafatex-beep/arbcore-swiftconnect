@@ -114,6 +114,7 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 ## Runbooks And Checklists
 
 - `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`
+- `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
 - `LAUNCH_CHECKLIST.md`
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`
@@ -124,6 +125,14 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 - `BETA_V1_DEPLOYMENT_READINESS.md`
 - `BETA_V1_INTERNAL_DEPLOYMENT_RUNBOOK.md`
 - `SUPPORT_HANDOVER_NOTE.md`
+
+## Support And Beta Operations Docs
+
+- `SUPPORT_HANDOVER_NOTE.md`
+- `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
+- `BETA_FEEDBACK_FORM.md`
+- `BETA_TESTING_GUIDE.md`
+- `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`
 
 ## Important Runtime Pages
 

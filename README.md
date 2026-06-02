@@ -31,6 +31,7 @@ Use the release package docs for handover:
 - `BETA_V1_DEPLOYMENT_READINESS.md`
 - `BETA_V1_INTERNAL_DEPLOYMENT_RUNBOOK.md`
 - `BETA_V1_ACCESS_CONTROL_PLAN.md`
+- `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
 
 Production read-only verification:
 
@@ -229,6 +230,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `BETA_V1_DEPLOYMENT_READINESS.md`: post-tag readiness checklist before deploying or expanding Beta v1.0 access.
 - `BETA_V1_INTERNAL_DEPLOYMENT_RUNBOOK.md`: operator step-by-step guide for deploying or validating Beta v1.0.
 - `BETA_V1_ACCESS_CONTROL_PLAN.md`: selected beta tester access, role, workspace, support, and offboarding plan.
+- `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`: Beta feedback, bug, access, provider, billing, security, and documentation issue triage workflow.
 - `LAUNCH_CHECKLIST.md`: production launch, QA, channel, auth, and rollback checklist.
 - `BETA_RELEASE_NOTES.md`: current Enterprise Beta status and testing scope.
 - `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.

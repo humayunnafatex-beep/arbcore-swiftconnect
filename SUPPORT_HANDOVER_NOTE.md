@@ -37,6 +37,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 ## Critical Docs
 
 - `BETA_V1_RELEASE_SUMMARY.md`
+- `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
 - `EXECUTIVE_HANDOVER_SUMMARY.md`
 - `TECHNICAL_HANDOVER_INDEX.md`
 - `OPERATING_MANUAL.md`
@@ -64,6 +65,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 ## Common Support Tasks
 
 - Check Channel Center for WhatsApp and Messenger setup readiness.
+- Use `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md` as the Beta issue triage workflow for feedback, bugs, access, provider, billing, and security concerns.
 - Run or review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` after a deployment.
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
 - Use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md` for internal 2-3 day beta operations before paid client onboarding.
