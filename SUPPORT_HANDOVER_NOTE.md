@@ -42,10 +42,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`
 - `CLIENT_ONBOARDING_GUIDE.md`
 - `BETA_FEEDBACK_FORM.md`
+- `PRODUCTION_DEPLOYMENT_VERIFICATION.md`
+- `PRODUCTION_MANUAL_QA_CHECKLIST.md`
 
 ## Common Support Tasks
 
 - Check Channel Center for WhatsApp and Messenger setup readiness.
+- Run or review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` after a deployment.
+- Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Investigate a failed message by reviewing status, provider ID, safe error text, and channel settings.
 - Confirm Auto Reply rule status, keyword, match mode, and channel configuration.
@@ -124,6 +128,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 ## Escalation Checklist
 
 - [ ] Check latest Vercel deployment status.
+- [ ] Run the read-only production verification script if route health is uncertain.
 - [ ] Check Supabase database health.
 - [ ] Check Meta app and channel status.
 - [ ] Check ARBCore Settings for channel fields.

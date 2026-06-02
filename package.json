@@ -10,6 +10,7 @@
     "db:seed": "node scripts/seed-production.mjs",
     "prisma:generate": "prisma generate",
     "start": "next start",
+    "verify:production": "node scripts/verify-production.mjs",
     "postinstall": "prisma generate",
     "lint": "next lint"
   },

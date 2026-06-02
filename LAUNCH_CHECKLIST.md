@@ -6,6 +6,8 @@ For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPOR
 
 For beta client onboarding and support handover, review `CLIENT_ONBOARDING_GUIDE.md`, `BETA_FEEDBACK_FORM.md`, and `SUPPORT_HANDOVER_NOTE.md`.
 
+For post-deployment verification, review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` and `PRODUCTION_MANUAL_QA_CHECKLIST.md`. The optional read-only script is `scripts/verify-production.mjs`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
@@ -51,6 +53,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Production deployment is Ready.
 - [ ] `/api/health` returns success.
 - [ ] Production domain uses HTTPS.
+- [ ] `PRODUCTION_DEPLOYMENT_VERIFICATION.md` has been completed after deployment.
+- [ ] `PRODUCTION_MANUAL_QA_CHECKLIST.md` has been completed for critical modules.
+- [ ] Optional `npm.cmd run verify:production` read-only checks pass or expected auth-gated responses are reviewed.
 
 ## 2A. Beta Client Onboarding Docs
 

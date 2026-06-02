@@ -191,6 +191,17 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.
 - `BETA_FEEDBACK_FORM.md`: structured feedback template for testers.
 - `SUPPORT_HANDOVER_NOTE.md`: support URLs, common issues, safety rules, and escalation steps.
+- `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment production verification guide.
+- `PRODUCTION_MANUAL_QA_CHECKLIST.md`: manual production QA checklist.
+
+Read-only production verification script:
+
+```powershell
+$env:PRODUCTION_URL="https://arbcore-swiftconnect.vercel.app"
+npm.cmd run verify:production
+```
+
+The verification script performs GET checks only. It does not call send endpoints, webhook POST endpoints, or mutation endpoints.
 
 ### Production Environment Checklist
 
