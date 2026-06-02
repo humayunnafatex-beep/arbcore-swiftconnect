@@ -94,6 +94,7 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 
 ## Client Onboarding Docs
 
+- `BETA_V1_ACCESS_CONTROL_PLAN.md`
 - `CLIENT_ONBOARDING_GUIDE.md`
 - `CLIENT_DEMO_SCRIPT.md`
 - `CLIENT_DEMO_SCRIPT_BN.md`
@@ -101,6 +102,14 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 - `BETA_TESTING_GUIDE.md`
 - `BETA_FEEDBACK_FORM.md`
 - `PAID_CLIENT_GO_LIVE_GATE.md`
+
+## Onboarding And Access Control Docs
+
+- `BETA_V1_ACCESS_CONTROL_PLAN.md`
+- `CLIENT_ONBOARDING_GUIDE.md`
+- `PAID_CLIENT_GO_LIVE_GATE.md`
+- `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`
+- `AUTH_WORKSPACE_HARDENING_PLAN.md`
 
 ## Runbooks And Checklists
 
