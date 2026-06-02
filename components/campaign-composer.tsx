@@ -25,6 +25,10 @@ export function CampaignComposer() {
           </div>
         </div>
 
+        <div className="rounded-[16px] border border-blue-100 bg-blue-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">
+          Use Campaigns to save audience criteria and preview matching Contacts. Draft planning only; no bulk messages are sent.
+        </div>
+
         <div className="rounded-[18px] border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-4">
           <p className="text-sm leading-7 text-slate-800">
             Hi {"{{1}}"}, <Gift className="inline h-4 w-4 text-amber-500" />

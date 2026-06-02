@@ -20,6 +20,7 @@ ARBCore SwiftConnect can receive customer messages only from channels connected 
 - [ ] Messenger setup is complete if Messenger testing is required.
 - [ ] Contacts are added or imported manually for now.
 - [ ] Campaign drafts are prepared only if the client needs outreach planning.
+- [ ] Campaign audience preview is reviewed only as planning data.
 - [ ] Auto Reply rules are created and activated.
 - [ ] Inbox workflow is tested with status, assignment, notes, and follow-up reminders.
 - [ ] Message Logs verification is completed for inbound and outbound messages.
@@ -40,7 +41,7 @@ https://arbcore-swiftconnect.vercel.app
 3. Configure WhatsApp/API Settings only if WhatsApp Cloud API testing is required.
 4. Configure Messenger/Page API Settings only if Messenger testing is required.
 5. Add or import contacts manually for now.
-6. Create campaign drafts for future outreach planning if needed.
+6. Create campaign drafts and preview matching Contacts for future outreach planning if needed.
 7. Create Auto Reply rules for common keywords such as `price`, `delivery`, or `support`.
 8. Test one inbound message from a real allowed test user.
 9. Test one outbound reply from Inbox or Send Messages.
@@ -80,6 +81,7 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - Plan limits are visible for beta planning but are report-only and do not block usage yet.
 - Gateway automation is not active in this beta phase.
 - Campaigns are draft planning only. Do not promise bulk sending, broadcast automation, or delivery metrics yet.
+- Audience Preview is Contacts-based planning only and does not send messages.
 
 ## Go-Live Checklist
 

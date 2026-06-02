@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { FormEvent, useMemo, useState } from "react";
-import { Archive, CalendarClock, Edit3, Megaphone, Plus, RefreshCw, Search, ShieldAlert } from "lucide-react";
+import { Archive, Edit3, Megaphone, Plus, RefreshCw, Search, ShieldAlert, Users } from "lucide-react";
 import { apiRequest, getApiErrorMessage, type ListResponse } from "@/lib/api-client";
 import { AppShell } from "./app-shell";
 import {
@@ -26,6 +26,11 @@ type Campaign = {
   channel: CampaignChannel;
   status: CampaignStatus;
   audienceNote: string;
+  audienceStatus: string;
+  audienceTags: string;
+  audienceSearch: string;
+  audienceChannel: string;
+  audienceLimit: number | null;
   messageBody: string;
   templateName: string;
   scheduledAt: string | null;
@@ -39,6 +44,11 @@ type CampaignForm = {
   channel: CampaignChannel;
   status: CampaignStatus;
   audienceNote: string;
+  audienceStatus: string;
+  audienceTags: string;
+  audienceSearch: string;
+  audienceChannel: "" | CampaignChannel;
+  audienceLimit: string;
   messageBody: string;
   templateName: string;
   scheduledAt: string;
@@ -51,6 +61,11 @@ const emptyForm: CampaignForm = {
   channel: "WHATSAPP",
   status: "DRAFT",
   audienceNote: "",
+  audienceStatus: "",
+  audienceTags: "",
+  audienceSearch: "",
+  audienceChannel: "",
+  audienceLimit: "",
   messageBody: "",
   templateName: "",
   scheduledAt: "",
@@ -59,6 +74,27 @@ const emptyForm: CampaignForm = {
 
 const statuses: CampaignStatus[] = ["DRAFT", "READY", "PAUSED", "ARCHIVED"];
 const channels: CampaignChannel[] = ["WHATSAPP", "MESSENGER"];
+const contactStatuses = ["", "NEW_LEAD", "INTERESTED", "FOLLOW_UP", "WON", "LOST"];
+
+type AudiencePreview = {
+  campaign: {
+    id: string;
+    name: string;
+  };
+  audience: {
+    estimatedCount: number;
+    previewLimit: number;
+    warning: string;
+    preview: Array<{
+      id: string;
+      name: string;
+      phone: string;
+      email: string | null;
+      status: string;
+      tags: string | null;
+    }>;
+  };
+};
 
 function dateInputValue(value: string | null) {
   if (!value) return "";
@@ -74,6 +110,8 @@ export function CampaignsModulePage() {
   const { toast, showToast } = useToast();
   const [form, setForm] = useState<CampaignForm>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [audiencePreview, setAudiencePreview] = useState<AudiencePreview | null>(null);
 
   const items = campaigns.data?.items ?? [];
   const draftCount = useMemo(() => items.filter((item) => item.status === "DRAFT").length, [items]);
@@ -90,12 +128,43 @@ export function CampaignsModulePage() {
       channel: campaign.channel,
       status: campaign.status,
       audienceNote: campaign.audienceNote || "",
+      audienceStatus: campaign.audienceStatus || "",
+      audienceTags: campaign.audienceTags || "",
+      audienceSearch: campaign.audienceSearch || "",
+      audienceChannel: (campaign.audienceChannel || "") as "" | CampaignChannel,
+      audienceLimit: campaign.audienceLimit ? String(campaign.audienceLimit) : "",
       messageBody: campaign.messageBody || "",
       templateName: campaign.templateName || "",
       scheduledAt: dateInputValue(campaign.scheduledAt),
       notes: campaign.notes || ""
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function previewAudience(campaign?: Campaign) {
+    const target = campaign ?? items.find((item) => item.id === form.id);
+    if (!target?.id) {
+      showToast("Save the campaign draft before previewing audience.", "error");
+      return;
+    }
+
+    setPreviewLoading(true);
+    try {
+      const params = new URLSearchParams({
+        status: form.id === target.id ? form.audienceStatus : target.audienceStatus || "",
+        tags: form.id === target.id ? form.audienceTags : target.audienceTags || "",
+        search: form.id === target.id ? form.audienceSearch : target.audienceSearch || "",
+        channel: form.id === target.id ? form.audienceChannel : target.audienceChannel || "",
+        limit: form.id === target.id ? form.audienceLimit : target.audienceLimit ? String(target.audienceLimit) : ""
+      });
+      const result = await apiRequest<AudiencePreview>(`/api/campaigns/${target.id}/audience?${params.toString()}`);
+      setAudiencePreview(result);
+      showToast("Audience preview loaded.");
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setPreviewLoading(false);
+    }
   }
 
   async function saveDraft(event: FormEvent<HTMLFormElement>) {
@@ -105,7 +174,8 @@ export function CampaignsModulePage() {
     try {
       const payload = {
         ...form,
-        scheduledAt: form.scheduledAt || null
+        scheduledAt: form.scheduledAt || null,
+        audienceLimit: form.audienceLimit ? Number(form.audienceLimit) : null
       };
 
       if (form.id) {
@@ -123,6 +193,7 @@ export function CampaignsModulePage() {
       }
 
       resetForm();
+      setAudiencePreview(null);
       campaigns.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
@@ -209,6 +280,41 @@ export function CampaignsModulePage() {
             <Field label="Audience note">
               <input className={inputClassName} value={form.audienceNote} onChange={(event) => setForm({ ...form, audienceNote: event.target.value })} placeholder="Opted-in customers, VIP list, or manual segment note" />
             </Field>
+            <section className="rounded-[18px] border border-blue-100 bg-blue-50/55 p-4">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-royal" />
+                <p className="text-xs font-black uppercase text-royal">Audience Criteria</p>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field label="Contact status">
+                  <select className={inputClassName} value={form.audienceStatus} onChange={(event) => setForm({ ...form, audienceStatus: event.target.value })}>
+                    {contactStatuses.map((status) => <option key={status || "ALL"} value={status}>{status ? statusLabel(status) : "All statuses"}</option>)}
+                  </select>
+                </Field>
+                <Field label="Audience channel">
+                  <select className={inputClassName} value={form.audienceChannel} onChange={(event) => setForm({ ...form, audienceChannel: event.target.value as "" | CampaignChannel })}>
+                    <option value="">All channels</option>
+                    {channels.map((channel) => <option key={channel} value={channel}>{statusLabel(channel)}</option>)}
+                  </select>
+                </Field>
+                <Field label="Tags filter">
+                  <input className={inputClassName} value={form.audienceTags} onChange={(event) => setForm({ ...form, audienceTags: event.target.value })} placeholder="vip, repeat buyer" />
+                </Field>
+                <Field label="Search filter">
+                  <input className={inputClassName} value={form.audienceSearch} onChange={(event) => setForm({ ...form, audienceSearch: event.target.value })} placeholder="name, phone, email, tag, segment" />
+                </Field>
+                <Field label="Audience limit">
+                  <input className={inputClassName} type="number" min="1" max="10000" value={form.audienceLimit} onChange={(event) => setForm({ ...form, audienceLimit: event.target.value })} placeholder="Optional limit" />
+                </Field>
+                <div className="flex items-end">
+                  <button type="button" className={secondaryButtonClassName} onClick={() => void previewAudience()} disabled={previewLoading || !form.id}>
+                    <Users className="h-4 w-4" />
+                    {previewLoading ? "Previewing..." : "Preview Audience"}
+                  </button>
+                </div>
+              </div>
+            </section>
+            {audiencePreview ? <AudiencePreviewPanel preview={audiencePreview} /> : null}
             <Field label="Message body">
               <textarea className={`${textareaClassName} min-h-36`} required value={form.messageBody} onChange={(event) => setForm({ ...form, messageBody: event.target.value })} placeholder="Write the campaign message draft. This will not be sent in this phase." />
             </Field>
@@ -287,6 +393,11 @@ function CampaignList({ campaigns, loading, error, onEdit, onArchive, submitting
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <Info label="Template" value={campaign.templateName || "-"} />
+              <Info label="Audience tags" value={campaign.audienceTags || "-"} />
+              <Info label="Audience status" value={campaign.audienceStatus ? statusLabel(campaign.audienceStatus) : "All"} />
+              <Info label="Audience channel" value={campaign.audienceChannel ? statusLabel(campaign.audienceChannel) : "All"} />
+              <Info label="Audience search" value={campaign.audienceSearch || "-"} />
+              <Info label="Audience limit" value={campaign.audienceLimit ? campaign.audienceLimit.toLocaleString() : "-"} />
               <Info label="Scheduled" value={formatDate(campaign.scheduledAt)} />
               <Info label="Updated" value={formatDate(campaign.updatedAt)} />
             </div>
@@ -295,6 +406,43 @@ function CampaignList({ campaigns, loading, error, onEdit, onArchive, submitting
         ))}
       </div>
     </DataState>
+  );
+}
+
+function AudiencePreviewPanel({ preview }: { preview: AudiencePreview }) {
+  return (
+    <section className="rounded-[18px] border border-amber-100 bg-amber-50 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase text-amber-700">Audience Preview</p>
+          <p className="mt-1 text-sm font-bold text-amber-800">{preview.audience.warning}</p>
+        </div>
+        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-amber-700 ring-1 ring-amber-100">
+          {preview.audience.estimatedCount.toLocaleString()} estimated
+        </span>
+      </div>
+      <div className="mt-4 max-h-72 overflow-y-auto rounded-[16px] bg-white">
+        {preview.audience.preview.length ? (
+          <div className="divide-y divide-amber-100">
+            {preview.audience.preview.map((contact) => (
+              <div key={contact.id} className="grid gap-1 p-3 text-sm sm:grid-cols-[1fr_140px]">
+                <div>
+                  <p className="font-black text-ink">{contact.name}</p>
+                  <p className="text-xs font-semibold text-slate-500">{contact.email || "No email"} - {statusLabel(contact.status)}</p>
+                </div>
+                <div className="text-left sm:text-right">
+                  <p className="font-bold text-slate-700">{contact.phone}</p>
+                  <p className="text-xs font-semibold text-slate-500">{contact.tags || "No tags"}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="p-4 text-sm font-semibold text-slate-500">No contacts match this audience preview.</p>
+        )}
+      </div>
+      <p className="mt-3 text-xs font-bold text-amber-800">Showing up to {preview.audience.previewLimit} contacts. Preview only. No messages will be sent.</p>
+    </section>
   );
 }
 

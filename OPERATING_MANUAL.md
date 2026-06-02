@@ -69,6 +69,8 @@ Campaigns is for planning WhatsApp or Messenger outreach drafts. A campaign stor
 
 Campaigns Phase 1 is draft planning only. There is no bulk sending, no broadcast automation, and no fake sent or delivered metrics. Future WhatsApp broadcast sending may require approved templates and Meta policy compliance. Messenger broadcast has platform limitations and permission requirements.
 
+Campaign audience preview uses Contacts to estimate matching recipients from saved criteria such as contact status, tags, search text, channel preference, and limit. Preview is planning-only and does not send messages.
+
 ## 4. Send Messages
 
 Send Messages is the message desk. It lets the team select or enter a phone number, write a message, preview the text, and record the send attempt.

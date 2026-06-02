@@ -176,12 +176,16 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Campaign draft create works.
 - [ ] Campaign draft edit works.
 - [ ] Campaign archive works.
+- [ ] Campaign audience criteria saves and reloads.
+- [ ] Audience preview loads matching Contacts.
+- [ ] Audience preview count/list respects status, tags, search, channel, and limit criteria.
+- [ ] Audience preview clearly says no messages will be sent.
 - [ ] Filters work for status, channel, and search.
 - [ ] No send button exists on the Campaigns page.
 - [ ] Existing campaign send endpoint returns disabled/safe response.
 - [ ] No bulk messages are sent.
 - [ ] No sent/delivered campaign metrics are faked.
-- [ ] Dashboard shows draft, ready, and total campaign counts only.
+- [ ] Dashboard shows draft, ready, and audience-criteria campaign counts only.
 
 ## 7. Send Messages QA
 

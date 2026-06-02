@@ -211,6 +211,11 @@ model Campaign {
   templateVariables Json?
   targetSegment     String?
   audienceNote      String         @default("")
+  audienceStatus    String         @default("")
+  audienceTags      String         @default("")
+  audienceSearch    String         @default("")
+  audienceChannel   String         @default("")
+  audienceLimit     Int?
   messageBody       String         @default("")
   status            CampaignStatus @default(DRAFT)
   scheduledAt       DateTime?

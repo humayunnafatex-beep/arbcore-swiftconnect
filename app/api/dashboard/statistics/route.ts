@@ -31,6 +31,8 @@ export async function GET() {
       activeCampaigns,
       draftCampaigns,
       readyCampaigns,
+      campaignsWithAudienceCriteria,
+      readyCampaignsWithAudience,
       totalCampaigns,
       contacts,
       hotLeads,
@@ -84,6 +86,31 @@ export async function GET() {
       prisma.campaign.count({ where: { companyId, status: { in: ["READY", "PAUSED"] } } }),
       prisma.campaign.count({ where: { companyId, status: "DRAFT" } }),
       prisma.campaign.count({ where: { companyId, status: "READY" } }),
+      prisma.campaign.count({
+        where: {
+          companyId,
+          OR: [
+            { audienceStatus: { not: "" } },
+            { audienceTags: { not: "" } },
+            { audienceSearch: { not: "" } },
+            { audienceChannel: { not: "" } },
+            { audienceLimit: { not: null } }
+          ]
+        }
+      }),
+      prisma.campaign.count({
+        where: {
+          companyId,
+          status: "READY",
+          OR: [
+            { audienceStatus: { not: "" } },
+            { audienceTags: { not: "" } },
+            { audienceSearch: { not: "" } },
+            { audienceChannel: { not: "" } },
+            { audienceLimit: { not: null } }
+          ]
+        }
+      }),
       prisma.campaign.count({ where: { companyId } }),
       prisma.contact.count({ where: { companyId } }),
       prisma.contact.count({ where: { companyId, stage: { in: ["NEW_LEAD", "INTERESTED", "FOLLOW_UP"] } } }),
@@ -153,6 +180,8 @@ export async function GET() {
       activeCampaigns,
       draftCampaigns,
       readyCampaigns,
+      campaignsWithAudienceCriteria,
+      readyCampaignsWithAudience,
       totalCampaigns,
       contacts,
       totalContacts: contacts,

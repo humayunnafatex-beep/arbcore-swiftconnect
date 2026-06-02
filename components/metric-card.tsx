@@ -38,6 +38,8 @@ type DashboardStatistics = {
   activeCampaigns: number;
   draftCampaigns: number;
   readyCampaigns: number;
+  campaignsWithAudienceCriteria: number;
+  readyCampaignsWithAudience: number;
   totalCampaigns: number;
   contacts: number;
   totalContacts: number;
@@ -202,6 +204,8 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     outboundMessages: 0,
     draftCampaigns: 0,
     readyCampaigns: 0,
+    campaignsWithAudienceCriteria: 0,
+    readyCampaignsWithAudience: 0,
     totalCampaigns: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
@@ -287,7 +291,8 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
         items={[
           { label: "Drafts", value: data.draftCampaigns, href: "/campaigns?status=DRAFT", icon: FileText, tone: "blue" },
           { label: "Ready", value: data.readyCampaigns, href: "/campaigns?status=READY", icon: CheckCircle2, tone: "green" },
-          { label: "Total", value: data.totalCampaigns, href: "/campaigns", icon: CreditCard, tone: "purple" },
+          { label: "With audience", value: data.campaignsWithAudienceCriteria, href: "/campaigns", icon: Users, tone: "purple" },
+          { label: "Ready + audience", value: data.readyCampaignsWithAudience, href: "/campaigns?status=READY", icon: CreditCard, tone: "green" },
           { label: "Open Campaigns", value: 1, href: "/campaigns", icon: LinkIcon, tone: "blue", displayValue: "Open" }
         ]}
         loading={loading}
