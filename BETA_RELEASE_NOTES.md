@@ -12,11 +12,12 @@
 - Message Logs for WhatsApp and Messenger filtering and provider status checks.
 - Settings persistence for Business Profile, WhatsApp/API, Messenger/Page API, team, and preferences.
 - License page for beta plan visibility.
+- Billing page for manual subscription and payment tracking.
 - Supabase Auth and permission readiness routes, not enforced by default.
 
 ## Not Yet Fully Active
 
-- Paid billing and subscription automation.
+- Automated paid billing and subscription enforcement.
 - Full external multi-client onboarding.
 - Messenger production app review and final Meta permissions.
 - `AUTH_ENFORCED=true` in production.
@@ -33,6 +34,7 @@
 - Open Auto Reply and confirm active rule workflow.
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
 - Open Settings and confirm saved access tokens remain hidden after refresh.
+- Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Open Auth Status and Auth Permissions for readiness metadata only.
 - Use `CLIENT_ONBOARDING_GUIDE.md` before onboarding each beta business.
 - Collect structured tester feedback with `BETA_FEEDBACK_FORM.md`.

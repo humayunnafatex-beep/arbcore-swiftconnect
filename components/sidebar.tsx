@@ -9,6 +9,7 @@ import {
   Cable,
   ClipboardList,
   ContactRound,
+  CreditCard,
   Home,
   Inbox,
   MessageCircle,
@@ -36,6 +37,7 @@ const navigation = [
   { label: "CRM", icon: Megaphone, href: "/crm" },
   { label: "Analytics", icon: BarChart3, href: "/analytics" },
   { label: "Settings", icon: Settings, href: "/settings" },
+  { label: "Billing", icon: CreditCard, href: "/billing" },
   { label: "License", icon: ShieldCheck, href: "/license" }
 ];
 

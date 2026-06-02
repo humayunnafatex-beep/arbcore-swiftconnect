@@ -25,6 +25,7 @@ ARBCore SwiftConnect can receive customer messages only from channels connected 
 - [ ] Channel Center shows expected channel readiness.
 - [ ] Dashboard shows expected CRM/support metrics.
 - [ ] Security and token safety rules are reviewed.
+- [ ] Billing is reviewed if this is a paid beta client.
 
 ## Step-By-Step Onboarding Flow
 
@@ -70,6 +71,9 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - Webhook routes are public for Meta callbacks, but they must be verified.
 - Do not reset the production database during onboarding.
 - Do not enable `AUTH_ENFORCED=true` or `PERMISSIONS_ENFORCED=true` until the mapped admin and permission checklists pass.
+- Do not store card data or payment credentials.
+- Do not mark a manual payment as `CONFIRMED` until an admin verifies it outside the app.
+- Gateway automation is not active in this beta phase.
 
 ## Go-Live Checklist
 
@@ -83,3 +87,4 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - [ ] Message Logs show safe provider status.
 - [ ] Dashboard metrics are checked.
 - [ ] Access tokens remain hidden after refresh.
+- [ ] Manual billing status is checked for paid beta clients.

@@ -104,6 +104,18 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Clear follow-up removes the reminder and resets done state.
 - [ ] Team duplicate email returns a friendly error.
 
+## 4B. Billing QA
+
+- [ ] Billing opens at `/billing`.
+- [ ] Subscription GET returns a safe manual beta subscription shape.
+- [ ] Manual subscription update saves plan, status, period dates, and notes.
+- [ ] Manual payment record create validates amount and status.
+- [ ] Payment history shows date, amount, method, status, and reference.
+- [ ] License links to Billing and still states billing enforcement is not active.
+- [ ] Payment gateway automation is not presented as active.
+- [ ] No card data or payment credentials are stored.
+- [ ] Admin confirms payment manually before marking it `CONFIRMED`.
+
 ## 4A. Auth Mapping QA
 
 - [ ] Keep `AUTH_ENFORCED=false` for production Enterprise Beta until admin mapping is verified.
@@ -259,6 +271,7 @@ Connecting Welzz Stride real number `01958474577`:
 ## 10. Known Limitations
 
 - Billing/license enforcement is not active in beta.
+- Manual payment tracking exists for paid beta clients, but gateway automation and billing enforcement are not active.
 - Demo cookie auth remains in place until production auth is implemented.
 - Supabase Auth helpers are preparation only; real login enforcement comes in a later phase.
 - `AUTH_ENFORCED` defaults to false; set it to true only after a real admin Supabase user is tested.
@@ -273,7 +286,7 @@ Connecting Welzz Stride real number `01958474577`:
 - Meta webhook routes must remain public but verified.
 - Real WhatsApp sending requires Meta Cloud API credentials and webhook readiness.
 - Messenger Send API and live Messenger auto-reply require Meta Page setup and may require Meta permissions/app review for production.
-- Payment/subscription automation is planned but not active.
+- Payment gateway automation is planned but not active.
 - Campaign sending requires approved templates and a completed production send workflow.
 - Saved access tokens are intentionally hidden after refresh.
 

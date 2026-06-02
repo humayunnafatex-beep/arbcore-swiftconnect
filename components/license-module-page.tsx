@@ -1,7 +1,9 @@
 "use client";
 
-import { CheckCircle2, Gauge, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, CreditCard, Gauge, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
+import { useApiData } from "./saas-page-utils";
 import { primaryButtonClassName, secondaryButtonClassName } from "./saas-page-utils";
 
 const usage = [
@@ -11,6 +13,9 @@ const usage = [
 ];
 
 export function LicenseModulePage() {
+  const { data } = useApiData<{ subscription: { plan: string; status: string; billingMode: string; currentPeriodStart: string | null; currentPeriodEnd: string | null }; created: boolean }>("/api/billing/subscription");
+  const subscription = data?.subscription;
+
   return (
     <AppShell>
       <section className="rounded-[28px] border border-blue-100 bg-white/95 p-5 shadow-panel sm:p-7">
@@ -25,7 +30,10 @@ export function LicenseModulePage() {
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Monitor Enterprise Beta status, future plan limits, and operational readiness for client workspaces.</p>
             </div>
           </div>
-          <button className={primaryButtonClassName} disabled>Beta Workspace</button>
+          <Link href="/billing" className={primaryButtonClassName}>
+            <CreditCard className="h-4 w-4" />
+            Billing
+          </Link>
         </div>
       </section>
 
@@ -41,7 +49,8 @@ export function LicenseModulePage() {
           <p className="mt-5 text-sm font-semibold leading-6 text-slate-500">Includes beta access to workspace modules while billing, subscriptions, and channel-based automation limits are prepared for paid SaaS launch.</p>
           <div className="mt-6 grid gap-3">
             <Info label="Workspace" value="ARBCore AI" />
-            <Info label="License status" value="Beta active" />
+            <Info label="License status" value={subscription?.status || "Beta active"} />
+            <Info label="Billing mode" value={subscription?.billingMode || "Manual beta"} />
             <Info label="Enforcement" value="Not active in beta" />
           </div>
         </article>
@@ -78,6 +87,8 @@ export function LicenseModulePage() {
           </div>
           <div className="grid gap-3 p-5">
             <Info label="Current plan" value="Enterprise Beta" />
+            <Info label="Subscription status" value={subscription?.status || "ACTIVE"} />
+            <Info label="Billing mode" value={subscription?.billingMode || "MANUAL"} />
             <Info label="Workspace/company" value="ARBCore AI" />
             <Info label="Access mode" value="Single-company beta" />
             <Info label="Auth enforcement" value="Off unless AUTH_ENFORCED=true" />
@@ -85,8 +96,12 @@ export function LicenseModulePage() {
             <Info label="Future mode" value="Multi-client SaaS with role-based access" />
             <Info label="Billing/license enforcement" value="Not active in this beta" />
             <p className="rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-800">
-              Billing records, payment collection, and role permission blocking are not enforced by the app yet. Future paid plans will support client workspaces and channel-based automation, but payment success must not be claimed until manual verification or gateway confirmation.
+              Manual payment tracking is available in Billing, but billing/license enforcement is not active yet. Gateway automation is not connected, card data must never be stored, and payment success must not be claimed until manual verification or future gateway confirmation.
             </p>
+            <Link href="/billing" className={secondaryButtonClassName}>
+              <CreditCard className="h-4 w-4" />
+              Open Billing
+            </Link>
           </div>
         </section>
 

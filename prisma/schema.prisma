@@ -118,6 +118,8 @@ model Company {
   messageTemplates MessageTemplate[]
   webhookEvents   WebhookEvent[]
   conversationStates ConversationState[]
+  subscriptions    Subscription[]
+  paymentRecords   PaymentRecord[]
 }
 
 model User {
@@ -367,4 +369,45 @@ model AIUsage {
 
   @@index([companyId])
   @@index([generationType])
+}
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  companyId          String
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plan               String   @default("ENTERPRISE_BETA")
+  status             String   @default("ACTIVE")
+  billingMode        String   @default("MANUAL")
+  startedAt          DateTime @default(now())
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  notes              String   @default("")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  paymentRecords PaymentRecord[]
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model PaymentRecord {
+  id             String        @id @default(cuid())
+  companyId      String
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  amount         Int
+  currency       String        @default("BDT")
+  method         String        @default("MANUAL")
+  status         String        @default("PENDING")
+  transactionRef String        @default("")
+  paidAt         DateTime?
+  notes          String        @default("")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([companyId])
+  @@index([subscriptionId])
+  @@index([status])
 }

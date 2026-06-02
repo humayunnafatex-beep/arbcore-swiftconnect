@@ -227,7 +227,9 @@ License shows the current plan, usage limits, and seat/message allowance for the
 
 Use License to review whether the business is within its current package and what needs upgrading before higher-volume messaging.
 
-Current status is Enterprise Beta. Billing/payment enforcement is not active yet. Future paid plans should support client workspaces, feature limits, and channel-based automation for WhatsApp and Messenger.
+Current status is Enterprise Beta. Manual payment and subscription tracking is available from Billing at `/billing`, but billing/payment enforcement is not active yet. Admins can manually track a plan, status, period, payment amount, method, reference, and notes after offline verification. Gateway automation is not active, payment success is not faked, and card data must never be stored.
+
+Future paid plans should support client workspaces, feature limits, and channel-based automation for WhatsApp and Messenger.
 
 ## 10. What Works Without WhatsApp API
 

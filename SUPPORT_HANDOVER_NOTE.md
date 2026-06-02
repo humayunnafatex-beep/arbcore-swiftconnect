@@ -17,6 +17,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Unified Inbox supports replies, status, assignment, contact linking, internal notes, and follow-up reminders.
 - Message Logs show WhatsApp and Messenger status safely.
 - Auth and permission readiness exists, but enforcement is off by default.
+- Manual subscription and payment tracking exists for paid beta clients, but gateway automation and billing enforcement are not active.
 
 ## Key URLs
 
@@ -26,6 +27,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Inbox: `https://arbcore-swiftconnect.vercel.app/inbox`
 - Message Logs: `https://arbcore-swiftconnect.vercel.app/message-logs`
 - Dashboard: `https://arbcore-swiftconnect.vercel.app/dashboard`
+- Billing: `https://arbcore-swiftconnect.vercel.app/billing`
 - Auth Status: `https://arbcore-swiftconnect.vercel.app/auth/status`
 - Permission Status: `https://arbcore-swiftconnect.vercel.app/auth/permissions`
 
@@ -51,6 +53,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Run or review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` after a deployment.
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
+- Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Investigate a failed message by reviewing status, provider ID, safe error text, and channel settings.
 - Confirm Auto Reply rule status, keyword, match mode, and channel configuration.
 - Verify webhook callback URL and verify token match Meta settings.
@@ -116,6 +119,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Open Auth Status and Permission Status.
 - Confirm enforcement is still off in production beta unless a controlled staging test is planned.
 
+### Manual Payment Status Confusion
+
+- Open Billing.
+- Confirm the subscription status and latest manual payment record.
+- Do not mark a payment `CONFIRMED` unless an admin has verified it offline.
+- Do not store card data or payment credentials.
+- Gateway automation is not active yet.
+
 ## Safety Rules
 
 - Do not share access tokens.
@@ -123,6 +134,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not enable `AUTH_ENFORCED=true` until a mapped admin is verified.
 - Do not enable `PERMISSIONS_ENFORCED=true` until permission staging tests pass.
 - Do not claim provider success unless Message Logs show `SENT`.
+- Do not claim payment success unless the manual payment record has been verified by an admin.
 - Do not expose raw webhook payloads if they may contain customer data.
 
 ## Escalation Checklist

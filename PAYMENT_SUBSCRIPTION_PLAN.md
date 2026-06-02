@@ -76,3 +76,16 @@ First paid rollout should use:
 5. Later gateway integration after operational flow is stable.
 
 Gateway automation can follow once the manual process is proven and the subscription database model is ready.
+
+## 8. Phase 1 Manual Tracking Status
+
+Phase 1 adds manual subscription and payment tracking for paid beta clients:
+
+- `Subscription` records track plan, status, billing mode, period dates, and admin notes.
+- `PaymentRecord` records track amount, currency, method, manual status, transaction reference, paid date, and notes.
+- Billing UI is available at `/billing`.
+- License links to Billing and shows the current manual subscription status when available.
+- Admins must confirm payments manually.
+- Gateway automation is not active.
+- Billing/license enforcement is not active.
+- Card data and sensitive payment credentials must never be stored.
