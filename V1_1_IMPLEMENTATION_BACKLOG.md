@@ -17,6 +17,8 @@ Use this backlog with:
 
 This is a planning document. It does not enable production flags or change runtime behavior.
 
+Selected first sprint plan: `V1_1_SPRINT_1_PLAN.md`.
+
 ## Backlog Item Template
 
 Use this shape when adding or expanding tasks:

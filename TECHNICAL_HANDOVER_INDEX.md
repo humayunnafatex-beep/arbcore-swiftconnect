@@ -156,8 +156,15 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 
 - `V1_1_HARDENING_ROADMAP.md`
 - `V1_1_IMPLEMENTATION_BACKLOG.md`
+- `V1_1_SPRINT_1_PLAN.md`
 - `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
 - `PAID_CLIENT_GO_LIVE_GATE.md`
+
+## v1.1 Sprint Planning Docs
+
+- `V1_1_SPRINT_1_PLAN.md`
+- `V1_1_IMPLEMENTATION_BACKLOG.md`
+- `V1_1_HARDENING_ROADMAP.md`
 
 ## Important Runtime Pages
 
