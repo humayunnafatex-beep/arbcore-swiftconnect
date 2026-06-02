@@ -101,6 +101,25 @@ function dateInputValue(value: string | null) {
   return new Date(value).toISOString().slice(0, 16);
 }
 
+function campaignToForm(campaign: Campaign): CampaignForm {
+  return {
+    id: campaign.id,
+    name: campaign.name,
+    channel: campaign.channel,
+    status: campaign.status,
+    audienceNote: campaign.audienceNote || "",
+    audienceStatus: campaign.audienceStatus || "",
+    audienceTags: campaign.audienceTags || "",
+    audienceSearch: campaign.audienceSearch || "",
+    audienceChannel: (campaign.audienceChannel || "") as "" | CampaignChannel,
+    audienceLimit: campaign.audienceLimit ? String(campaign.audienceLimit) : "",
+    messageBody: campaign.messageBody || "",
+    templateName: campaign.templateName || "",
+    scheduledAt: dateInputValue(campaign.scheduledAt),
+    notes: campaign.notes || ""
+  };
+}
+
 export function CampaignsModulePage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [channelFilter, setChannelFilter] = useState("ALL");
@@ -122,22 +141,7 @@ export function CampaignsModulePage() {
   }
 
   function editCampaign(campaign: Campaign) {
-    setForm({
-      id: campaign.id,
-      name: campaign.name,
-      channel: campaign.channel,
-      status: campaign.status,
-      audienceNote: campaign.audienceNote || "",
-      audienceStatus: campaign.audienceStatus || "",
-      audienceTags: campaign.audienceTags || "",
-      audienceSearch: campaign.audienceSearch || "",
-      audienceChannel: (campaign.audienceChannel || "") as "" | CampaignChannel,
-      audienceLimit: campaign.audienceLimit ? String(campaign.audienceLimit) : "",
-      messageBody: campaign.messageBody || "",
-      templateName: campaign.templateName || "",
-      scheduledAt: dateInputValue(campaign.scheduledAt),
-      notes: campaign.notes || ""
-    });
+    setForm(campaignToForm(campaign));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -178,22 +182,19 @@ export function CampaignsModulePage() {
         audienceLimit: form.audienceLimit ? Number(form.audienceLimit) : null
       };
 
-      if (form.id) {
-        await apiRequest<Campaign>(`/api/campaigns/${form.id}`, {
+      const saved = form.id
+        ? await apiRequest<Campaign>(`/api/campaigns/${form.id}`, {
           method: "PATCH",
           body: JSON.stringify(payload)
-        });
-        showToast("Campaign draft updated.");
-      } else {
-        await apiRequest<Campaign>("/api/campaigns", {
+        })
+        : await apiRequest<Campaign>("/api/campaigns", {
           method: "POST",
           body: JSON.stringify(payload)
         });
-        showToast("Campaign draft created.");
-      }
 
-      resetForm();
+      setForm(campaignToForm(saved));
       setAudiencePreview(null);
+      showToast(form.id ? "Campaign draft updated. Audience preview is available." : "Campaign draft created. Audience preview is available.");
       campaigns.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
@@ -285,6 +286,7 @@ export function CampaignsModulePage() {
                 <Users className="h-4 w-4 text-royal" />
                 <p className="text-xs font-black uppercase text-royal">Audience Criteria</p>
               </div>
+              <p className="mt-2 text-xs font-bold leading-5 text-slate-500">Save the draft first, then preview the matching contacts. Preview does not send messages.</p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Field label="Contact status">
                   <select className={inputClassName} value={form.audienceStatus} onChange={(event) => setForm({ ...form, audienceStatus: event.target.value })}>

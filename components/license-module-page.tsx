@@ -17,6 +17,9 @@ export function LicenseModulePage() {
   const summary = useApiData<{ payments: { totalConfirmedAmount: number; totalPendingAmount: number; pendingCount: number; currency: string; lastPaymentDate: string | null } }>("/api/billing/summary");
   const planUsage = useApiData<{ plan: string; limits: { contacts: number | null; teamMembers: number | null; monthlyMessages: number | null }; usage: { contacts: number; teamMembers: number; monthlyMessages: number; enabledChannels: string[] }; reportOnly: boolean }>("/api/billing/usage");
   const subscription = data?.subscription;
+  const currentPlan = subscription?.plan ? labelize(subscription.plan) : "Enterprise Beta";
+  const licenseStatus = subscription?.status ? labelize(subscription.status) : "Beta Active";
+  const billingMode = subscription?.billingMode ? labelize(subscription.billingMode) : "Manual Beta";
 
   return (
     <AppShell>
@@ -44,15 +47,15 @@ export function LicenseModulePage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase text-royal">Current Plan</p>
-              <h2 className="mt-2 text-3xl font-black text-ink">Enterprise Beta</h2>
+              <h2 className="mt-2 text-3xl font-black text-ink">{currentPlan}</h2>
             </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">Beta Active</span>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">{licenseStatus}</span>
           </div>
           <p className="mt-5 text-sm font-semibold leading-6 text-slate-500">Includes beta access to workspace modules while billing, subscriptions, and channel-based automation limits are prepared for paid SaaS launch.</p>
           <div className="mt-6 grid gap-3">
             <Info label="Workspace" value="ARBCore AI" />
-            <Info label="License status" value={subscription?.status || "Beta active"} />
-            <Info label="Billing mode" value={subscription?.billingMode || "Manual beta"} />
+            <Info label="License status" value={licenseStatus} />
+            <Info label="Billing mode" value={billingMode} />
             <Info label="Enforcement" value="Not active in beta" />
           </div>
         </article>
@@ -95,11 +98,11 @@ export function LicenseModulePage() {
             <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-royal ring-1 ring-blue-100">Beta</span>
           </div>
           <div className="grid gap-3 p-5">
-            <Info label="Current plan" value="Enterprise Beta" />
+            <Info label="Current plan" value={currentPlan} />
             <Info label="Plan usage mode" value={planUsage.data?.reportOnly ? "Report-only" : "Beta"} />
             <Info label="Enabled channels" value={planUsage.data?.usage.enabledChannels.length ? planUsage.data.usage.enabledChannels.join(", ") : "None"} />
-            <Info label="Subscription status" value={subscription?.status || "ACTIVE"} />
-            <Info label="Billing mode" value={subscription?.billingMode || "MANUAL"} />
+            <Info label="Subscription status" value={licenseStatus} />
+            <Info label="Billing mode" value={billingMode} />
             <Info label="Confirmed payments" value={summary.data ? `${summary.data.payments.currency} ${summary.data.payments.totalConfirmedAmount.toLocaleString()}` : "-"} />
             <Info label="Pending payments" value={summary.data ? `${summary.data.payments.currency} ${summary.data.payments.totalPendingAmount.toLocaleString()}` : "-"} />
             <Info label="Workspace/company" value="ARBCore AI" />
@@ -147,4 +150,8 @@ function Info({ label, value }: { label: string; value: string }) {
       <span className="text-sm font-black text-ink">{value}</span>
     </div>
   );
+}
+
+function labelize(value: string) {
+  return value.toLowerCase().split("_").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
 }
