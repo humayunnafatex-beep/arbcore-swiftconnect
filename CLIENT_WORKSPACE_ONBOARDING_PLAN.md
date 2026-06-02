@@ -151,3 +151,5 @@ Strict routing readiness is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`. 
 Provider ID uniqueness readiness is documented in `PROVIDER_ID_UNIQUENESS_PLAN.md`. Use `/admin/provider-diagnostics` before enabling strict routing.
 
 Settings now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed for workspaces that are not connected to Meta yet. Database unique constraints are still future work.
+
+Tenant membership readiness is documented in `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`. Use `/auth/tenant-access` and `/api/auth/tenant-access` to verify report-only user-to-company membership status before paid client access. The beta selected workspace cookie is not tenant security.

@@ -67,6 +67,8 @@ Client workspace onboarding Phase 1 is documented in `CLIENT_WORKSPACE_ONBOARDIN
 
 Client workspace Phase 2 adds beta/admin workspace selection with a cookie that stores only the selected company ID. This is preparation for testing workspace context and must be replaced by authenticated membership-based switching before production multi-client access.
 
+Client workspace Phase 8 adds report-only tenant membership readiness through `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`, `/auth/tenant-access`, and `/api/auth/tenant-access`. `TENANT_MEMBERSHIP_ENFORCED=false` remains the beta default; future production must enforce user-company access before paid client login.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:
@@ -126,6 +128,7 @@ Required production direction:
 - Login/Auth system: replace demo-cookie auth before commercial launch.
 - Auth enforcement: test `AUTH_ENFORCED=true` locally or in staging with `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` before production.
 - Permission enforcement: test `PERMISSIONS_ENFORCED=true` only after role permissions are verified in `/auth/permissions`.
+- Tenant membership enforcement: test `TENANT_MEMBERSHIP_ENFORCED=true` only after `/auth/tenant-access` confirms mapped user-company access.
 - Role-based access control: protect Settings, Billing, Team, and provider credentials.
 - Environment variables: keep database URLs, app secrets, and provider secrets out of Git.
 - Token masking: never return or display access tokens after save.

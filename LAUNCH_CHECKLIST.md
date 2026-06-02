@@ -16,6 +16,8 @@ For client workspace setup, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/a
 
 For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`.
 
+For tenant membership readiness, review `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`, `/auth/tenant-access`, and `/api/auth/tenant-access`.
+
 For provider webhook routing, review `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 
 For strict provider routing readiness, review `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
@@ -174,6 +176,10 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm public WhatsApp webhook routes remain public.
 - [ ] Confirm `/admin/workspaces` remains beta/admin-assisted and does not switch the current session.
 - [ ] Confirm selected workspace cookie stores only a workspace ID and is not treated as tenant security.
+- [ ] Open `/auth/tenant-access`.
+- [ ] Confirm `/api/auth/tenant-access` returns safe JSON only.
+- [ ] Confirm tenant membership is report-only with `TENANT_MEMBERSHIP_ENFORCED=false`.
+- [ ] Confirm paid client access is not enabled until user-company membership validation is enforced.
 - [ ] Confirm production SaaS switching is still blocked until user/company membership validation is implemented.
 - [ ] Confirm WhatsApp inbound webhook routing matches by Phone Number ID when available.
 - [ ] Confirm Messenger inbound webhook routing matches by Page ID when available.
@@ -342,6 +348,7 @@ Connecting Welzz Stride real number `01958474577`:
 - Use `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` for local/staging enforcement tests.
 - Use `AUTH_IMPLEMENTATION_PHASE_7.md` and `/auth/permissions` before role permission blocking.
 - Phase 8 guards selected APIs in report-only mode. Keep `PERMISSIONS_ENFORCED=false` until limited-role staging tests pass.
+- Use `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md` and `/auth/tenant-access` before tenant membership blocking. Keep `TENANT_MEMBERSHIP_ENFORCED=false` until staging tests pass.
 - Phase 9 supports local/staging permission enforcement tests. Do not enable production permission enforcement automatically.
 - Supabase Auth users must map to Prisma `User` records and the correct `companyId` before external client onboarding.
 - Current beta is single-company/demo-auth mode; Phase 1 adds foundation only and real login enforcement comes later.

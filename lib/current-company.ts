@@ -23,6 +23,9 @@ export async function getCurrentCompany() {
   const selectedWorkspaceId = getSelectedWorkspaceId();
 
   if (selectedWorkspaceId) {
+    // Beta/admin testing only: this intentionally honors the selected workspace cookie.
+    // TODO: Future production should call tenant access validation before honoring
+    // this cookie. The selected workspace cookie is not tenant security.
     const selectedCompany = await prisma.company.findUnique({ where: { id: selectedWorkspaceId } });
 
     if (selectedCompany) {
@@ -42,6 +45,7 @@ export async function getCurrentCompany() {
   const company = await prisma.company.findFirst({ orderBy: { createdAt: "asc" } });
 
   if (company) {
+    // TODO: Production SaaS should not use default fallback for untrusted clients.
     return company;
   }
 

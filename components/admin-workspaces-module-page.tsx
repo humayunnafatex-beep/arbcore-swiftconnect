@@ -3,7 +3,7 @@
 import type React from "react";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { Building2, CheckCircle2, LogOut, Plus, RefreshCw, ShieldAlert, Users } from "lucide-react";
+import { Building2, CheckCircle2, KeyRound, LogOut, Plus, RefreshCw, ShieldAlert, Users } from "lucide-react";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { AppShell } from "./app-shell";
 import {
@@ -137,13 +137,17 @@ export function AdminWorkspacesModulePage() {
             <ShieldAlert className="h-4 w-4" />
             Provider Diagnostics
           </Link>
+          <Link href="/auth/tenant-access" className={secondaryButtonClassName}>
+            <KeyRound className="h-4 w-4" />
+            Tenant Access
+          </Link>
         </div>
       </section>
 
       <section className="rounded-[22px] border border-amber-100 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800">
         <div className="flex gap-3">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>Workspace creation and selection are beta/admin-only. Do not use workspace switching for untrusted clients until auth and company membership enforcement are complete.</p>
+          <p>Workspace creation and selection are beta/admin-only. Before paid client access, verify tenant membership and auth mapping. Do not use workspace switching for untrusted clients until auth and company membership enforcement are complete.</p>
         </div>
       </section>
 

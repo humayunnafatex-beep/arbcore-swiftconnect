@@ -196,6 +196,8 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `/admin/workspaces`: beta/admin workspace creation and selected-workspace testing; not production tenant switching.
 - `WORKSPACE_ISOLATION_QA_REPORT.md`: company scoping audit for beta workspace switching.
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`: manual beta/admin workspace switching test steps.
+- `TENANT_MEMBERSHIP_ENFORCEMENT_PLAN.md`: report-only tenant membership readiness before production enforcement.
+- `/auth/tenant-access` and `/api/auth/tenant-access`: safe user-company membership diagnostics; no tokens, cookies, or raw sessions are exposed.
 - `PROVIDER_WEBHOOK_ROUTING_PLAN.md`: provider-based webhook routing foundation for WhatsApp and Messenger.
 - `STRICT_PROVIDER_WEBHOOK_ROUTING.md`: opt-in strict unmatched-provider webhook behavior.
 - `PROVIDER_ID_UNIQUENESS_PLAN.md`: provider ID duplicate diagnostics and future uniqueness plan.
