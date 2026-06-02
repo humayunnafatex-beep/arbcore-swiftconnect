@@ -1,5 +1,7 @@
 # Messenger Setup Guide
 
+For multi-workspace routing behavior, also review `PROVIDER_WEBHOOK_ROUTING_PLAN.md`. Messenger inbound webhooks can be routed by Facebook Page ID when `Company.messengerPageId` matches the webhook `entry[].id`; unmatched events still use beta fallback behavior.
+
 Use this guide to prepare Meta Messenger/Facebook Page receive and reply support in ARBCore SwiftConnect.
 
 Messenger support is provider-backed only after Meta setup is complete. ARBCore does not fake Messenger sending success.

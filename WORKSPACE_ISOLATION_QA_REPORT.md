@@ -114,19 +114,20 @@ This is QA hardening only. `AUTH_ENFORCED` and `PERMISSIONS_ENFORCED` remain off
 
 ## Webhook Routing Limitation
 
-Webhook routing was inspected but not changed in this phase.
+Webhook routing was inspected in Phase 3 and provider-routing foundation was added in Phase 4. See `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 
 Current limitation:
 
-- WhatsApp webhook routes still resolve company through current/default company behavior.
-- Messenger webhook routes still resolve company through current/default company behavior.
+- WhatsApp webhook POST can route by Phone Number ID when available.
+- Messenger webhook POST can route by Page ID when available.
+- Unmatched provider webhooks still fall back to beta/default company behavior.
 
 Future production multi-client mode must route inbound webhooks by provider identifiers:
 
 - WhatsApp Phone Number ID and/or WhatsApp Business Account ID.
 - Messenger Page ID.
 
-Do not rely on beta selected workspace cookies for provider webhook routing.
+Do not rely on beta selected workspace cookies for provider webhook routing. Before production multi-client use, fallback should be disabled or converted into an unmatched-event workflow.
 
 ## Final Status
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCurrentCompany } from "@/lib/current-company";
 import { sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
+import { getCompanyForProviderWebhook, type ProviderRoutingResult } from "@/lib/provider-routing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,12 +53,13 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const payload = (await request.json().catch(() => null)) as MessengerPayload | null;
-    const company = await getCurrentCompany();
 
-    if (!payload || !company) {
+    if (!payload) {
       return NextResponse.json({ success: true, data: { received: true, messages: 0 } });
     }
 
+    const routing = await getCompanyForProviderWebhook({ channel: "MESSENGER", payload });
+    const company = routing.company;
     const messages = extractMessengerMessages(payload);
 
     await prisma.webhookEvent.create({
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
         companyId: company.id,
         provider: "messenger",
         eventType: messages.length ? "messages" : "unknown",
-        payload: sanitizeMessengerWebhookPayload(payload, messages) as Prisma.InputJsonValue
+        payload: sanitizeMessengerWebhookPayload(payload, messages, routing) as Prisma.InputJsonValue
       }
     });
 
@@ -86,22 +88,17 @@ export async function POST(request: Request) {
         continue;
       }
 
-      const contact = await prisma.contact.upsert({
-        where: { phone: message.senderPsid },
-        update: { companyId: company.id },
-        create: {
-          companyId: company.id,
-          name: `Messenger ${message.senderPsid}`,
-          phone: message.senderPsid,
-          segment: "Messenger Inbox",
-          optedIn: true
-        }
+      const contact = await findOrCreateWebhookContact({
+        companyId: company.id,
+        phone: message.senderPsid,
+        name: `Messenger ${message.senderPsid}`,
+        segment: "Messenger Inbox"
       });
 
       await prisma.messageLog.create({
         data: {
           companyId: company.id,
-          contactId: contact.id,
+          contactId: contact?.id,
           channel: "MESSENGER",
           body: message.text,
           direction: "INBOUND",
@@ -120,7 +117,7 @@ export async function POST(request: Request) {
         await prisma.messageLog.create({
           data: {
             companyId: company.id,
-            contactId: contact.id,
+            contactId: contact?.id,
             channel: "MESSENGER",
             body: matchedRule.response,
             direction: "OUTBOUND",
@@ -140,7 +137,7 @@ export async function POST(request: Request) {
       await prisma.messageLog.create({
         data: {
           companyId: company.id,
-          contactId: contact.id,
+          contactId: contact?.id,
           channel: "MESSENGER",
           body: matchedRule.response,
           direction: "OUTBOUND",
@@ -193,6 +190,46 @@ function normalizeText(value: string) {
   return value.trim().toLowerCase();
 }
 
+async function findOrCreateWebhookContact({
+  companyId,
+  phone,
+  name,
+  segment
+}: {
+  companyId: string;
+  phone: string;
+  name: string;
+  segment: string;
+}) {
+  const existing = await prisma.contact.findFirst({
+    where: { companyId, phone }
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  try {
+    return await prisma.contact.create({
+      data: {
+        companyId,
+        name,
+        phone,
+        segment,
+        optedIn: true
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      // Current beta schema keeps Contact.phone globally unique. Do not reassign
+      // another workspace's contact while provider routing is being hardened.
+      return null;
+    }
+
+    throw error;
+  }
+}
+
 function extractMessengerMessages(payload: MessengerPayload) {
   return (payload.entry ?? [])
     .flatMap((entry) => entry.messaging ?? [])
@@ -209,12 +246,19 @@ function extractMessengerMessages(payload: MessengerPayload) {
     .filter((message) => message.senderPsid && message.text);
 }
 
-function sanitizeMessengerWebhookPayload(payload: MessengerPayload, messages: ReturnType<typeof extractMessengerMessages>) {
+function sanitizeMessengerWebhookPayload(payload: MessengerPayload, messages: ReturnType<typeof extractMessengerMessages>, routing: ProviderRoutingResult) {
+  const providerIds = routing.providerIds as { pageId?: string; senderId?: string };
+
   return {
     provider: "messenger",
     object: payload.object ?? "page",
     messageCount: messages.length,
     senderCount: new Set(messages.map((message) => message.senderPsid)).size,
+    routing: {
+      routedBy: routing.routedBy,
+      messengerPageIdPresent: Boolean(providerIds.pageId),
+      senderPresent: Boolean(providerIds.senderId)
+    },
     receivedAt: new Date().toISOString()
   };
 }

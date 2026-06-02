@@ -1,5 +1,7 @@
 # Meta WhatsApp Cloud API Setup Guide
 
+For multi-workspace routing behavior, also review `PROVIDER_WEBHOOK_ROUTING_PLAN.md`. WhatsApp inbound webhooks can be routed by `metadata.phone_number_id` when it matches `Company.whatsappPhoneNumberId`; unmatched events still use beta fallback behavior.
+
 Use this guide to connect ARBCore SwiftConnect to the real Meta WhatsApp Cloud API for live end-to-end testing.
 
 ARBCore SwiftConnect does not fake WhatsApp sending. A message is only treated as sent when Meta accepts the request through WhatsApp Cloud API.

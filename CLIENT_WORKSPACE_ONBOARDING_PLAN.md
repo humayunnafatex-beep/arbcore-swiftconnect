@@ -143,3 +143,5 @@ The QA pass confirms the major app modules are scoped by current company for bet
 - Full client SaaS requires auth and company membership enforcement.
 - Webhook routing still needs provider-based routing before untrusted multi-client production.
 - Channel credentials remain per company and are not copied.
+
+Provider routing foundation is documented in `PROVIDER_WEBHOOK_ROUTING_PLAN.md`. Current webhook POST handling can match WhatsApp by Phone Number ID and Messenger by Page ID, with beta fallback preserved for unmatched events.

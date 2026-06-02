@@ -53,6 +53,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`
 - `WORKSPACE_ISOLATION_QA_REPORT.md`
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`
+- `PROVIDER_WEBHOOK_ROUTING_PLAN.md`
 
 ## Common Support Tasks
 
@@ -64,6 +65,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces` before creating a separate client workspace.
 - Use the Select Workspace and Clear Selected Workspace actions only for admin beta testing.
 - Use `WORKSPACE_ISOLATION_QA_REPORT.md` and `WORKSPACE_SWITCHING_TEST_CHECKLIST.md` before claiming workspace separation is ready for beta client testing.
+- Use `PROVIDER_WEBHOOK_ROUTING_PLAN.md` when testing inbound WhatsApp/Messenger routing across more than one workspace.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Check Admin Workspaces for workspace summary counts when preparing an external beta client.
@@ -155,7 +157,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not reuse or copy Welzz Stride access tokens into a client workspace.
 - Verify Supabase Auth user mapping before giving a client real access.
 - Production tenant switching must validate authenticated user membership and role.
-- Webhooks still need provider-based routing before untrusted multi-client production.
+- Webhooks now have provider-routing foundation, but unmatched events still use beta fallback. Require provider matches before untrusted multi-client production.
 
 ### Manual Payment Status Confusion
 

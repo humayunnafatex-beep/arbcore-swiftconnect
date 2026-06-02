@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
+import { getCompanyForProviderWebhook, type ProviderRoutingResult } from "@/lib/provider-routing";
 import { parseWebhookEvent, sendWhatsAppTextMessage, validateSignature } from "@/lib/whatsapp-service";
 
 export const runtime = "nodejs";
@@ -40,7 +41,8 @@ export async function POST(request: Request) {
     }
 
     const payload = JSON.parse(rawBody) as Prisma.InputJsonValue;
-    const company = await getWebhookCompany();
+    const routing = await getCompanyForProviderWebhook({ channel: "WHATSAPP", payload });
+    const company = routing.company;
 
     if (!company) {
       return NextResponse.json({ success: true, data: { received: true, messages: 0 } });
@@ -53,22 +55,17 @@ export async function POST(request: Request) {
         companyId: company.id,
         provider: "whatsapp",
         eventType: parsed.messages.length ? "messages" : parsed.statuses.length ? "statuses" : "unknown",
-        payload
+        payload: withWhatsAppRoutingMetadata(payload, routing)
       }
     });
 
     for (const message of parsed.messages) {
       const body = message.text ?? `[${message.type} message]`;
-      const contact = await prisma.contact.upsert({
-        where: { phone: message.from },
-        update: { companyId: company.id },
-        create: {
-          companyId: company.id,
-          name: `WhatsApp ${message.from}`,
-          phone: message.from,
-          segment: "WhatsApp Inbox",
-          optedIn: true
-        }
+      const contact = await findOrCreateWebhookContact({
+        companyId: company.id,
+        phone: message.from,
+        name: `WhatsApp ${message.from}`,
+        segment: "WhatsApp Inbox"
       });
 
       const existingInboundLog = await prisma.messageLog.findFirst({
@@ -87,7 +84,8 @@ export async function POST(request: Request) {
       await prisma.messageLog.create({
         data: {
           companyId: company.id,
-          contactId: contact.id,
+          contactId: contact?.id,
+          channel: "WHATSAPP",
           body,
           direction: "INBOUND",
           status: "RECEIVED",
@@ -115,7 +113,8 @@ export async function POST(request: Request) {
       await prisma.messageLog.create({
         data: {
           companyId: company.id,
-          contactId: contact.id,
+          contactId: contact?.id,
+          channel: "WHATSAPP",
           body: matchedRule.response,
           direction: "OUTBOUND",
           status: autoReplyResult.success ? "SENT" : "FAILED",
@@ -170,7 +169,71 @@ function normalizeText(value: string) {
   return value.trim().toLowerCase();
 }
 
+async function findOrCreateWebhookContact({
+  companyId,
+  phone,
+  name,
+  segment
+}: {
+  companyId: string;
+  phone: string;
+  name: string;
+  segment: string;
+}) {
+  const existing = await prisma.contact.findFirst({
+    where: { companyId, phone }
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  try {
+    return await prisma.contact.create({
+      data: {
+        companyId,
+        name,
+        phone,
+        segment,
+        optedIn: true
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      // Current beta schema keeps Contact.phone globally unique. Do not reassign
+      // another workspace's contact while provider routing is being hardened.
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+function withWhatsAppRoutingMetadata(payload: Prisma.InputJsonValue, routing: ProviderRoutingResult): Prisma.InputJsonValue {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return {
+      provider: "whatsapp",
+      routing: safeRoutingMetadata(routing)
+    };
+  }
+
+  return {
+    ...payload,
+    routing: safeRoutingMetadata(routing)
+  };
+}
+
+function safeRoutingMetadata(routing: ProviderRoutingResult) {
+  const providerIds = routing.providerIds as { phoneNumberId?: string; businessAccountId?: string; from?: string };
+  return {
+    routedBy: routing.routedBy,
+    whatsappPhoneNumberIdPresent: Boolean(providerIds.phoneNumberId),
+    whatsappBusinessAccountIdPresent: Boolean(providerIds.businessAccountId),
+    senderPresent: Boolean(providerIds.from)
+  };
+}
+
 async function getWebhookCompany() {
-  // TODO: Replace default-company fallback with explicit multi-workspace webhook routing.
+  // GET verification usually has no provider IDs, so keep current beta/default fallback.
   return getCurrentCompany();
 }
