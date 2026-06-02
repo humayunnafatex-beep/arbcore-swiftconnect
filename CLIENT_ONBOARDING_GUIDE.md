@@ -6,6 +6,8 @@ Use this guide to onboard a business into ARBCore SwiftConnect in a controlled E
 
 ARBCore SwiftConnect can receive customer messages only from channels connected through Meta Cloud API credentials saved in Settings. The app should never claim a disconnected WhatsApp number or Facebook Page is active.
 
+Before paid client onboarding, run the Welzz Stride internal beta flow in `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`.
+
 ## Who This Guide Is For
 
 - Welzz Stride internal team

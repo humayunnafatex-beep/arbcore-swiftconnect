@@ -46,14 +46,18 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`
 - `CLIENT_ONBOARDING_GUIDE.md`
 - `BETA_FEEDBACK_FORM.md`
+- `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`
+- `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`
 
 ## Common Support Tasks
 
 - Check Channel Center for WhatsApp and Messenger setup readiness.
 - Run or review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` after a deployment.
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
+- Use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md` for internal 2-3 day beta operations before paid client onboarding.
+- Use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` when verifying production migrations.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Use Billing Summary to review confirmed totals, pending totals, last payment, and period status.

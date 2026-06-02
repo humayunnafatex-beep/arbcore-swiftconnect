@@ -44,18 +44,22 @@
 - Open a manual receipt from Payment History and confirm it does not show secrets or card data.
 - Open Auth Status and Auth Permissions for readiness metadata only.
 - Use `CLIENT_ONBOARDING_GUIDE.md` before onboarding each beta business.
+- Run `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md` before paid client onboarding.
 - Collect structured tester feedback with `BETA_FEEDBACK_FORM.md`.
 - Use `SUPPORT_HANDOVER_NOTE.md` for support URLs, common issue checks, and escalation.
 - Complete `PRODUCTION_DEPLOYMENT_VERIFICATION.md` and `PRODUCTION_MANUAL_QA_CHECKLIST.md` after each production deployment.
+- Use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` to verify production migration readiness.
 - Optionally run `npm.cmd run verify:production` for read-only route/API checks.
 
 ## Client Onboarding And Support Docs
 
 - `CLIENT_ONBOARDING_GUIDE.md`: step-by-step onboarding for Welzz Stride internal testing and future beta clients.
 - `BETA_FEEDBACK_FORM.md`: practical beta feedback template for feature ratings, setup experience, bugs, and paid-pilot readiness.
+- `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`: internal beta workflow and go/no-go decision guide.
 - `SUPPORT_HANDOVER_NOTE.md`: support reference for key URLs, common tasks, common issues, safety rules, and escalation checks.
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment guide for Vercel, Supabase, routes, APIs, webhooks, security, and rollback.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: checkbox-based manual QA checklist for production beta verification.
+- `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: production migration verification checklist for Supabase.
 
 ## Rollback Notes
 

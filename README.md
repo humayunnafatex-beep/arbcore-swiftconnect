@@ -191,8 +191,10 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.
 - `BETA_FEEDBACK_FORM.md`: structured feedback template for testers.
 - `SUPPORT_HANDOVER_NOTE.md`: support URLs, common issues, safety rules, and escalation steps.
+- `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`: internal 2-3 day beta workflow for Welzz Stride.
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment production verification guide.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: manual production QA checklist.
+- `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: Supabase production migration verification checklist.
 
 Read-only production verification script:
 

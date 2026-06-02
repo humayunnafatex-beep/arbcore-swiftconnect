@@ -6,7 +6,11 @@ For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPOR
 
 For beta client onboarding and support handover, review `CLIENT_ONBOARDING_GUIDE.md`, `BETA_FEEDBACK_FORM.md`, and `SUPPORT_HANDOVER_NOTE.md`.
 
+For Welzz Stride internal beta operations, use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`.
+
 For post-deployment verification, review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` and `PRODUCTION_MANUAL_QA_CHECKLIST.md`. The optional read-only script is `scripts/verify-production.mjs`.
+
+For Supabase production migration verification, use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`.
 
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
@@ -72,6 +76,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `npx prisma migrate deploy` has run for pending migrations.
 - [ ] `npx prisma generate` has run after schema changes.
 - [ ] Basic record counts look correct after deploy.
+- [ ] `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` has been reviewed for latest migrations.
 
 ## 4. Settings QA
 
