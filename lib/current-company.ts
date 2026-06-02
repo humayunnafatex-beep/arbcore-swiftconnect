@@ -1,12 +1,35 @@
-import { ensureDefaultWorkspace, getCurrentAuthContext } from "@/lib/auth";
+import { ensureDefaultWorkspace, getCurrentAuthContext, isAuthEnforced } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSelectedWorkspaceId } from "@/lib/workspace-selection";
 
 export async function getCurrentCompany() {
   // Beta behavior: keep the existing single-company/default workspace flow.
   // Phase 4: if a Supabase Auth user maps to a Prisma user, use that user's company.
   // TODO: Make authenticated user/session company resolution the default before onboarding external clients.
+  // TODO: In production SaaS mode, workspace switching must validate user membership/role.
   // TODO: For multi-client webhooks, route by provider account identifiers such as
   // WhatsApp Phone Number ID and verify token instead of first/default company fallback.
+  if (isAuthEnforced()) {
+    try {
+      const authenticatedCompany = await getAuthenticatedCurrentCompany();
+      if (authenticatedCompany) {
+        return authenticatedCompany;
+      }
+    } catch {
+      // Public provider webhooks do not have browser sessions. Keep beta fallback for now.
+    }
+  }
+
+  const selectedWorkspaceId = getSelectedWorkspaceId();
+
+  if (selectedWorkspaceId) {
+    const selectedCompany = await prisma.company.findUnique({ where: { id: selectedWorkspaceId } });
+
+    if (selectedCompany) {
+      return selectedCompany;
+    }
+  }
+
   try {
     const authenticatedCompany = await getAuthenticatedCurrentCompany();
     if (authenticatedCompany) {

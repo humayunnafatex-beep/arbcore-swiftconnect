@@ -68,7 +68,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `CLIENT_ONBOARDING_GUIDE.md` has been reviewed before onboarding a tester.
 - [ ] `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` has been reviewed before creating a separate client workspace.
 - [ ] `/admin/workspaces` lists the expected workspace records without exposing tokens.
-- [ ] New client workspaces are not assumed active until auth mapping is verified.
+- [ ] Select Workspace works only as beta/admin testing preparation.
+- [ ] Clear Selected Workspace restores the default beta fallback.
+- [ ] New client workspaces are not treated as production client access until auth mapping is verified.
 - [ ] `BETA_FEEDBACK_FORM.md` is ready for the tester after the demo.
 - [ ] `SUPPORT_HANDOVER_NOTE.md` is available to the support/admin team.
 - [ ] Tester is reminded not to share or screenshot access tokens.
@@ -159,6 +161,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm no tokens, cookies, raw sessions, or service-role keys are displayed.
 - [ ] Confirm public WhatsApp webhook routes remain public.
 - [ ] Confirm `/admin/workspaces` remains beta/admin-assisted and does not switch the current session.
+- [ ] Confirm selected workspace cookie stores only a workspace ID and is not treated as tenant security.
+- [ ] Confirm production SaaS switching is still blocked until user/company membership validation is implemented.
 
 ## 5. Contacts QA
 

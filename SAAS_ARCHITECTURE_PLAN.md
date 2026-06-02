@@ -65,6 +65,8 @@ Phase 8 and Phase 9 apply selected API guards and local/staging permission enfor
 
 Client workspace onboarding Phase 1 is documented in `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`. The admin-assisted `/admin/workspaces` page can create separate `Company` records and optional owner users, but it does not switch sessions, copy provider credentials, or enable tenant enforcement.
 
+Client workspace Phase 2 adds beta/admin workspace selection with a cookie that stores only the selected company ID. This is preparation for testing workspace context and must be replaced by authenticated membership-based switching before production multi-client access.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:
@@ -81,6 +83,8 @@ Future SaaS structure should be workspace-first:
 Important SaaS rule: every operational API must scope database reads and writes by `companyId`.
 
 Current onboarding caution: multi-client workspace creation is beta/admin-assisted only. Do not onboard paid clients until Supabase Auth mapping, permission status, and company scoping are verified for the target workspace.
+
+Workspace switching caution: the beta selected-workspace cookie is not a tenant security boundary. It must not be used for untrusted clients.
 
 ## 5. Channel Architecture
 

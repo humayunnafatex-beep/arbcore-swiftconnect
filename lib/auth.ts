@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/api";
 import { DEMO_EMAIL, DEMO_PASSWORD, DEFAULT_COMPANY_ID, DEFAULT_USER_ID, AUTH_COOKIE_NAME, isDemoSession } from "@/lib/auth-constants";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSelectedWorkspaceId } from "@/lib/workspace-selection";
 
 export type AuthContext = Awaited<ReturnType<typeof ensureDefaultWorkspace>>;
 export type AppModule = "dashboard" | "connect" | "contacts" | "campaigns" | "inbox" | "ai-studio" | "auto-reply" | "crm" | "analytics" | "settings" | "license";
@@ -137,7 +138,19 @@ export async function getCurrentAuthContext() {
     throw new ApiError(401, "UNAUTHENTICATED", "You must be logged in to access this resource.");
   }
 
-  return ensureDefaultWorkspace();
+  const defaultContext = await ensureDefaultWorkspace();
+
+  if (!isAuthEnforced()) {
+    const selectedCompany = await getSelectedWorkspace();
+
+    if (selectedCompany) {
+      // Beta/admin testing only. In production SaaS mode, workspace switching must
+      // validate user membership and role before changing company context.
+      return { user: defaultContext.user, company: selectedCompany };
+    }
+  }
+
+  return defaultContext;
 }
 
 export async function getSafeAuthStatus() {
@@ -318,4 +331,16 @@ function emptyCompanyStatus() {
     slug: null,
     plan: null
   };
+}
+
+async function getSelectedWorkspace() {
+  const selectedWorkspaceId = getSelectedWorkspaceId();
+
+  if (!selectedWorkspaceId) {
+    return null;
+  }
+
+  return prisma.company.findUnique({
+    where: { id: selectedWorkspaceId }
+  });
 }

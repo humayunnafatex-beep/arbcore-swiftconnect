@@ -10,6 +10,8 @@ Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHA
 
 Client workspace onboarding Phase 1 is tracked in `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`. `/admin/workspaces` is an admin-assisted foundation for creating company records and optional owner users, not a full tenant enforcement or workspace switching system.
 
+Client workspace Phase 2 adds beta/admin workspace selection using an HTTP-only `arbcore_selected_workspace_id` cookie. This is for admin testing only; production tenant switching still requires Supabase Auth, company membership validation, and role enforcement.
+
 Current behavior:
 
 - Demo login route exists.
@@ -39,6 +41,8 @@ Current selection is single-company oriented:
 Important limitation: before external clients are added, company selection must come from the authenticated user session or provider-specific webhook routing, not simply the default/first company.
 
 Phase 1 onboarding adds workspace records safely, but current session resolution still preserves the single-company beta fallback. Do not assume a newly created workspace is active for the current browser session.
+
+Phase 2 selection can temporarily resolve app APIs to an admin-selected workspace while enforcement is off. Clear the selection to return to the default beta workspace. Do not use this as client-facing production access.
 
 ## 3. Current Roles / Team Behavior
 
@@ -172,6 +176,7 @@ Review `AUTH_IMPLEMENTATION_PHASE_8.md` before expanding guards beyond the selec
 - Convert route-level access from informal patterns to shared permission helpers.
 - Add `VIEWER` through migration if needed.
 - Protect Settings, Team, Billing, and provider credentials.
+- Replace beta cookie workspace selection with authenticated membership-based workspace resolution before untrusted client onboarding.
 
 ### Phase 6: Invite Client Users / Team Members
 

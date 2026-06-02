@@ -95,3 +95,35 @@ Phase 1 adds:
 The API returns workspace summary counts only. It does not return WhatsApp tokens, Messenger Page Access Tokens, verify tokens, raw webhook payloads, cookies, or Supabase sessions.
 
 The POST endpoint creates a separate workspace record and optional owner user. It does not create channel credentials, copy Welzz Stride settings, or auto-select the new workspace for the current session.
+
+## Beta Workspace Selection
+
+Phase 2 adds beta/admin workspace selection preparation:
+
+```text
+/api/admin/workspaces/current
+/api/admin/workspaces/select
+```
+
+Admins can select a workspace from `/admin/workspaces` for testing. The selected workspace ID is stored in an HTTP-only cookie named:
+
+```text
+arbcore_selected_workspace_id
+```
+
+This cookie stores only the company/workspace ID. It does not store tokens, credentials, provider settings, cookies from Supabase, or raw session data.
+
+Current beta resolution order:
+
+1. Supabase Auth mapped user company remains authoritative when a mapped user exists.
+2. In non-enforced beta mode, an admin-selected workspace cookie can provide the current company context.
+3. If no selected workspace exists, ARBCore falls back to the default beta workspace.
+
+Important limitations:
+
+- Workspace selection is beta/admin-only.
+- It is not safe for untrusted client access yet.
+- Production SaaS switching must validate authenticated user membership and role.
+- Channel credentials remain per company and are never copied.
+- Webhook routing is not changed in this phase.
+- Clear the selected workspace to return to the default beta fallback.

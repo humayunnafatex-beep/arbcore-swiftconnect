@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { FormEvent, useState } from "react";
-import { Building2, Plus, RefreshCw, ShieldAlert, Users } from "lucide-react";
+import { Building2, CheckCircle2, LogOut, Plus, RefreshCw, ShieldAlert, Users } from "lucide-react";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { AppShell } from "./app-shell";
 import {
@@ -31,6 +31,16 @@ type WorkspaceResponse = {
   items: Workspace[];
 };
 
+type CurrentWorkspaceResponse = {
+  selectedWorkspace: {
+    id: string;
+    name: string;
+    plan: string;
+  } | null;
+  defaultMode: boolean;
+  warning: string;
+};
+
 const planOptions = ["ENTERPRISE_BETA", "STARTER_BETA", "GROWTH_BETA", "CUSTOM"];
 
 const emptyForm = {
@@ -43,10 +53,13 @@ const emptyForm = {
 
 export function AdminWorkspacesModulePage() {
   const workspaces = useApiData<WorkspaceResponse>("/api/admin/workspaces");
+  const currentWorkspace = useApiData<CurrentWorkspaceResponse>("/api/admin/workspaces/current");
   const { toast, showToast } = useToast();
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const items = workspaces.data?.items ?? [];
+  const selectedWorkspace = currentWorkspace.data?.selectedWorkspace ?? null;
 
   async function createWorkspace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,10 +73,42 @@ export function AdminWorkspacesModulePage() {
       showToast("Workspace created. Configure channels separately after mapping is verified.");
       setForm(emptyForm);
       workspaces.reload();
+      currentWorkspace.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function selectWorkspace(workspace: Workspace) {
+    setSwitching(true);
+
+    try {
+      await apiRequest("/api/admin/workspaces/select", {
+        method: "POST",
+        body: JSON.stringify({ companyId: workspace.id })
+      });
+      currentWorkspace.reload();
+      showToast(`${workspace.name} selected for beta admin testing. Open Dashboard, Settings, or Inbox to view this workspace context.`);
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setSwitching(false);
+    }
+  }
+
+  async function clearSelectedWorkspace() {
+    setSwitching(true);
+
+    try {
+      await apiRequest("/api/admin/workspaces/select", { method: "DELETE" });
+      currentWorkspace.reload();
+      showToast("Selected workspace cleared. Default beta workspace fallback is active.");
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setSwitching(false);
     }
   }
 
@@ -91,7 +136,30 @@ export function AdminWorkspacesModulePage() {
       <section className="rounded-[22px] border border-amber-100 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800">
         <div className="flex gap-3">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>Workspace creation is beta/admin-only. Auth enforcement and permission enforcement remain off by default, and new workspaces are not automatically selected for the current session.</p>
+          <p>Workspace creation and selection are beta/admin-only. Do not use workspace switching for untrusted clients until auth and company membership enforcement are complete.</p>
+        </div>
+      </section>
+
+      <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-blue-50 text-royal ring-1 ring-blue-100">
+              <CheckCircle2 className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-xs font-black uppercase text-royal">Current Workspace Context</p>
+              <h2 className="mt-1 text-xl font-black text-ink">{selectedWorkspace ? selectedWorkspace.name : "Default beta fallback"}</h2>
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                {selectedWorkspace
+                  ? `${labelize(selectedWorkspace.plan)} selected by admin cookie. Open Dashboard, Settings, or Inbox to view this workspace context.`
+                  : "No admin-selected workspace cookie is active."}
+              </p>
+            </div>
+          </div>
+          <button className={secondaryButtonClassName} onClick={() => void clearSelectedWorkspace()} disabled={switching || !selectedWorkspace}>
+            <LogOut className="h-4 w-4" />
+            Clear Selected Workspace
+          </button>
         </div>
       </section>
 
@@ -134,7 +202,7 @@ export function AdminWorkspacesModulePage() {
             <Metric label="Users" value={items.reduce((total, item) => total + item.userCount, 0).toLocaleString()} helper="Mapped Prisma users" />
             <Metric label="Messages" value={items.reduce((total, item) => total + item.messageCount, 0).toLocaleString()} helper="Logged messages" />
           </section>
-          <DataState loading={workspaces.loading} error={workspaces.error} empty={!items.length} emptyText="No workspaces found yet.">
+          <DataState loading={workspaces.loading || currentWorkspace.loading} error={workspaces.error || currentWorkspace.error} empty={!items.length} emptyText="No workspaces found yet.">
             <div className="grid gap-4">
               {items.map((workspace) => (
                 <article key={workspace.id} className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
@@ -143,13 +211,25 @@ export function AdminWorkspacesModulePage() {
                       <h3 className="text-lg font-black text-ink">{workspace.name}</h3>
                       <p className="mt-1 text-sm font-semibold text-slate-500">{workspace.slug}</p>
                     </div>
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-royal ring-1 ring-blue-100">{labelize(workspace.plan)}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {selectedWorkspace?.id === workspace.id ? (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">Selected</span>
+                      ) : null}
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-royal ring-1 ring-blue-100">{labelize(workspace.plan)}</span>
+                    </div>
                   </div>
                   <div className="mt-4 grid gap-3 sm:grid-cols-4">
                     <Info label="Users" value={workspace.userCount.toLocaleString()} />
                     <Info label="Contacts" value={workspace.contactCount.toLocaleString()} />
                     <Info label="Messages" value={workspace.messageCount.toLocaleString()} />
                     <Info label="Created" value={formatDate(workspace.createdAt)} />
+                  </div>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs font-bold leading-5 text-slate-500">Selection uses a beta admin cookie only. Channel credentials stay separate per company.</p>
+                    <button className={secondaryButtonClassName} onClick={() => void selectWorkspace(workspace)} disabled={switching || selectedWorkspace?.id === workspace.id}>
+                      <CheckCircle2 className="h-4 w-4" />
+                      {selectedWorkspace?.id === workspace.id ? "Selected" : "Select Workspace"}
+                    </button>
                   </div>
                 </article>
               ))}
