@@ -2,6 +2,8 @@
 
 For the final Beta v1.0 package, review `BETA_V1_RELEASE_SUMMARY.md`, `EXECUTIVE_HANDOVER_SUMMARY.md`, and `TECHNICAL_HANDOVER_INDEX.md`.
 
+For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
+
 ## What Is Working
 
 - Dashboard with live CRM/support metrics and quick links.
@@ -63,6 +65,7 @@ For the final Beta v1.0 package, review `BETA_V1_RELEASE_SUMMARY.md`, `EXECUTIVE
 - `BETA_V1_RELEASE_SUMMARY.md`: Enterprise Beta v1.0 scope, safe defaults, verification status, known limitations, and next steps.
 - `EXECUTIVE_HANDOVER_SUMMARY.md`: business-friendly handover summary for decision makers.
 - `TECHNICAL_HANDOVER_INDEX.md`: grouped technical document index for developers, support, QA, and operations.
+- `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`: Beta success criteria, blocker conditions, expansion readiness, and exit decision guide.
 - `CLIENT_ONBOARDING_GUIDE.md`: step-by-step onboarding for Welzz Stride internal testing and future beta clients.
 - `BETA_FEEDBACK_FORM.md`: practical beta feedback template for feature ratings, setup experience, bugs, and paid-pilot readiness.
 - `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`: internal beta workflow and go/no-go decision guide.
