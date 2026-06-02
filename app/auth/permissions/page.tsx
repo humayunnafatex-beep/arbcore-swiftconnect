@@ -170,7 +170,7 @@ export default function AuthPermissionsPage() {
           <Link className={primaryButtonClassName} href="/auth/status">Auth Status</Link>
           <Link className={secondaryButtonClassName} href="/dashboard">Dashboard</Link>
           <Link className={secondaryButtonClassName} href="/settings">Settings</Link>
-          <Link className={secondaryButtonClassName} href="/whatsapp-logs">WhatsApp Logs</Link>
+          <Link className={secondaryButtonClassName} href="/message-logs">Message Logs</Link>
           <Link className={secondaryButtonClassName} href="/login">Login</Link>
           <Link className={secondaryButtonClassName} href="/auth/logout">Logout</Link>
         </div>

@@ -2,6 +2,8 @@
 
 Use this checklist before each production launch or rollback.
 
+For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPORT.md`, `SECURITY_QA_REPORT.md`, and `MIGRATION_AUDIT.md`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.

@@ -18,7 +18,7 @@ export async function GET() {
         webhookUrl: company.whatsappWebhookUrl || null,
         webhookPath: "/api/whatsapp/webhook",
         sendTestPath: "/send-messages",
-        logsPath: "/whatsapp-logs"
+        logsPath: "/message-logs"
       },
       messenger: {
         configured: Boolean(company.messengerPageId && company.messengerPageAccessToken),
@@ -28,7 +28,7 @@ export async function GET() {
         webhookUrl: company.messengerWebhookUrl || null,
         webhookPath: "/api/messenger/webhook",
         testSendApiPath: "/api/messenger/test-send",
-        logsPath: "/whatsapp-logs"
+        logsPath: "/message-logs"
       },
       autoReply: {
         supportedChannels: ["WHATSAPP", "MESSENGER"],

@@ -304,6 +304,8 @@ The Settings page accepts WhatsApp and Messenger access tokens for launch setup,
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.
 
+For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPORT.md`, `SECURITY_QA_REPORT.md`, and `MIGRATION_AUDIT.md`.
+
 For auth readiness, open `/auth/status` after Supabase login and confirm the mode is `supabase_mapped`. The backing `/api/auth/me` endpoint returns safe status fields only and must not expose tokens, cookies, or raw Supabase sessions.
 
 Before enforcing login, complete `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` in local or staging and confirm public WhatsApp webhook routes still work.

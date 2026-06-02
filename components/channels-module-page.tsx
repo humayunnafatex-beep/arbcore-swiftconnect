@@ -16,7 +16,7 @@ type ChannelStatus = {
     webhookUrl: string | null;
     webhookPath: "/api/whatsapp/webhook";
     sendTestPath: "/send-messages";
-    logsPath: "/whatsapp-logs";
+    logsPath: "/message-logs";
   };
   messenger: {
     configured: boolean;
@@ -26,7 +26,7 @@ type ChannelStatus = {
     webhookUrl: string | null;
     webhookPath: "/api/messenger/webhook";
     testSendApiPath: "/api/messenger/test-send";
-    logsPath: "/whatsapp-logs";
+    logsPath: "/message-logs";
   };
   autoReply: {
     supportedChannels: string[];
@@ -217,7 +217,7 @@ export function ChannelsModulePage() {
                     <h2 className="text-lg font-black text-ink">Messenger Test Send</h2>
                     <p className="mt-1 text-sm font-semibold text-slate-500">Messenger requires a valid Facebook Page PSID. Do not use phone numbers here.</p>
                   </div>
-                  <Link href="/whatsapp-logs" className={secondaryButtonClassName}>
+                  <Link href="/message-logs" className={secondaryButtonClassName}>
                     <ClipboardList className="h-4 w-4" />
                     View Logs
                   </Link>
@@ -253,7 +253,7 @@ export function ChannelsModulePage() {
                     <Send className="h-4 w-4" />
                     Open WhatsApp Send Test
                   </Link>
-                  <Link href="/whatsapp-logs" className={secondaryButtonClassName}>
+                  <Link href="/message-logs" className={secondaryButtonClassName}>
                     <ClipboardList className="h-4 w-4" />
                     Open Logs
                   </Link>
