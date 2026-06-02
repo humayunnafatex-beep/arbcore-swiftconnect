@@ -54,6 +54,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
+- Use Billing Summary to review confirmed totals, pending totals, last payment, and period status.
+- Use View Receipt from Payment History for printable manual receipts.
 - Investigate a failed message by reviewing status, provider ID, safe error text, and channel settings.
 - Confirm Auto Reply rule status, keyword, match mode, and channel configuration.
 - Verify webhook callback URL and verify token match Meta settings.
@@ -124,6 +126,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Open Billing.
 - Confirm the subscription status and latest manual payment record.
 - Do not mark a payment `CONFIRMED` unless an admin has verified it offline.
+- Do not treat `PENDING` payment records as confirmed payments.
+- Use the manual receipt page only as a record of what was manually entered.
 - Do not store card data or payment credentials.
 - Gateway automation is not active yet.
 

@@ -33,7 +33,10 @@ export async function GET() {
       activeContacts,
       activeAutoReplyRules,
       teamMembers,
-      aiCreditsUsed
+      aiCreditsUsed,
+      subscription,
+      paymentGroups,
+      lastPayment
     ] = await Promise.all([
       prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } }),
       prisma.messageLog.count({
@@ -79,7 +82,18 @@ export async function GET() {
       prisma.contact.count({ where: { companyId, doNotContact: false, optedIn: true } }),
       prisma.autoReplyRule.count({ where: { companyId, isActive: true } }),
       prisma.user.count({ where: { companyId, isActive: true } }),
-      prisma.aiGeneration.count({ where: { companyId } })
+      prisma.aiGeneration.count({ where: { companyId } }),
+      prisma.subscription.findFirst({ where: { companyId }, orderBy: { createdAt: "desc" } }),
+      prisma.paymentRecord.groupBy({
+        by: ["status"],
+        where: { companyId },
+        _sum: { amount: true },
+        _count: { _all: true }
+      }),
+      prisma.paymentRecord.findFirst({
+        where: { companyId },
+        orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }]
+      })
     ]);
     const stateByConversation = new Map(conversationStates.map((state) => [`${state.channel}:${state.contactKey}`, state]));
     const conversationKeys = new Set<string>();
@@ -98,6 +112,7 @@ export async function GET() {
     const dueFollowUps = conversationStates.filter((state) => state.followUpAt && !state.followUpDone && state.followUpAt.getTime() <= Date.now()).length;
     const upcomingFollowUps = conversationStates.filter((state) => state.followUpAt && !state.followUpDone && state.followUpAt.getTime() > Date.now()).length;
     const doneFollowUps = conversationStates.filter((state) => state.followUpDone).length;
+    const pendingPayments = paymentGroups.find((group) => group.status === "PENDING");
 
     return ok({
       connectedNumbers,
@@ -128,6 +143,15 @@ export async function GET() {
       aiCreditsUsed,
       whatsappConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),
       messengerConfigured: Boolean(company.messengerPageAccessToken),
+      billing: {
+        plan: subscription?.plan || "ENTERPRISE_BETA",
+        status: subscription?.status || "ACTIVE",
+        pendingPaymentCount: pendingPayments?._count._all ?? 0,
+        pendingPaymentAmount: pendingPayments?._sum.amount ?? 0,
+        lastPaymentDate: (lastPayment?.paidAt ?? lastPayment?.createdAt)?.toISOString() ?? null,
+        lastPaymentAmount: lastPayment?.amount ?? null,
+        currency: lastPayment?.currency || "BDT"
+      },
       apiStatus: "Operational"
     });
   } catch (error) {

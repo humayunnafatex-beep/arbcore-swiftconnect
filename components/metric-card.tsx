@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Bot, CheckCircle2, Clock, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, CreditCard, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
 import { kpis } from "@/data/dashboard";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -45,6 +45,15 @@ type DashboardStatistics = {
   aiCreditsUsed: number;
   whatsappConfigured: boolean;
   messengerConfigured: boolean;
+  billing: {
+    plan: string;
+    status: string;
+    pendingPaymentCount: number;
+    pendingPaymentAmount: number;
+    lastPaymentDate: string | null;
+    lastPaymentAmount: number | null;
+    currency: string;
+  };
   apiStatus: string;
 };
 
@@ -182,7 +191,16 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     inboundMessages: 0,
     outboundMessages: 0,
     whatsappConfigured: false,
-    messengerConfigured: false
+    messengerConfigured: false,
+    billing: {
+      plan: "ENTERPRISE_BETA",
+      status: "ACTIVE",
+      pendingPaymentCount: 0,
+      pendingPaymentAmount: 0,
+      lastPaymentDate: null,
+      lastPaymentAmount: null,
+      currency: "BDT"
+    }
   };
   const data = stats ?? empty;
 
@@ -229,6 +247,17 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Inbound", value: data.inboundMessages, href: "/message-logs?direction=INBOUND", icon: Inbox, tone: "blue" },
           { label: "Outbound", value: data.outboundMessages, href: "/message-logs?direction=OUTBOUND", icon: Send, tone: "purple" },
           { label: "Channel Center", value: data.whatsappConfigured || data.messengerConfigured ? 1 : 0, href: "/channels", icon: LinkIcon, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Billing Overview"
+        helper={data.billing.pendingPaymentCount ? "Pending payments need manual review." : "No pending payments."}
+        items={[
+          { label: "Current plan", value: 1, href: "/billing", icon: CreditCard, tone: "blue", displayValue: data.billing.plan.replace(/_/g, " ") },
+          { label: "Subscription", value: 1, href: "/billing", icon: CheckCircle2, tone: data.billing.status === "PAST_DUE" ? "red" : "green", displayValue: data.billing.status },
+          { label: "Pending payments", value: data.billing.pendingPaymentCount, href: "/billing", icon: AlertTriangle, tone: data.billing.pendingPaymentCount ? "red" : "gray", badge: `${data.billing.currency} ${data.billing.pendingPaymentAmount.toLocaleString()}` },
+          { label: "Last payment", value: data.billing.lastPaymentAmount ?? 0, href: "/billing", icon: CreditCard, tone: "purple", displayValue: data.billing.lastPaymentDate ? new Date(data.billing.lastPaymentDate).toLocaleDateString("en") : "-" }
         ]}
         loading={loading}
       />

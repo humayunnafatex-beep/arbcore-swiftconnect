@@ -14,6 +14,7 @@ const usage = [
 
 export function LicenseModulePage() {
   const { data } = useApiData<{ subscription: { plan: string; status: string; billingMode: string; currentPeriodStart: string | null; currentPeriodEnd: string | null }; created: boolean }>("/api/billing/subscription");
+  const summary = useApiData<{ payments: { totalConfirmedAmount: number; totalPendingAmount: number; pendingCount: number; currency: string; lastPaymentDate: string | null } }>("/api/billing/summary");
   const subscription = data?.subscription;
 
   return (
@@ -89,6 +90,8 @@ export function LicenseModulePage() {
             <Info label="Current plan" value="Enterprise Beta" />
             <Info label="Subscription status" value={subscription?.status || "ACTIVE"} />
             <Info label="Billing mode" value={subscription?.billingMode || "MANUAL"} />
+            <Info label="Confirmed payments" value={summary.data ? `${summary.data.payments.currency} ${summary.data.payments.totalConfirmedAmount.toLocaleString()}` : "-"} />
+            <Info label="Pending payments" value={summary.data ? `${summary.data.payments.currency} ${summary.data.payments.totalPendingAmount.toLocaleString()}` : "-"} />
             <Info label="Workspace/company" value="ARBCore AI" />
             <Info label="Access mode" value="Single-company beta" />
             <Info label="Auth enforcement" value="Off unless AUTH_ENFORCED=true" />

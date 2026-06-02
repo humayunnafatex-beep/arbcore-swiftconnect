@@ -1,8 +1,9 @@
 "use client";
 
 import type React from "react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CreditCard, History, Loader2, RefreshCw, Save, ShieldAlert } from "lucide-react";
+import { CalendarClock, CreditCard, History, Loader2, ReceiptText, RefreshCw, Save, ShieldAlert } from "lucide-react";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { AppShell } from "./app-shell";
 import { DataState, Toast, formatDate, inputClassName, primaryButtonClassName, secondaryButtonClassName, textareaClassName, useApiData, useToast } from "./saas-page-utils";
@@ -40,6 +41,33 @@ type PaymentsResponse = {
   payments: PaymentRecord[];
 };
 
+type BillingSummary = {
+  subscription: {
+    plan: string;
+    status: string;
+    billingMode: string;
+    currentPeriodStart: string | null;
+    currentPeriodEnd: string | null;
+  };
+  payments: {
+    totalConfirmedAmount: number;
+    totalPendingAmount: number;
+    confirmedCount: number;
+    pendingCount: number;
+    failedCount: number;
+    refundedCount: number;
+    lastPaymentDate: string | null;
+    lastPaymentAmount: number | null;
+    currency: string;
+  };
+  health: {
+    hasActiveSubscription: boolean;
+    hasPendingPayment: boolean;
+    isPastDue: boolean;
+    daysUntilPeriodEnd: number | null;
+  };
+};
+
 const plans = ["ENTERPRISE_BETA", "STARTER", "BUSINESS", "AGENCY", "ENTERPRISE"];
 const subscriptionStatuses = ["ACTIVE", "TRIAL", "PAST_DUE", "CANCELLED"];
 const methods = ["MANUAL", "CASH", "BANK", "BKASH", "NAGAD", "SSLCOMMERZ_FUTURE", "STRIPE_FUTURE"];
@@ -53,6 +81,7 @@ function dateInputValue(value: string | null) {
 export function BillingModulePage() {
   const subscriptionRequest = useApiData<SubscriptionResponse>("/api/billing/subscription");
   const paymentsRequest = useApiData<PaymentsResponse>("/api/billing/payments");
+  const summaryRequest = useApiData<BillingSummary>("/api/billing/summary");
   const { toast, showToast } = useToast();
   const [savingSubscription, setSavingSubscription] = useState(false);
   const [addingPayment, setAddingPayment] = useState(false);
@@ -89,6 +118,7 @@ export function BillingModulePage() {
   function refreshAll() {
     subscriptionRequest.reload();
     paymentsRequest.reload();
+    summaryRequest.reload();
   }
 
   async function saveSubscription() {
@@ -104,6 +134,7 @@ export function BillingModulePage() {
       });
       showToast("Manual subscription updated.");
       subscriptionRequest.reload();
+      summaryRequest.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
     } finally {
@@ -134,6 +165,7 @@ export function BillingModulePage() {
       });
       paymentsRequest.reload();
       subscriptionRequest.reload();
+      summaryRequest.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
     } finally {
@@ -143,6 +175,7 @@ export function BillingModulePage() {
 
   const subscription = subscriptionRequest.data?.subscription;
   const payments = paymentsRequest.data?.payments ?? [];
+  const summary = summaryRequest.data;
 
   return (
     <AppShell>
@@ -168,9 +201,24 @@ export function BillingModulePage() {
       <section className="rounded-[22px] border border-amber-100 bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800">
         <div className="flex gap-3">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>This is manual beta payment tracking. Gateway automation is not active yet. Do not store card data, and do not mark payment confirmed unless an admin has verified it manually.</p>
+          <p>Gateway automation is not active. Payments are manually recorded. Do not store card data, and do not mark payment confirmed unless an admin has verified it manually.</p>
         </div>
       </section>
+
+      <DataState loading={summaryRequest.loading} error={summaryRequest.error} empty={!summary} emptyText="No billing summary is available yet.">
+        {summary ? (
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <SummaryCard label="Current plan" value={summary.subscription.plan.replace(/_/g, " ")} helper={summary.health.hasActiveSubscription ? "Active or trial workspace" : "Review subscription status"} />
+            <SummaryCard label="Subscription status" value={summary.subscription.status} helper={`Billing mode: ${summary.subscription.billingMode}`} />
+            <SummaryCard label="Confirmed payments" value={`${summary.payments.currency} ${summary.payments.totalConfirmedAmount.toLocaleString()}`} helper={`${summary.payments.confirmedCount} confirmed record(s)`} />
+            <SummaryCard label="Pending payments" value={`${summary.payments.currency} ${summary.payments.totalPendingAmount.toLocaleString()}`} helper={`${summary.payments.pendingCount} pending record(s)`} tone={summary.health.hasPendingPayment ? "amber" : "blue"} />
+            <SummaryCard label="Last payment" value={summary.payments.lastPaymentAmount === null ? "-" : `${summary.payments.currency} ${summary.payments.lastPaymentAmount.toLocaleString()}`} helper={formatDate(summary.payments.lastPaymentDate)} />
+            <SummaryCard label="Current period end" value={dateInputValue(summary.subscription.currentPeriodEnd) || "-"} helper={summary.health.isPastDue ? "Past due" : "Manual period tracking"} tone={summary.health.isPastDue ? "rose" : "blue"} />
+            <SummaryCard label="Days remaining" value={summary.health.daysUntilPeriodEnd === null ? "-" : summary.health.daysUntilPeriodEnd.toString()} helper="Based on current period end" icon={<CalendarClock className="h-5 w-5" />} />
+            <SummaryCard label="Manual receipts" value={payments.length.toLocaleString()} helper="Use View Receipt from history" icon={<ReceiptText className="h-5 w-5" />} />
+          </section>
+        ) : null}
+      </DataState>
 
       <DataState loading={subscriptionRequest.loading} error={subscriptionRequest.error} empty={!subscription} emptyText="No subscription status is available yet.">
         {subscription ? (
@@ -273,7 +321,7 @@ export function BillingModulePage() {
             </div>
             <div className="divide-y divide-blue-100">
               {payments.map((payment) => (
-                <div key={payment.id} className="grid gap-3 p-5 lg:grid-cols-[150px_1fr_120px_120px] lg:items-center">
+                <div key={payment.id} className="grid gap-3 p-5 lg:grid-cols-[150px_1fr_120px_120px_130px] lg:items-center">
                   <div>
                     <p className="text-sm font-black text-ink">{formatDate(payment.paidAt || payment.createdAt)}</p>
                     <p className="text-xs font-bold text-slate-500">{payment.currency} {payment.amount.toLocaleString()}</p>
@@ -285,6 +333,10 @@ export function BillingModulePage() {
                   </div>
                   <span className="rounded-full bg-blue-50 px-3 py-1 text-center text-xs font-black text-royal ring-1 ring-blue-100">{payment.status}</span>
                   <p className="text-xs font-bold text-slate-500">Recorded {formatDate(payment.createdAt)}</p>
+                  <Link href={`/billing/payments/${payment.id}/receipt`} className={secondaryButtonClassName}>
+                    <ReceiptText className="h-4 w-4" />
+                    View Receipt
+                  </Link>
                 </div>
               ))}
             </div>
@@ -294,6 +346,23 @@ export function BillingModulePage() {
 
       {toast ? <Toast {...toast} /> : null}
     </AppShell>
+  );
+}
+
+function SummaryCard({ label, value, helper, tone = "blue", icon }: { label: string; value: string; helper: string; tone?: "blue" | "amber" | "rose"; icon?: React.ReactNode }) {
+  const toneClass = tone === "amber" ? "bg-amber-50 text-amber-700 ring-amber-100" : tone === "rose" ? "bg-rose-50 text-rose-700 ring-rose-100" : "bg-blue-50 text-royal ring-blue-100";
+
+  return (
+    <article className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+      <div className="flex items-center justify-between gap-3">
+        <span className={`grid h-11 w-11 place-items-center rounded-[14px] ring-1 ${toneClass}`}>
+          {icon || <CreditCard className="h-5 w-5" />}
+        </span>
+      </div>
+      <p className="mt-4 text-xs font-black uppercase text-slate-500">{label}</p>
+      <p className="mt-1 truncate text-2xl font-black text-ink">{value}</p>
+      <p className="mt-1 text-xs font-bold text-slate-500">{helper}</p>
+    </article>
   );
 }
 

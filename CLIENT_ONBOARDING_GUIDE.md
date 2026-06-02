@@ -73,6 +73,8 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - Do not enable `AUTH_ENFORCED=true` or `PERMISSIONS_ENFORCED=true` until the mapped admin and permission checklists pass.
 - Do not store card data or payment credentials.
 - Do not mark a manual payment as `CONFIRMED` until an admin verifies it outside the app.
+- Do not treat `PENDING` payment records as confirmed payments.
+- Manual receipts can be printed from Billing payment history after a record is created.
 - Gateway automation is not active in this beta phase.
 
 ## Go-Live Checklist
@@ -88,3 +90,4 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - [ ] Dashboard metrics are checked.
 - [ ] Access tokens remain hidden after refresh.
 - [ ] Manual billing status is checked for paid beta clients.
+- [ ] Manual receipt is reviewed if a payment record was created.

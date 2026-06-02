@@ -89,3 +89,16 @@ Phase 1 adds manual subscription and payment tracking for paid beta clients:
 - Gateway automation is not active.
 - Billing/license enforcement is not active.
 - Card data and sensitive payment credentials must never be stored.
+
+## 9. Phase 2 Billing Metrics And Receipts
+
+Phase 2 adds safe billing summary metrics and printable manual receipts:
+
+- Billing Summary shows plan, subscription status, billing mode, confirmed totals, pending totals, last payment, period end, and days remaining.
+- Confirmed totals count `CONFIRMED` payment records only.
+- Pending totals count `PENDING` payment records only.
+- Pending payments are not confirmed payments and must not be treated as paid access.
+- Manual receipt pages are available from Payment History using View Receipt.
+- Receipts show ARBCore SwiftConnect, company name, payment ID, plan, amount, method, status, reference, dates, notes, and a manual-payment disclaimer.
+- Gateway automation is still not active.
+- Card data and payment credentials must never be stored.

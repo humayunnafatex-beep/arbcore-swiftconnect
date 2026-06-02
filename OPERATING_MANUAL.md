@@ -229,6 +229,8 @@ Use License to review whether the business is within its current package and wha
 
 Current status is Enterprise Beta. Manual payment and subscription tracking is available from Billing at `/billing`, but billing/payment enforcement is not active yet. Admins can manually track a plan, status, period, payment amount, method, reference, and notes after offline verification. Gateway automation is not active, payment success is not faked, and card data must never be stored.
 
+Billing Summary shows confirmed payment totals, pending payment totals, last payment, current period end, and days remaining. Only `CONFIRMED` records count as confirmed payments. `PENDING` records are manual follow-up items, not successful payments. Payment History includes printable manual receipts.
+
 Future paid plans should support client workspaces, feature limits, and channel-based automation for WhatsApp and Messenger.
 
 ## 10. What Works Without WhatsApp API

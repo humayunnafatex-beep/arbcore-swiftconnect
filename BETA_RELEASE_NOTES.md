@@ -12,7 +12,7 @@
 - Message Logs for WhatsApp and Messenger filtering and provider status checks.
 - Settings persistence for Business Profile, WhatsApp/API, Messenger/Page API, team, and preferences.
 - License page for beta plan visibility.
-- Billing page for manual subscription and payment tracking.
+- Billing page for manual subscription tracking, billing summary metrics, payment history, and printable manual receipts.
 - Supabase Auth and permission readiness routes, not enforced by default.
 
 ## Not Yet Fully Active
@@ -35,6 +35,8 @@
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
 - Open Settings and confirm saved access tokens remain hidden after refresh.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
+- Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
+- Open a manual receipt from Payment History and confirm it does not show secrets or card data.
 - Open Auth Status and Auth Permissions for readiness metadata only.
 - Use `CLIENT_ONBOARDING_GUIDE.md` before onboarding each beta business.
 - Collect structured tester feedback with `BETA_FEEDBACK_FORM.md`.

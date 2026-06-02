@@ -111,7 +111,13 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Manual subscription update saves plan, status, period dates, and notes.
 - [ ] Manual payment record create validates amount and status.
 - [ ] Payment history shows date, amount, method, status, and reference.
+- [ ] Billing Summary shows confirmed total, pending total, last payment, period end, and days remaining.
+- [ ] Confirmed total counts only `CONFIRMED` payment records.
+- [ ] Pending total counts only `PENDING` payment records.
+- [ ] View Receipt opens a printable manual receipt page.
+- [ ] Receipt shows manual-payment disclaimer and no secrets.
 - [ ] License links to Billing and still states billing enforcement is not active.
+- [ ] Dashboard shows Billing Overview with plan, status, pending payments, and last payment.
 - [ ] Payment gateway automation is not presented as active.
 - [ ] No card data or payment credentials are stored.
 - [ ] Admin confirms payment manually before marking it `CONFIRMED`.
