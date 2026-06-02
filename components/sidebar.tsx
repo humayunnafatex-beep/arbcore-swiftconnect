@@ -6,6 +6,7 @@ import {
   BarChart3,
   Bot,
   BriefcaseBusiness,
+  Building2,
   Cable,
   ClipboardList,
   ContactRound,
@@ -38,6 +39,7 @@ const navigation = [
   { label: "Analytics", icon: BarChart3, href: "/analytics" },
   { label: "Settings", icon: Settings, href: "/settings" },
   { label: "Billing", icon: CreditCard, href: "/billing" },
+  { label: "Admin Workspaces", icon: Building2, href: "/admin/workspaces" },
   { label: "License", icon: ShieldCheck, href: "/license" }
 ];
 

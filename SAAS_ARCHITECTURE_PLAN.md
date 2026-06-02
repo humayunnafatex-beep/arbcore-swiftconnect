@@ -63,6 +63,8 @@ Phase 7 adds role permission readiness. Use `AUTH_IMPLEMENTATION_PHASE_7.md`, `/
 
 Phase 8 and Phase 9 apply selected API guards and local/staging permission enforcement test support. Use `AUTH_IMPLEMENTATION_PHASE_8.md`, `AUTH_IMPLEMENTATION_PHASE_9.md`, and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md` before any production role blocking.
 
+Client workspace onboarding Phase 1 is documented in `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`. The admin-assisted `/admin/workspaces` page can create separate `Company` records and optional owner users, but it does not switch sessions, copy provider credentials, or enable tenant enforcement.
+
 ## 4. Multi-Client Model
 
 Future SaaS structure should be workspace-first:
@@ -77,6 +79,8 @@ Future SaaS structure should be workspace-first:
 - Subscription / Plan: controls paid access, feature limits, and billing state.
 
 Important SaaS rule: every operational API must scope database reads and writes by `companyId`.
+
+Current onboarding caution: multi-client workspace creation is beta/admin-assisted only. Do not onboard paid clients until Supabase Auth mapping, permission status, and company scoping are verified for the target workspace.
 
 ## 5. Channel Architecture
 

@@ -12,6 +12,8 @@ For post-deployment verification, review `PRODUCTION_DEPLOYMENT_VERIFICATION.md`
 
 For Supabase production migration verification, use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`.
 
+For client workspace setup, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
@@ -64,6 +66,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 ## 2A. Beta Client Onboarding Docs
 
 - [ ] `CLIENT_ONBOARDING_GUIDE.md` has been reviewed before onboarding a tester.
+- [ ] `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` has been reviewed before creating a separate client workspace.
+- [ ] `/admin/workspaces` lists the expected workspace records without exposing tokens.
+- [ ] New client workspaces are not assumed active until auth mapping is verified.
 - [ ] `BETA_FEEDBACK_FORM.md` is ready for the tester after the demo.
 - [ ] `SUPPORT_HANDOVER_NOTE.md` is available to the support/admin team.
 - [ ] Tester is reminded not to share or screenshot access tokens.
@@ -153,6 +158,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm `/api/auth/permissions` remains available for diagnostics.
 - [ ] Confirm no tokens, cookies, raw sessions, or service-role keys are displayed.
 - [ ] Confirm public WhatsApp webhook routes remain public.
+- [ ] Confirm `/admin/workspaces` remains beta/admin-assisted and does not switch the current session.
 
 ## 5. Contacts QA
 

@@ -8,6 +8,8 @@ ARBCore SwiftConnect can receive customer messages only from channels connected 
 
 Before paid client onboarding, run the Welzz Stride internal beta flow in `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`.
 
+For creating and tracking a separate client workspace record, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and use `/admin/workspaces` only as an admin-assisted beta tool.
+
 ## Who This Guide Is For
 
 - Welzz Stride internal team
@@ -30,6 +32,8 @@ Before paid client onboarding, run the Welzz Stride internal beta flow in `WELZZ
 - [ ] Dashboard shows expected CRM/support metrics.
 - [ ] Security and token safety rules are reviewed.
 - [ ] Billing is reviewed if this is a paid beta client.
+- [ ] If this is an external client, a separate workspace is created and reviewed from `/admin/workspaces`.
+- [ ] Supabase Auth to Prisma User to Company mapping is verified before promising client access.
 
 ## Step-By-Step Onboarding Flow
 
@@ -76,6 +80,8 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - Webhook routes are public for Meta callbacks, but they must be verified.
 - Do not reset the production database during onboarding.
 - Do not enable `AUTH_ENFORCED=true` or `PERMISSIONS_ENFORCED=true` until the mapped admin and permission checklists pass.
+- Do not onboard paid clients until the client's workspace, owner user, auth mapping, and company scoping are verified.
+- Do not reuse Welzz Stride WhatsApp or Messenger credentials for another workspace.
 - Do not store card data or payment credentials.
 - Do not mark a manual payment as `CONFIRMED` until an admin verifies it outside the app.
 - Do not treat `PENDING` payment records as confirmed payments.
@@ -100,3 +106,4 @@ WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md
 - [ ] Manual billing status is checked for paid beta clients.
 - [ ] Manual receipt is reviewed if a payment record was created.
 - [ ] Plan usage is reviewed as report-only beta planning information.
+- [ ] `/admin/workspaces` shows the correct workspace and owner user count for external client onboarding.

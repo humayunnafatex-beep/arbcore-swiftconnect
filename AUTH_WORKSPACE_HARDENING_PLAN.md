@@ -8,6 +8,8 @@ This is acceptable for the current single-company Enterprise Beta, but it is not
 
 Phase 1 and Phase 2 implementation notes are tracked in `AUTH_IMPLEMENTATION_PHASE_1.md`. Controlled Phase 3 route protection is tracked in `AUTH_IMPLEMENTATION_PHASE_3.md`. Supabase Auth user mapping is tracked in `AUTH_IMPLEMENTATION_PHASE_4.md`. Safe admin mapping verification is tracked in `AUTH_IMPLEMENTATION_PHASE_5.md`. Local and staging enforcement test readiness is tracked in `AUTH_IMPLEMENTATION_PHASE_6.md` and `AUTH_ENFORCEMENT_TEST_CHECKLIST.md`. Role permission readiness is tracked in `AUTH_IMPLEMENTATION_PHASE_7.md`. Report-only guarded API rollout is tracked in `AUTH_IMPLEMENTATION_PHASE_8.md`. Limited local/staging permission enforcement testing is tracked in `AUTH_IMPLEMENTATION_PHASE_9.md` and `PERMISSION_ENFORCEMENT_TEST_CHECKLIST.md`.
 
+Client workspace onboarding Phase 1 is tracked in `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`. `/admin/workspaces` is an admin-assisted foundation for creating company records and optional owner users, not a full tenant enforcement or workspace switching system.
+
 Current behavior:
 
 - Demo login route exists.
@@ -35,6 +37,8 @@ Current selection is single-company oriented:
 - `lib/current-company.ts` now centralizes the current beta company lookup while preserving existing behavior.
 
 Important limitation: before external clients are added, company selection must come from the authenticated user session or provider-specific webhook routing, not simply the default/first company.
+
+Phase 1 onboarding adds workspace records safely, but current session resolution still preserves the single-company beta fallback. Do not assume a newly created workspace is active for the current browser session.
 
 ## 3. Current Roles / Team Behavior
 
@@ -175,6 +179,8 @@ Review `AUTH_IMPLEMENTATION_PHASE_8.md` before expanding guards beyond the selec
 - Add password setup/reset.
 - Add active/inactive user handling through real auth.
 - Keep duplicate email handling friendly.
+
+Before inviting paid client users, confirm `/auth/status`, `/auth/permissions`, and `/admin/workspaces` show the expected Prisma user, role, and company mapping.
 
 ### Phase 7: Billing / License Enforcement
 

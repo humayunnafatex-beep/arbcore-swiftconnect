@@ -50,6 +50,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`
+- `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`
 
 ## Common Support Tasks
 
@@ -58,8 +59,10 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
 - Use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md` for internal 2-3 day beta operations before paid client onboarding.
 - Use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` when verifying production migrations.
+- Use `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces` before creating a separate client workspace.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
+- Check Admin Workspaces for workspace summary counts when preparing an external beta client.
 - Use Billing Summary to review confirmed totals, pending totals, last payment, and period status.
 - Use Plan Usage to review report-only limits for contacts, team members, auto replies, monthly messages, inbox conversations, and channels.
 - Use View Receipt from Payment History for printable manual receipts.
@@ -138,6 +141,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Open Auth Status and Permission Status.
 - Confirm enforcement is still off in production beta unless a controlled staging test is planned.
 
+### Client Workspace Confusion
+
+- `/admin/workspaces` creates and lists workspace records only.
+- New workspaces are not automatically selected for the current session.
+- Channel credentials must be configured separately per client workspace.
+- Do not reuse or copy Welzz Stride access tokens into a client workspace.
+- Verify Supabase Auth user mapping before giving a client real access.
+
 ### Manual Payment Status Confusion
 
 - Open Billing.
@@ -155,6 +166,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not reset the production database.
 - Do not enable `AUTH_ENFORCED=true` until a mapped admin is verified.
 - Do not enable `PERMISSIONS_ENFORCED=true` until permission staging tests pass.
+- Do not onboard paid clients until workspace mapping and company isolation are verified.
 - Do not claim provider success unless Message Logs show `SENT`.
 - Do not claim payment success unless the manual payment record has been verified by an admin.
 - Do not expose raw webhook payloads if they may contain customer data.
