@@ -6,6 +6,8 @@ For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPOR
 
 For Beta v1.0 release packaging and handover, review `BETA_V1_RELEASE_SUMMARY.md`, `EXECUTIVE_HANDOVER_SUMMARY.md`, and `TECHNICAL_HANDOVER_INDEX.md`.
 
+For final Beta v1.0 stakeholder approval, complete `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`.
+
 For beta client onboarding and support handover, review `CLIENT_ONBOARDING_GUIDE.md`, `BETA_FEEDBACK_FORM.md`, and `SUPPORT_HANDOVER_NOTE.md`.
 
 For Welzz Stride internal beta operations, use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`.
@@ -81,6 +83,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 ## 2A. Beta Client Onboarding Docs
 
+- [ ] `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md` has been completed for final stakeholder review and sign-off.
 - [ ] `CLIENT_ONBOARDING_GUIDE.md` has been reviewed before onboarding a tester.
 - [ ] `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` has been reviewed before creating a separate client workspace.
 - [ ] `/admin/workspaces` lists the expected workspace records without exposing tokens.

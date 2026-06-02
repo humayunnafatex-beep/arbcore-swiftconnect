@@ -7,7 +7,16 @@ Use this index as the main table of contents for developers, support, QA, and op
 - `BETA_V1_RELEASE_SUMMARY.md`
 - `EXECUTIVE_HANDOVER_SUMMARY.md`
 - `TECHNICAL_HANDOVER_INDEX.md`
+- `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`
 - `BETA_RELEASE_NOTES.md`
+
+## Release Review And Launch Review
+
+- `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`
+- `LAUNCH_CHECKLIST.md`
+- `PRODUCTION_DEPLOYMENT_VERIFICATION.md`
+- `PRODUCTION_MANUAL_QA_CHECKLIST.md`
+- `PAID_CLIENT_GO_LIVE_GATE.md`
 
 ## Setup Docs
 
@@ -98,6 +107,7 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`
 - `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`
 - `PAID_CLIENT_GO_LIVE_GATE.md`
+- `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`
 - `SUPPORT_HANDOVER_NOTE.md`
 
 ## Important Runtime Pages

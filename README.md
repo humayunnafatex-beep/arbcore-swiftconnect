@@ -27,6 +27,7 @@ Use the release package docs for handover:
 - `BETA_V1_RELEASE_SUMMARY.md`
 - `EXECUTIVE_HANDOVER_SUMMARY.md`
 - `TECHNICAL_HANDOVER_INDEX.md`
+- `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`
 
 Production read-only verification:
 
@@ -221,6 +222,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `BETA_V1_RELEASE_SUMMARY.md`: Enterprise Beta v1.0 release scope, safe defaults, verification status, limitations, and next steps.
 - `EXECUTIVE_HANDOVER_SUMMARY.md`: non-technical business handover for decision makers.
 - `TECHNICAL_HANDOVER_INDEX.md`: grouped document index for developers, support, QA, and operations.
+- `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`: final stakeholder review gate for business, technical, security, support, onboarding, launch, and beta decision sign-off.
 - `LAUNCH_CHECKLIST.md`: production launch, QA, channel, auth, and rollback checklist.
 - `BETA_RELEASE_NOTES.md`: current Enterprise Beta status and testing scope.
 - `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.
