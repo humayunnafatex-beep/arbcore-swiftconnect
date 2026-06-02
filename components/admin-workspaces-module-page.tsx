@@ -22,6 +22,8 @@ type Workspace = {
   slug: string;
   plan: string;
   createdAt: string;
+  whatsappPhoneNumberIdPresent: boolean;
+  messengerPageIdPresent: boolean;
   userCount: number;
   contactCount: number;
   messageCount: number;
@@ -223,6 +225,8 @@ export function AdminWorkspacesModulePage() {
                     <Info label="Contacts" value={workspace.contactCount.toLocaleString()} />
                     <Info label="Messages" value={workspace.messageCount.toLocaleString()} />
                     <Info label="Created" value={formatDate(workspace.createdAt)} />
+                    <Info label="WhatsApp ID" value={workspace.whatsappPhoneNumberIdPresent ? "Present" : "Missing"} />
+                    <Info label="Messenger Page" value={workspace.messengerPageIdPresent ? "Present" : "Missing"} />
                   </div>
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs font-bold leading-5 text-slate-500">Selection uses a beta admin cookie only. Channel credentials stay separate per company.</p>

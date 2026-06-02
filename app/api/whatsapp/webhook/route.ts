@@ -45,6 +45,14 @@ export async function POST(request: Request) {
     const company = routing.company;
 
     if (!company) {
+      await prisma.webhookEvent.create({
+        data: {
+          provider: "whatsapp",
+          eventType: "unmatched_provider",
+          payload: unmatchedWhatsAppPayload(routing)
+        }
+      });
+
       return NextResponse.json({ success: true, data: { received: true, messages: 0 } });
     }
 
@@ -227,9 +235,21 @@ function safeRoutingMetadata(routing: ProviderRoutingResult) {
   const providerIds = routing.providerIds as { phoneNumberId?: string; businessAccountId?: string; from?: string };
   return {
     routedBy: routing.routedBy,
+    strictMode: routing.strictMode,
+    matched: routing.matched,
     whatsappPhoneNumberIdPresent: Boolean(providerIds.phoneNumberId),
     whatsappBusinessAccountIdPresent: Boolean(providerIds.businessAccountId),
     senderPresent: Boolean(providerIds.from)
+  };
+}
+
+function unmatchedWhatsAppPayload(routing: ProviderRoutingResult): Prisma.InputJsonValue {
+  return {
+    provider: "whatsapp",
+    eventType: "unmatched_provider",
+    routing: safeRoutingMetadata(routing),
+    note: "Strict provider routing is enabled. Unmatched WhatsApp webhook was acknowledged but not processed into a workspace.",
+    receivedAt: new Date().toISOString()
   };
 }
 

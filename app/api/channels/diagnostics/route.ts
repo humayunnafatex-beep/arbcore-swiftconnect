@@ -1,5 +1,6 @@
 import { handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { isStrictProviderWebhookRouting } from "@/lib/provider-routing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ export async function GET() {
       !company.messengerVerifyToken ? "messengerVerifyToken" : null,
       !company.messengerWebhookUrl ? "messengerWebhookUrl" : null
     ].filter(Boolean) as string[];
+    const strictProviderRouting = isStrictProviderWebhookRouting();
 
     return ok({
       whatsapp: {
@@ -40,6 +42,12 @@ export async function GET() {
         missing: messengerMissing,
         webhookPath: MESSENGER_WEBHOOK_PATH,
         webhookUrl: company.messengerWebhookUrl || null
+      },
+      providerRouting: {
+        strict: strictProviderRouting,
+        message: strictProviderRouting
+          ? "Strict routing is on. Unmatched provider webhooks are not processed into default workspace."
+          : "Beta fallback is active. Unmatched provider webhooks may route to default workspace."
       }
     });
   } catch (error) {

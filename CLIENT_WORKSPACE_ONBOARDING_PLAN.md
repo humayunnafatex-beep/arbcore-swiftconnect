@@ -145,3 +145,5 @@ The QA pass confirms the major app modules are scoped by current company for bet
 - Channel credentials remain per company and are not copied.
 
 Provider routing foundation is documented in `PROVIDER_WEBHOOK_ROUTING_PLAN.md`. Current webhook POST handling can match WhatsApp by Phone Number ID and Messenger by Page ID, with beta fallback preserved for unmatched events.
+
+Strict routing readiness is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`. Keep strict routing off until every workspace provider ID is verified.

@@ -54,6 +54,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `WORKSPACE_ISOLATION_QA_REPORT.md`
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`
 - `PROVIDER_WEBHOOK_ROUTING_PLAN.md`
+- `STRICT_PROVIDER_WEBHOOK_ROUTING.md`
 
 ## Common Support Tasks
 
@@ -66,6 +67,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use the Select Workspace and Clear Selected Workspace actions only for admin beta testing.
 - Use `WORKSPACE_ISOLATION_QA_REPORT.md` and `WORKSPACE_SWITCHING_TEST_CHECKLIST.md` before claiming workspace separation is ready for beta client testing.
 - Use `PROVIDER_WEBHOOK_ROUTING_PLAN.md` when testing inbound WhatsApp/Messenger routing across more than one workspace.
+- Use `STRICT_PROVIDER_WEBHOOK_ROUTING.md` before enabling strict unmatched-provider behavior in local, staging, or production.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Check Admin Workspaces for workspace summary counts when preparing an external beta client.
@@ -158,6 +160,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Verify Supabase Auth user mapping before giving a client real access.
 - Production tenant switching must validate authenticated user membership and role.
 - Webhooks now have provider-routing foundation, but unmatched events still use beta fallback. Require provider matches before untrusted multi-client production.
+- Strict provider routing is off by default. If enabled, unmatched provider webhooks are acknowledged but not processed into the default workspace.
 
 ### Manual Payment Status Confusion
 

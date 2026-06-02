@@ -26,6 +26,8 @@ export async function GET() {
         name: true,
         slug: true,
         plan: true,
+        whatsappPhoneNumberId: true,
+        messengerPageId: true,
         createdAt: true,
         _count: {
           select: {
@@ -44,6 +46,8 @@ export async function GET() {
         slug: company.slug,
         plan: company.plan,
         createdAt: company.createdAt,
+        whatsappPhoneNumberIdPresent: Boolean(company.whatsappPhoneNumberId),
+        messengerPageIdPresent: Boolean(company.messengerPageId),
         userCount: company._count.users,
         contactCount: company._count.contacts,
         messageCount: company._count.messageLogs

@@ -6,6 +6,8 @@ This plan documents the provider-based webhook routing foundation for ARBCore Sw
 
 This phase does not enable full multi-client production enforcement.
 
+Strict-mode readiness is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
+
 ## WhatsApp Routing
 
 WhatsApp Cloud API webhooks include provider identifiers inside the webhook payload.
@@ -47,6 +49,8 @@ BETA_FALLBACK
 ```
 
 This preserves existing live webhook behavior for Welzz Stride and current Enterprise Beta testing.
+
+When `STRICT_PROVIDER_WEBHOOK_ROUTING=true`, unmatched provider webhooks are acknowledged but are not processed into the default workspace. See `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
 
 ## Production Requirement
 

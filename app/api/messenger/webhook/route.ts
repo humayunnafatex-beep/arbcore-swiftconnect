@@ -60,6 +60,19 @@ export async function POST(request: Request) {
 
     const routing = await getCompanyForProviderWebhook({ channel: "MESSENGER", payload });
     const company = routing.company;
+
+    if (!company) {
+      await prisma.webhookEvent.create({
+        data: {
+          provider: "messenger",
+          eventType: "unmatched_provider",
+          payload: unmatchedMessengerPayload(routing) as Prisma.InputJsonValue
+        }
+      });
+
+      return NextResponse.json({ success: true, data: { received: true, messages: 0 } });
+    }
+
     const messages = extractMessengerMessages(payload);
 
     await prisma.webhookEvent.create({
@@ -256,9 +269,29 @@ function sanitizeMessengerWebhookPayload(payload: MessengerPayload, messages: Re
     senderCount: new Set(messages.map((message) => message.senderPsid)).size,
     routing: {
       routedBy: routing.routedBy,
+      strictMode: routing.strictMode,
+      matched: routing.matched,
       messengerPageIdPresent: Boolean(providerIds.pageId),
       senderPresent: Boolean(providerIds.senderId)
     },
+    receivedAt: new Date().toISOString()
+  };
+}
+
+function unmatchedMessengerPayload(routing: ProviderRoutingResult) {
+  const providerIds = routing.providerIds as { pageId?: string; senderId?: string };
+
+  return {
+    provider: "messenger",
+    eventType: "unmatched_provider",
+    routing: {
+      routedBy: routing.routedBy,
+      strictMode: routing.strictMode,
+      matched: routing.matched,
+      messengerPageIdPresent: Boolean(providerIds.pageId),
+      senderPresent: Boolean(providerIds.senderId)
+    },
+    note: "Strict provider routing is enabled. Unmatched Messenger webhook was acknowledged but not processed into a workspace.",
     receivedAt: new Date().toISOString()
   };
 }

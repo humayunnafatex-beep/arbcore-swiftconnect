@@ -18,6 +18,8 @@ For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `W
 
 For provider webhook routing, review `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 
+For strict provider routing readiness, review `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
@@ -172,6 +174,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm WhatsApp inbound webhook routing matches by Phone Number ID when available.
 - [ ] Confirm Messenger inbound webhook routing matches by Page ID when available.
 - [ ] Confirm unmatched provider webhooks are not treated as production multi-client safe while beta fallback remains active.
+- [ ] Confirm `STRICT_PROVIDER_WEBHOOK_ROUTING=false` unless strict routing has been tested in local/staging.
+- [ ] Confirm Channel Center shows strict provider routing status.
+- [ ] Confirm Admin Workspaces shows WhatsApp Phone Number ID and Messenger Page ID presence only.
 
 ## 5. Contacts QA
 

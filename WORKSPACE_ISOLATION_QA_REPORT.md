@@ -116,18 +116,20 @@ This is QA hardening only. `AUTH_ENFORCED` and `PERMISSIONS_ENFORCED` remain off
 
 Webhook routing was inspected in Phase 3 and provider-routing foundation was added in Phase 4. See `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 
+Strict unmatched-provider behavior is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
+
 Current limitation:
 
 - WhatsApp webhook POST can route by Phone Number ID when available.
 - Messenger webhook POST can route by Page ID when available.
-- Unmatched provider webhooks still fall back to beta/default company behavior.
+- Unmatched provider webhooks still fall back to beta/default company behavior unless `STRICT_PROVIDER_WEBHOOK_ROUTING=true`.
 
 Future production multi-client mode must route inbound webhooks by provider identifiers:
 
 - WhatsApp Phone Number ID and/or WhatsApp Business Account ID.
 - Messenger Page ID.
 
-Do not rely on beta selected workspace cookies for provider webhook routing. Before production multi-client use, fallback should be disabled or converted into an unmatched-event workflow.
+Do not rely on beta selected workspace cookies for provider webhook routing. Before production multi-client use, enable and test strict provider routing or convert unmatched events into a dedicated quarantine workflow.
 
 ## Final Status
 

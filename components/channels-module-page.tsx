@@ -49,6 +49,10 @@ type ChannelDiagnostics = {
     webhookPath: "/api/messenger/webhook";
     webhookUrl: string | null;
   };
+  providerRouting: {
+    strict: boolean;
+    message: string;
+  };
 };
 
 type MessengerTestResponse = {
@@ -193,20 +197,31 @@ export function ChannelsModulePage() {
 
             <DataState loading={diagnostics.loading} error={diagnostics.error} empty={!diagnostics.data} emptyText="No diagnostics are available yet.">
               {diagnostics.data ? (
-                <section className="grid gap-4 xl:grid-cols-2">
-                  <DiagnosticsCard
-                    title="WhatsApp Diagnostics"
-                    outboundReady={diagnostics.data.whatsapp.readyForOutbound}
-                    webhookReady={diagnostics.data.whatsapp.readyForWebhook}
-                    missing={diagnostics.data.whatsapp.missing}
-                  />
-                  <DiagnosticsCard
-                    title="Messenger Diagnostics"
-                    outboundReady={diagnostics.data.messenger.readyForOutbound}
-                    webhookReady={diagnostics.data.messenger.readyForWebhook}
-                    missing={diagnostics.data.messenger.missing}
-                  />
-                </section>
+                <div className="space-y-4">
+                  <section className="grid gap-4 xl:grid-cols-2">
+                    <DiagnosticsCard
+                      title="WhatsApp Diagnostics"
+                      outboundReady={diagnostics.data.whatsapp.readyForOutbound}
+                      webhookReady={diagnostics.data.whatsapp.readyForWebhook}
+                      missing={diagnostics.data.whatsapp.missing}
+                    />
+                    <DiagnosticsCard
+                      title="Messenger Diagnostics"
+                      outboundReady={diagnostics.data.messenger.readyForOutbound}
+                      webhookReady={diagnostics.data.messenger.readyForWebhook}
+                      missing={diagnostics.data.messenger.missing}
+                    />
+                  </section>
+                  <section className={`rounded-[24px] border p-5 text-sm font-bold leading-6 shadow-panel ${diagnostics.data.providerRouting.strict ? "border-emerald-100 bg-emerald-50 text-emerald-800" : "border-amber-100 bg-amber-50 text-amber-800"}`}>
+                    <div className="flex items-start gap-3">
+                      <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
+                      <div>
+                        <p className="font-black">Strict provider routing: {diagnostics.data.providerRouting.strict ? "On" : "Off"}</p>
+                        <p className="mt-1">{diagnostics.data.providerRouting.message}</p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
               ) : null}
             </DataState>
 

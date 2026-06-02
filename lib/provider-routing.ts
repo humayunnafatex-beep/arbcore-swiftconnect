@@ -7,7 +7,8 @@ export type ProviderRoutedBy =
   | "WHATSAPP_PHONE_NUMBER_ID"
   | "WHATSAPP_BUSINESS_ACCOUNT_ID"
   | "MESSENGER_PAGE_ID"
-  | "BETA_FALLBACK";
+  | "BETA_FALLBACK"
+  | "UNMATCHED_PROVIDER";
 
 export type WhatsAppProviderIds = {
   phoneNumberId?: string;
@@ -21,10 +22,16 @@ export type MessengerProviderIds = {
 };
 
 export type ProviderRoutingResult = {
-  company: Company;
+  company: Company | null;
   routedBy: ProviderRoutedBy;
   providerIds: WhatsAppProviderIds | MessengerProviderIds;
+  strictMode: boolean;
+  matched: boolean;
 };
+
+export function isStrictProviderWebhookRouting() {
+  return process.env.STRICT_PROVIDER_WEBHOOK_ROUTING === "true";
+}
 
 export function extractWhatsAppProviderIds(payload: unknown): WhatsAppProviderIds {
   const ids: WhatsAppProviderIds = {};
@@ -133,6 +140,7 @@ export async function getCompanyForProviderWebhook({
   channel: ProviderRoutingChannel;
   payload: unknown;
 }): Promise<ProviderRoutingResult> {
+  const strictMode = isStrictProviderWebhookRouting();
   const routed = channel === "WHATSAPP"
     ? await findCompanyByWhatsAppProvider(payload)
     : await findCompanyByMessengerProvider(payload);
@@ -141,7 +149,19 @@ export async function getCompanyForProviderWebhook({
     return {
       company: routed.company,
       routedBy: routed.routedBy,
-      providerIds: routed.providerIds
+      providerIds: routed.providerIds,
+      strictMode,
+      matched: true
+    };
+  }
+
+  if (strictMode) {
+    return {
+      company: null,
+      routedBy: "UNMATCHED_PROVIDER",
+      providerIds: routed.providerIds,
+      strictMode,
+      matched: false
     };
   }
 
@@ -150,7 +170,9 @@ export async function getCompanyForProviderWebhook({
   return {
     company: await getCurrentCompany(),
     routedBy: "BETA_FALLBACK",
-    providerIds: routed.providerIds
+    providerIds: routed.providerIds,
+    strictMode,
+    matched: false
   };
 }
 

@@ -196,6 +196,8 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `/admin/workspaces`: beta/admin workspace creation and selected-workspace testing; not production tenant switching.
 - `WORKSPACE_ISOLATION_QA_REPORT.md`: company scoping audit for beta workspace switching.
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`: manual beta/admin workspace switching test steps.
+- `PROVIDER_WEBHOOK_ROUTING_PLAN.md`: provider-based webhook routing foundation for WhatsApp and Messenger.
+- `STRICT_PROVIDER_WEBHOOK_ROUTING.md`: opt-in strict unmatched-provider webhook behavior.
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment production verification guide.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: manual production QA checklist.
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: Supabase production migration verification checklist.
