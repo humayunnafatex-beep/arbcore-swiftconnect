@@ -142,6 +142,13 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 - [ ] Dashboard loads without visible errors.
 - [ ] Contacts, messages, conversations, auto replies, campaigns, and team counts load.
+- [ ] Dashboard shows Support Inbox Overview metrics.
+- [ ] Dashboard shows Follow-up Overview metrics.
+- [ ] Dashboard shows Message Health metrics.
+- [ ] Dashboard shows Channel Activity metrics.
+- [ ] Dashboard quick links open filtered Inbox and Message Logs views.
+- [ ] Due follow-up link opens `/inbox?followUp=DUE`.
+- [ ] Failed messages link opens `/message-logs?status=FAILED`.
 - [ ] Empty or low-data workspaces still render cleanly.
 
 ## 9. WhatsApp Cloud API QA

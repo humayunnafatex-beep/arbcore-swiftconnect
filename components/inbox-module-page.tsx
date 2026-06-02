@@ -165,10 +165,11 @@ const replyStatusText: Record<ReplyStatus, string> = {
 };
 
 export function InboxModulePage() {
-  const [channel, setChannel] = useState<ChannelFilter>("ALL");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
-  const [followUpFilter, setFollowUpFilter] = useState<FollowUpFilter>("ALL");
-  const [assignedToFilter, setAssignedToFilter] = useState("ALL");
+  const initialFilters = getInitialFilters();
+  const [channel, setChannel] = useState<ChannelFilter>(initialFilters.channel);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialFilters.status);
+  const [followUpFilter, setFollowUpFilter] = useState<FollowUpFilter>(initialFilters.followUp);
+  const [assignedToFilter, setAssignedToFilter] = useState(initialFilters.assignedTo);
   const [search, setSearch] = useState("");
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
@@ -910,4 +911,36 @@ function toDateTimeLocalValue(value: string | null) {
 
   const offsetMs = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+function parseChannelFilter(value: string | null): ChannelFilter {
+  return value === "WHATSAPP" || value === "MESSENGER" ? value : "ALL";
+}
+
+function parseStatusFilter(value: string | null): StatusFilter {
+  return value === "OPEN" || value === "PENDING" || value === "CLOSED" ? value : "ALL";
+}
+
+function parseFollowUpFilter(value: string | null): FollowUpFilter {
+  return value === "NONE" || value === "DUE" || value === "UPCOMING" || value === "DONE" ? value : "ALL";
+}
+
+function getInitialFilters() {
+  if (typeof window === "undefined") {
+    return {
+      channel: "ALL" as ChannelFilter,
+      status: "ALL" as StatusFilter,
+      followUp: "ALL" as FollowUpFilter,
+      assignedTo: "ALL"
+    };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    channel: parseChannelFilter(params.get("channel")),
+    status: parseStatusFilter(params.get("status")),
+    followUp: parseFollowUpFilter(params.get("followUp")),
+    assignedTo: params.get("assignedTo")?.trim() || "ALL"
+  };
 }

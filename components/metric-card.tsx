@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
 import { kpis } from "@/data/dashboard";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -20,11 +21,30 @@ type DashboardStatistics = {
   messagesSentToday: number;
   totalMessages: number;
   openConversations: number;
+  pendingConversations: number;
+  closedConversations: number;
+  unassignedConversations: number;
+  dueFollowUps: number;
+  upcomingFollowUps: number;
+  doneFollowUps: number;
+  failedMessages: number;
+  sentMessages: number;
+  receivedMessages: number;
+  attemptedMessages: number;
+  whatsappMessages: number;
+  messengerMessages: number;
+  inboundMessages: number;
+  outboundMessages: number;
   activeCampaigns: number;
   contacts: number;
+  totalContacts: number;
+  hotLeads: number;
+  activeContacts: number;
   activeAutoReplyRules: number;
   teamMembers: number;
   aiCreditsUsed: number;
+  whatsappConfigured: boolean;
+  messengerConfigured: boolean;
   apiStatus: string;
 };
 
@@ -139,6 +159,140 @@ export function MetricGrid() {
         );
       })}
       </div>
+      <DashboardSections stats={stats} loading={loading} />
     </div>
+  );
+}
+
+function DashboardSections({ stats, loading }: { stats: DashboardStatistics | null; loading: boolean }) {
+  const empty = {
+    openConversations: 0,
+    pendingConversations: 0,
+    closedConversations: 0,
+    unassignedConversations: 0,
+    dueFollowUps: 0,
+    upcomingFollowUps: 0,
+    doneFollowUps: 0,
+    failedMessages: 0,
+    sentMessages: 0,
+    receivedMessages: 0,
+    attemptedMessages: 0,
+    whatsappMessages: 0,
+    messengerMessages: 0,
+    inboundMessages: 0,
+    outboundMessages: 0,
+    whatsappConfigured: false,
+    messengerConfigured: false
+  };
+  const data = stats ?? empty;
+
+  return (
+    <div className="mt-5 grid gap-4 xl:grid-cols-2">
+      <MetricSection
+        title="Support Inbox Overview"
+        helper={data.openConversations ? "Open conversations need attention." : "No conversations yet."}
+        items={[
+          { label: "Open", value: data.openConversations, href: "/inbox?status=OPEN", icon: Inbox, tone: "green" },
+          { label: "Pending", value: data.pendingConversations, href: "/inbox?status=PENDING", icon: Clock, tone: "blue" },
+          { label: "Closed", value: data.closedConversations, href: "/inbox?status=CLOSED", icon: CheckCircle2, tone: "gray" },
+          { label: "Unassigned", value: data.unassignedConversations, href: "/inbox?assignedTo=UNASSIGNED", icon: Users, tone: "purple" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Follow-up Overview"
+        helper={data.dueFollowUps ? "Due follow-ups should be handled from Inbox." : "No follow-ups due."}
+        items={[
+          { label: "Due", value: data.dueFollowUps, href: "/inbox?followUp=DUE", icon: AlertTriangle, tone: "red" },
+          { label: "Upcoming", value: data.upcomingFollowUps, href: "/inbox?followUp=UPCOMING", icon: Clock, tone: "blue" },
+          { label: "Done", value: data.doneFollowUps, href: "/inbox?followUp=DONE", icon: CheckCircle2, tone: "green" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Message Health"
+        helper={data.failedMessages ? "Review failed messages from Message Logs." : "No failed messages."}
+        items={[
+          { label: "Sent", value: data.sentMessages, href: "/message-logs?status=SENT", icon: Send, tone: "green" },
+          { label: "Received", value: data.receivedMessages, href: "/message-logs?status=RECEIVED", icon: MessageSquareText, tone: "blue" },
+          { label: "Failed", value: data.failedMessages, href: "/message-logs?status=FAILED", icon: AlertTriangle, tone: "red" },
+          { label: "Attempted", value: data.attemptedMessages, href: "/message-logs?status=ATTEMPTED", icon: Clock, tone: "gray" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Channel Activity"
+        helper="Use Channel Center for setup status and diagnostics."
+        items={[
+          { label: "WhatsApp", value: data.whatsappMessages, href: "/message-logs?channel=WHATSAPP", icon: MessageCircle, tone: data.whatsappConfigured ? "green" : "gray", badge: data.whatsappConfigured ? "Configured" : "Not configured" },
+          { label: "Messenger", value: data.messengerMessages, href: "/message-logs?channel=MESSENGER", icon: MessageCircle, tone: data.messengerConfigured ? "green" : "gray", badge: data.messengerConfigured ? "Configured" : "Not configured" },
+          { label: "Inbound", value: data.inboundMessages, href: "/message-logs?direction=INBOUND", icon: Inbox, tone: "blue" },
+          { label: "Outbound", value: data.outboundMessages, href: "/message-logs?direction=OUTBOUND", icon: Send, tone: "purple" },
+          { label: "Channel Center", value: data.whatsappConfigured || data.messengerConfigured ? 1 : 0, href: "/channels", icon: LinkIcon, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
+    </div>
+  );
+}
+
+function MetricSection({
+  title,
+  helper,
+  items,
+  loading
+}: {
+  title: string;
+  helper: string;
+  items: Array<{
+    label: string;
+    value: number;
+    href: string;
+    icon: typeof Inbox;
+    tone: "blue" | "green" | "gray" | "purple" | "red";
+    badge?: string;
+    displayValue?: string;
+  }>;
+  loading: boolean;
+}) {
+  return (
+    <section className="rounded-[24px] border border-blue-100/80 bg-white/92 p-5 shadow-panel backdrop-blur">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-black text-ink">{title}</h2>
+          <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {items.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <Link key={item.label} href={item.href} className="group rounded-[18px] border border-blue-100 bg-blue-50/55 p-4 transition hover:border-royal hover:bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <span className={cn("grid h-11 w-11 place-items-center rounded-[14px]", toneClass(item.tone))}>
+                  <Icon className="h-5 w-5" />
+                </span>
+                {item.badge ? <span className="rounded-full bg-white px-2 py-1 text-[11px] font-black text-slate-500 ring-1 ring-blue-100">{item.badge}</span> : null}
+              </div>
+              <p className="mt-3 text-xs font-black uppercase text-slate-500">{item.label}</p>
+              <p className={cn("mt-1 text-2xl font-black text-ink", loading && "h-8 w-16 animate-pulse rounded-lg bg-blue-100 text-transparent")}>
+                {loading ? "..." : item.displayValue ?? item.value.toLocaleString()}
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function toneClass(tone: "blue" | "green" | "gray" | "purple" | "red") {
+  return cn(
+    tone === "blue" && "bg-blue-100 text-royal",
+    tone === "green" && "bg-emerald-100 text-emerald-700",
+    tone === "gray" && "bg-slate-100 text-slate-600",
+    tone === "purple" && "bg-violet-100 text-violet-700",
+    tone === "red" && "bg-rose-100 text-rose-700"
   );
 }

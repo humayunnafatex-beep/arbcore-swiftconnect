@@ -44,6 +44,8 @@ The Dashboard is the main business overview. It shows live workspace activity su
 
 Use it at the start of the day to check whether the workspace is healthy, whether message activity is happening, and where follow-up is needed.
 
+Dashboard CRM/support metrics show Inbox status counts, due follow-ups, message health, and channel activity. Use the quick links to jump directly to filtered Inbox views, Message Logs, and Channel Center. Failed messages should be reviewed in Message Logs, and due follow-ups should be handled from Inbox.
+
 ## 2. Contacts
 
 Contacts is the customer list. Each contact can store a name, WhatsApp phone number, email, source or segment, tags, status, and opt-in preference.
