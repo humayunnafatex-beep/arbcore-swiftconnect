@@ -206,6 +206,8 @@ Next review date:
 
 ## Follow-Up Plan For v1.1 Or Production Expansion
 
+Use `V1_1_HARDENING_ROADMAP.md` as the detailed post-Beta v1.0 hardening plan before broader production or paid-client expansion.
+
 Potential v1.1/hardening focus:
 
 - Auth enforcement staging and production rollout.

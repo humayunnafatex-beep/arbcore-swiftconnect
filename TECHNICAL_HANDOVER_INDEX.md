@@ -139,9 +139,17 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 ## Release Decision Docs
 
 - `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`
+- `V1_1_HARDENING_ROADMAP.md`
 - `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md`
 - `PAID_CLIENT_GO_LIVE_GATE.md`
 - `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`
+
+## Roadmap And Next Phase Docs
+
+- `V1_1_HARDENING_ROADMAP.md`
+- `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`
+- `SAAS_ARCHITECTURE_PLAN.md`
+- `AUTH_WORKSPACE_HARDENING_PLAN.md`
 
 ## Important Runtime Pages
 
