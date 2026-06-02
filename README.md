@@ -183,6 +183,15 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - Run `npx prisma migrate deploy` during deployment or in a release command.
 - Run `npm run db:seed` after migrations so the demo owner login exists in PostgreSQL.
 
+## Project Docs
+
+- `OPERATING_MANUAL.md`: day-to-day module guide and current beta behavior.
+- `LAUNCH_CHECKLIST.md`: production launch, QA, channel, auth, and rollback checklist.
+- `BETA_RELEASE_NOTES.md`: current Enterprise Beta status and testing scope.
+- `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.
+- `BETA_FEEDBACK_FORM.md`: structured feedback template for testers.
+- `SUPPORT_HANDOVER_NOTE.md`: support URLs, common issues, safety rules, and escalation steps.
+
 ### Production Environment Checklist
 
 ```env

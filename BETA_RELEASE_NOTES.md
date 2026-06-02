@@ -34,6 +34,15 @@
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
 - Open Settings and confirm saved access tokens remain hidden after refresh.
 - Open Auth Status and Auth Permissions for readiness metadata only.
+- Use `CLIENT_ONBOARDING_GUIDE.md` before onboarding each beta business.
+- Collect structured tester feedback with `BETA_FEEDBACK_FORM.md`.
+- Use `SUPPORT_HANDOVER_NOTE.md` for support URLs, common issue checks, and escalation.
+
+## Client Onboarding And Support Docs
+
+- `CLIENT_ONBOARDING_GUIDE.md`: step-by-step onboarding for Welzz Stride internal testing and future beta clients.
+- `BETA_FEEDBACK_FORM.md`: practical beta feedback template for feature ratings, setup experience, bugs, and paid-pilot readiness.
+- `SUPPORT_HANDOVER_NOTE.md`: support reference for key URLs, common tasks, common issues, safety rules, and escalation checks.
 
 ## Rollback Notes
 

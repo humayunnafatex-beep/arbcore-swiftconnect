@@ -4,6 +4,8 @@ Use this checklist before each production launch or rollback.
 
 For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPORT.md`, `SECURITY_QA_REPORT.md`, and `MIGRATION_AUDIT.md`.
 
+For beta client onboarding and support handover, review `CLIENT_ONBOARDING_GUIDE.md`, `BETA_FEEDBACK_FORM.md`, and `SUPPORT_HANDOVER_NOTE.md`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
@@ -49,6 +51,14 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Production deployment is Ready.
 - [ ] `/api/health` returns success.
 - [ ] Production domain uses HTTPS.
+
+## 2A. Beta Client Onboarding Docs
+
+- [ ] `CLIENT_ONBOARDING_GUIDE.md` has been reviewed before onboarding a tester.
+- [ ] `BETA_FEEDBACK_FORM.md` is ready for the tester after the demo.
+- [ ] `SUPPORT_HANDOVER_NOTE.md` is available to the support/admin team.
+- [ ] Tester is reminded not to share or screenshot access tokens.
+- [ ] Tester understands WhatsApp and Messenger success must be verified from Message Logs.
 
 ## 3. Supabase Migration
 

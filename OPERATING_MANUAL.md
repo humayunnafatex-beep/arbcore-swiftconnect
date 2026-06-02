@@ -318,6 +318,8 @@ Settings and Team APIs are also prepared with report-only permission guards. Kee
 
 For support issues, collect the affected module, approximate time, user action, friendly error message, and whether the issue happened before or after a deployment. Do not collect or share raw access tokens or database connection strings.
 
+For client onboarding and beta support, use `CLIENT_ONBOARDING_GUIDE.md`, `BETA_FEEDBACK_FORM.md`, and `SUPPORT_HANDOVER_NOTE.md`. These documents cover the beta onboarding flow, structured tester feedback, support URLs, common issues, escalation steps, and token safety rules.
+
 Known limitations:
 
 1. Real WhatsApp sending is blocked until WhatsApp Cloud API credentials and server environment variables are configured.
