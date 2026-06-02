@@ -55,6 +55,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Use Billing Summary to review confirmed totals, pending totals, last payment, and period status.
+- Use Plan Usage to review report-only limits for contacts, team members, auto replies, monthly messages, inbox conversations, and channels.
 - Use View Receipt from Payment History for printable manual receipts.
 - Investigate a failed message by reviewing status, provider ID, safe error text, and channel settings.
 - Confirm Auto Reply rule status, keyword, match mode, and channel configuration.
@@ -128,6 +129,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not mark a payment `CONFIRMED` unless an admin has verified it offline.
 - Do not treat `PENDING` payment records as confirmed payments.
 - Use the manual receipt page only as a record of what was manually entered.
+- Do not block users because of plan limits in the current beta; over-limit warnings are report-only.
 - Do not store card data or payment credentials.
 - Gateway automation is not active yet.
 

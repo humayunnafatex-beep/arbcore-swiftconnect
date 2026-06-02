@@ -53,6 +53,13 @@ type DashboardStatistics = {
     lastPaymentDate: string | null;
     lastPaymentAmount: number | null;
     currency: string;
+    usage: {
+      contacts: number;
+      contactsLimit: number | null;
+      monthlyMessages: number;
+      monthlyMessagesLimit: number | null;
+      enabledChannelCount: number;
+    };
   };
   apiStatus: string;
 };
@@ -199,7 +206,14 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
       pendingPaymentAmount: 0,
       lastPaymentDate: null,
       lastPaymentAmount: null,
-      currency: "BDT"
+      currency: "BDT",
+      usage: {
+        contacts: 0,
+        contactsLimit: 1000,
+        monthlyMessages: 0,
+        monthlyMessagesLimit: 5000,
+        enabledChannelCount: 0
+      }
     }
   };
   const data = stats ?? empty;
@@ -261,8 +275,23 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
         ]}
         loading={loading}
       />
+      <MetricSection
+        title="Plan Usage Snapshot"
+        helper="Report-only usage. No beta features are blocked by plan limits yet."
+        items={[
+          { label: "Contacts", value: data.billing.usage.contacts, href: "/billing", icon: Users, tone: "blue", badge: `Limit ${formatLimit(data.billing.usage.contactsLimit)}` },
+          { label: "Monthly messages", value: data.billing.usage.monthlyMessages, href: "/billing", icon: MessageSquareText, tone: "purple", badge: `Limit ${formatLimit(data.billing.usage.monthlyMessagesLimit)}` },
+          { label: "Channels", value: data.billing.usage.enabledChannelCount, href: "/billing", icon: LinkIcon, tone: "green", displayValue: `${data.billing.usage.enabledChannelCount}` },
+          { label: "Usage details", value: 1, href: "/billing", icon: CreditCard, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
     </div>
   );
+}
+
+function formatLimit(limit: number | null) {
+  return limit === null ? "Custom" : limit.toLocaleString();
 }
 
 function MetricSection({

@@ -68,6 +68,25 @@ type BillingSummary = {
   };
 };
 
+type PlanUsage = {
+  plan: string;
+  limits: Record<"contacts" | "teamMembers" | "autoReplyRules" | "monthlyMessages" | "inboxConversations", number | null> & {
+    channels: string[];
+    manualBilling: boolean;
+    supportLevel: string;
+  };
+  usage: {
+    contacts: number;
+    teamMembers: number;
+    autoReplyRules: number;
+    monthlyMessages: number;
+    inboxConversations: number;
+    enabledChannels: string[];
+  };
+  reportOnly: boolean;
+  notes: string;
+};
+
 const plans = ["ENTERPRISE_BETA", "STARTER", "BUSINESS", "AGENCY", "ENTERPRISE"];
 const subscriptionStatuses = ["ACTIVE", "TRIAL", "PAST_DUE", "CANCELLED"];
 const methods = ["MANUAL", "CASH", "BANK", "BKASH", "NAGAD", "SSLCOMMERZ_FUTURE", "STRIPE_FUTURE"];
@@ -82,6 +101,7 @@ export function BillingModulePage() {
   const subscriptionRequest = useApiData<SubscriptionResponse>("/api/billing/subscription");
   const paymentsRequest = useApiData<PaymentsResponse>("/api/billing/payments");
   const summaryRequest = useApiData<BillingSummary>("/api/billing/summary");
+  const usageRequest = useApiData<PlanUsage>("/api/billing/usage");
   const { toast, showToast } = useToast();
   const [savingSubscription, setSavingSubscription] = useState(false);
   const [addingPayment, setAddingPayment] = useState(false);
@@ -119,6 +139,7 @@ export function BillingModulePage() {
     subscriptionRequest.reload();
     paymentsRequest.reload();
     summaryRequest.reload();
+    usageRequest.reload();
   }
 
   async function saveSubscription() {
@@ -176,6 +197,7 @@ export function BillingModulePage() {
   const subscription = subscriptionRequest.data?.subscription;
   const payments = paymentsRequest.data?.payments ?? [];
   const summary = summaryRequest.data;
+  const planUsage = usageRequest.data;
 
   return (
     <AppShell>
@@ -216,6 +238,33 @@ export function BillingModulePage() {
             <SummaryCard label="Current period end" value={dateInputValue(summary.subscription.currentPeriodEnd) || "-"} helper={summary.health.isPastDue ? "Past due" : "Manual period tracking"} tone={summary.health.isPastDue ? "rose" : "blue"} />
             <SummaryCard label="Days remaining" value={summary.health.daysUntilPeriodEnd === null ? "-" : summary.health.daysUntilPeriodEnd.toString()} helper="Based on current period end" icon={<CalendarClock className="h-5 w-5" />} />
             <SummaryCard label="Manual receipts" value={payments.length.toLocaleString()} helper="Use View Receipt from history" icon={<ReceiptText className="h-5 w-5" />} />
+          </section>
+        ) : null}
+      </DataState>
+
+      <DataState loading={usageRequest.loading} error={usageRequest.error} empty={!planUsage} emptyText="No plan usage data is available yet.">
+        {planUsage ? (
+          <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase text-royal">Plan Usage</p>
+                <h2 className="mt-1 text-xl font-black text-ink">{planUsage.plan.replace(/_/g, " ")} limits</h2>
+                <p className="mt-1 text-sm font-semibold text-slate-500">Plan limits are visible for beta planning but not enforced yet.</p>
+              </div>
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-royal ring-1 ring-blue-100">Report-only</span>
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <UsageMeter label="Contacts" used={planUsage.usage.contacts} limit={planUsage.limits.contacts} />
+              <UsageMeter label="Team members" used={planUsage.usage.teamMembers} limit={planUsage.limits.teamMembers} />
+              <UsageMeter label="Auto Reply rules" used={planUsage.usage.autoReplyRules} limit={planUsage.limits.autoReplyRules} />
+              <UsageMeter label="Monthly messages" used={planUsage.usage.monthlyMessages} limit={planUsage.limits.monthlyMessages} />
+              <UsageMeter label="Inbox conversations" used={planUsage.usage.inboxConversations} limit={planUsage.limits.inboxConversations} />
+              <article className="rounded-[18px] border border-blue-100 bg-blue-50/55 p-4">
+                <p className="text-xs font-black uppercase text-slate-500">Enabled channels</p>
+                <p className="mt-2 text-lg font-black text-ink">{planUsage.usage.enabledChannels.length ? planUsage.usage.enabledChannels.join(", ") : "None"}</p>
+                <p className="mt-1 text-xs font-bold text-slate-500">Plan includes {planUsage.limits.channels.join(", ")}</p>
+              </article>
+            </div>
           </section>
         ) : null}
       </DataState>
@@ -346,6 +395,33 @@ export function BillingModulePage() {
 
       {toast ? <Toast {...toast} /> : null}
     </AppShell>
+  );
+}
+
+function UsageMeter({ label, used, limit }: { label: string; used: number; limit: number | null }) {
+  const percent = limit ? Math.round((used / limit) * 100) : null;
+  const overLimit = typeof limit === "number" && used > limit;
+
+  return (
+    <article className="rounded-[18px] border border-blue-100 bg-blue-50/55 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase text-slate-500">{label}</p>
+          <p className="mt-2 text-lg font-black text-ink">{used.toLocaleString()} / {limit === null ? "Custom" : limit.toLocaleString()}</p>
+        </div>
+        {overLimit ? <span className="rounded-full bg-amber-50 px-2 py-1 text-[11px] font-black text-amber-700 ring-1 ring-amber-100">Over plan limit - report-only</span> : null}
+      </div>
+      {percent === null ? (
+        <p className="mt-3 text-xs font-bold text-slate-500">Custom plan limit</p>
+      ) : (
+        <>
+          <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
+            <div className="h-full rounded-full bg-gradient-to-r from-royal to-electric" style={{ width: `${Math.min(percent, 100)}%` }} />
+          </div>
+          <p className="mt-2 text-xs font-bold text-slate-500">{percent}% used</p>
+        </>
+      )}
+    </article>
   );
 }
 

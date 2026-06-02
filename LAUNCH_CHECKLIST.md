@@ -118,6 +118,11 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Receipt shows manual-payment disclaimer and no secrets.
 - [ ] License links to Billing and still states billing enforcement is not active.
 - [ ] Dashboard shows Billing Overview with plan, status, pending payments, and last payment.
+- [ ] Plan Usage section loads in Billing.
+- [ ] `/api/billing/usage` returns safe report-only usage data.
+- [ ] License shows compact plan usage.
+- [ ] Dashboard shows Plan Usage Snapshot.
+- [ ] Over-limit warnings are report-only and do not block features.
 - [ ] Payment gateway automation is not presented as active.
 - [ ] No card data or payment credentials are stored.
 - [ ] Admin confirms payment manually before marking it `CONFIRMED`.

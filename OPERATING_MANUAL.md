@@ -231,6 +231,8 @@ Current status is Enterprise Beta. Manual payment and subscription tracking is a
 
 Billing Summary shows confirmed payment totals, pending payment totals, last payment, current period end, and days remaining. Only `CONFIRMED` records count as confirmed payments. `PENDING` records are manual follow-up items, not successful payments. Payment History includes printable manual receipts.
 
+Plan Usage shows contacts, team members, auto-reply rules, monthly messages, inbox conversations, and enabled channels against the current plan. These limits are report-only in beta. Over-limit warnings help with planning but do not block features yet.
+
 Future paid plans should support client workspaces, feature limits, and channel-based automation for WhatsApp and Messenger.
 
 ## 10. What Works Without WhatsApp API

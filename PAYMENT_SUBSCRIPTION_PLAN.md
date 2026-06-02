@@ -102,3 +102,13 @@ Phase 2 adds safe billing summary metrics and printable manual receipts:
 - Receipts show ARBCore SwiftConnect, company name, payment ID, plan, amount, method, status, reference, dates, notes, and a manual-payment disclaimer.
 - Gateway automation is still not active.
 - Card data and payment credentials must never be stored.
+
+## 10. Phase 3 Report-Only Plan Limits
+
+Phase 3 adds visible plan limits and usage indicators:
+
+- Plan limits are defined for `ENTERPRISE_BETA`, `STARTER`, `BUSINESS`, `AGENCY`, and `ENTERPRISE`.
+- Usage indicators show contacts, team members, auto-reply rules, monthly messages, inbox conversations, and enabled channels.
+- Over-limit warnings are report-only and do not block beta users.
+- Billing, License, and Dashboard show plan usage summaries.
+- Future enforcement should wait until auth, permissions, billing, and client isolation are production-ready.

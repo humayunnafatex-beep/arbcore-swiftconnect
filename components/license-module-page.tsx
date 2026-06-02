@@ -15,6 +15,7 @@ const usage = [
 export function LicenseModulePage() {
   const { data } = useApiData<{ subscription: { plan: string; status: string; billingMode: string; currentPeriodStart: string | null; currentPeriodEnd: string | null }; created: boolean }>("/api/billing/subscription");
   const summary = useApiData<{ payments: { totalConfirmedAmount: number; totalPendingAmount: number; pendingCount: number; currency: string; lastPaymentDate: string | null } }>("/api/billing/summary");
+  const planUsage = useApiData<{ plan: string; limits: { contacts: number | null; teamMembers: number | null; monthlyMessages: number | null }; usage: { contacts: number; teamMembers: number; monthlyMessages: number; enabledChannels: string[] }; reportOnly: boolean }>("/api/billing/usage");
   const subscription = data?.subscription;
 
   return (
@@ -57,20 +58,27 @@ export function LicenseModulePage() {
         </article>
 
         <div className="grid gap-4 md:grid-cols-3">
-          {usage.map((item) => {
+          {(planUsage.data
+            ? [
+                { label: "Contacts usage", used: planUsage.data.usage.contacts, total: planUsage.data.limits.contacts, icon: Gauge },
+                { label: "Monthly messages", used: planUsage.data.usage.monthlyMessages, total: planUsage.data.limits.monthlyMessages, icon: TrendingUp },
+                { label: "Team usage", used: planUsage.data.usage.teamMembers, total: planUsage.data.limits.teamMembers, icon: Users }
+              ]
+            : usage
+          ).map((item) => {
             const Icon = item.icon;
-            const percent = Math.round((item.used / item.total) * 100);
+            const percent = item.total ? Math.round((item.used / item.total) * 100) : null;
             return (
               <article key={item.label} className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
                 <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-blue-50 text-royal ring-1 ring-blue-100">
                   <Icon className="h-5 w-5" />
                 </span>
                 <p className="mt-5 text-sm font-black text-ink">{item.label}</p>
-                <p className="mt-1 text-2xl font-black text-ink">{item.used.toLocaleString()} / {item.total.toLocaleString()}</p>
+                <p className="mt-1 text-2xl font-black text-ink">{item.used.toLocaleString()} / {item.total === null ? "Custom" : item.total.toLocaleString()}</p>
                 <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200">
-                  <div className="h-full rounded-full bg-gradient-to-r from-royal to-electric" style={{ width: `${percent}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-royal to-electric" style={{ width: `${percent === null ? 100 : Math.min(percent, 100)}%` }} />
                 </div>
-                <p className="mt-2 text-xs font-bold text-slate-500">{percent}% used</p>
+                <p className="mt-2 text-xs font-bold text-slate-500">{percent === null ? "Custom limit" : `${percent}% used`}</p>
               </article>
             );
           })}
@@ -88,6 +96,8 @@ export function LicenseModulePage() {
           </div>
           <div className="grid gap-3 p-5">
             <Info label="Current plan" value="Enterprise Beta" />
+            <Info label="Plan usage mode" value={planUsage.data?.reportOnly ? "Report-only" : "Beta"} />
+            <Info label="Enabled channels" value={planUsage.data?.usage.enabledChannels.length ? planUsage.data.usage.enabledChannels.join(", ") : "None"} />
             <Info label="Subscription status" value={subscription?.status || "ACTIVE"} />
             <Info label="Billing mode" value={subscription?.billingMode || "MANUAL"} />
             <Info label="Confirmed payments" value={summary.data ? `${summary.data.payments.currency} ${summary.data.payments.totalConfirmedAmount.toLocaleString()}` : "-"} />

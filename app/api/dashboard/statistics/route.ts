@@ -1,5 +1,6 @@
 import { handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { getPlanLimits, normalizePlanName } from "@/lib/plan-limits";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -36,7 +37,8 @@ export async function GET() {
       aiCreditsUsed,
       subscription,
       paymentGroups,
-      lastPayment
+      lastPayment,
+      monthlyMessagesForPlan
     ] = await Promise.all([
       prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } }),
       prisma.messageLog.count({
@@ -93,6 +95,9 @@ export async function GET() {
       prisma.paymentRecord.findFirst({
         where: { companyId },
         orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }]
+      }),
+      prisma.messageLog.count({
+        where: { companyId, createdAt: { gte: new Date(today.getFullYear(), today.getMonth(), 1) } }
       })
     ]);
     const stateByConversation = new Map(conversationStates.map((state) => [`${state.channel}:${state.contactKey}`, state]));
@@ -113,6 +118,12 @@ export async function GET() {
     const upcomingFollowUps = conversationStates.filter((state) => state.followUpAt && !state.followUpDone && state.followUpAt.getTime() > Date.now()).length;
     const doneFollowUps = conversationStates.filter((state) => state.followUpDone).length;
     const pendingPayments = paymentGroups.find((group) => group.status === "PENDING");
+    const plan = normalizePlanName(subscription?.plan || company.plan);
+    const limits = getPlanLimits(plan);
+    const enabledChannelCount = [
+      company.whatsappPhoneNumberId && company.whatsappAccessToken,
+      company.messengerPageId && company.messengerPageAccessToken
+    ].filter(Boolean).length;
 
     return ok({
       connectedNumbers,
@@ -144,13 +155,20 @@ export async function GET() {
       whatsappConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),
       messengerConfigured: Boolean(company.messengerPageAccessToken),
       billing: {
-        plan: subscription?.plan || "ENTERPRISE_BETA",
+        plan,
         status: subscription?.status || "ACTIVE",
         pendingPaymentCount: pendingPayments?._count._all ?? 0,
         pendingPaymentAmount: pendingPayments?._sum.amount ?? 0,
         lastPaymentDate: (lastPayment?.paidAt ?? lastPayment?.createdAt)?.toISOString() ?? null,
         lastPaymentAmount: lastPayment?.amount ?? null,
-        currency: lastPayment?.currency || "BDT"
+        currency: lastPayment?.currency || "BDT",
+        usage: {
+          contacts,
+          contactsLimit: limits.contacts,
+          monthlyMessages: monthlyMessagesForPlan,
+          monthlyMessagesLimit: limits.monthlyMessages,
+          enabledChannelCount
+        }
       },
       apiStatus: "Operational"
     });
