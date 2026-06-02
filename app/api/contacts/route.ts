@@ -49,8 +49,8 @@ export async function POST(request: Request) {
     const { context } = await requirePermission("contacts.manage");
     const { company } = context;
     const phone = input.phone.trim();
-    const existingContact = await prisma.contact.findUnique({
-      where: { phone },
+    const existingContact = await prisma.contact.findFirst({
+      where: { companyId: company.id, phone },
       select: { id: true, name: true }
     });
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
           success: false,
           error: {
             code: "DUPLICATE_CONTACT_PHONE",
-            message: `A contact with this phone number already exists: ${existingContact.name}.`
+            message: `A contact with this phone number already exists in this workspace: ${existingContact.name}.`
           }
         },
         { status: 409 }
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
           success: false,
           error: {
             code: "DUPLICATE_CONTACT_PHONE",
-            message: "A contact with this phone number already exists."
+            message: "A contact with this phone number already exists. Current beta schema keeps contact phone numbers globally unique."
           }
         },
         { status: 409 }

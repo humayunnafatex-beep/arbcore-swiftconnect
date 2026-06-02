@@ -194,6 +194,8 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`: internal 2-3 day beta workflow for Welzz Stride.
 - `CLIENT_WORKSPACE_ONBOARDING_PLAN.md`: safe beta/admin-assisted multi-client workspace setup foundation.
 - `/admin/workspaces`: beta/admin workspace creation and selected-workspace testing; not production tenant switching.
+- `WORKSPACE_ISOLATION_QA_REPORT.md`: company scoping audit for beta workspace switching.
+- `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`: manual beta/admin workspace switching test steps.
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment production verification guide.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: manual production QA checklist.
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: Supabase production migration verification checklist.

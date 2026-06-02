@@ -127,3 +127,19 @@ Important limitations:
 - Channel credentials remain per company and are never copied.
 - Webhook routing is not changed in this phase.
 - Clear the selected workspace to return to the default beta fallback.
+
+## Workspace Isolation QA
+
+Use these Phase 3 documents before broader beta client testing:
+
+```text
+WORKSPACE_ISOLATION_QA_REPORT.md
+WORKSPACE_SWITCHING_TEST_CHECKLIST.md
+```
+
+The QA pass confirms the major app modules are scoped by current company for beta/admin switching and documents the remaining limitations:
+
+- Workspace switching remains beta/admin-only.
+- Full client SaaS requires auth and company membership enforcement.
+- Webhook routing still needs provider-based routing before untrusted multi-client production.
+- Channel credentials remain per company and are not copied.

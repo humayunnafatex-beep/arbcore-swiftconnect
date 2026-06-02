@@ -30,39 +30,48 @@ export async function POST(request: Request) {
     const companyId = company.id;
     const validRows = rows.map((row) => contactCreateSchema.parse(normalizeImportRow(row)));
     const results = [];
+    let skipped = 0;
 
     for (const row of validRows) {
       const existing = await prisma.contact.findUnique({ where: { phone: row.phone } });
       const keepUnsubscribed = existing?.companyId === companyId && existing.doNotContact;
-      const contact = await prisma.contact.upsert({
-        where: { phone: row.phone },
-        update: {
-          companyId,
-          name: row.name,
-          email: row.email ?? null,
-          tags: normalizeTags(row.tags),
-          segment: row.segment ?? null,
-          stage: row.stage ?? "NEW_LEAD",
-          optedIn: keepUnsubscribed ? false : row.optedIn ?? true,
-          metadata: row.metadata as Prisma.InputJsonValue | undefined
-        },
-        create: {
-          companyId,
-          name: row.name,
-          phone: row.phone,
-          email: row.email ?? undefined,
-          tags: normalizeTags(row.tags),
-          segment: row.segment ?? undefined,
-          stage: row.stage ?? "NEW_LEAD",
-          optedIn: row.optedIn ?? true,
-          metadata: row.metadata as Prisma.InputJsonValue | undefined
-        }
-      });
+
+      if (existing && existing.companyId !== companyId) {
+        skipped += 1;
+        continue;
+      }
+
+      const contact = existing
+        ? await prisma.contact.update({
+            where: { id: existing.id },
+            data: {
+              name: row.name,
+              email: row.email ?? null,
+              tags: normalizeTags(row.tags),
+              segment: row.segment ?? null,
+              stage: row.stage ?? "NEW_LEAD",
+              optedIn: keepUnsubscribed ? false : row.optedIn ?? true,
+              metadata: row.metadata as Prisma.InputJsonValue | undefined
+            }
+          })
+        : await prisma.contact.create({
+            data: {
+              companyId,
+              name: row.name,
+              phone: row.phone,
+              email: row.email ?? undefined,
+              tags: normalizeTags(row.tags),
+              segment: row.segment ?? undefined,
+              stage: row.stage ?? "NEW_LEAD",
+              optedIn: row.optedIn ?? true,
+              metadata: row.metadata as Prisma.InputJsonValue | undefined
+            }
+          });
 
       results.push(contact);
     }
 
-    return ok({ imported: results.length, items: results });
+    return ok({ imported: results.length, skipped, items: results });
   } catch (error) {
     return handleApiError(error);
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { sendMessengerTextMessage } from "@/lib/messenger-service";
@@ -62,13 +63,13 @@ export async function POST(request: Request) {
       channel,
       contactKey
     });
-    contactId = contact.id;
+    contactId = contact?.id;
 
     if (channel === "WHATSAPP") {
       if (!company.whatsappPhoneNumberId || !company.whatsappAccessToken) {
         await createSafeMessageLog({
           companyId: company.id,
-          contactId: contact.id,
+          contactId: contact?.id,
           channel,
           body: messageBody,
           status: "FAILED",
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
 
       return handleProviderResult({
         companyId: company.id,
-        contactId: contact.id,
+        contactId: contact?.id,
         channel,
         body: messageBody,
         providerResult
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
     if (!company.messengerPageAccessToken) {
       await createSafeMessageLog({
         companyId: company.id,
-        contactId: contact.id,
+        contactId: contact?.id,
         channel,
         body: messageBody,
         status: "FAILED",
@@ -121,7 +122,7 @@ export async function POST(request: Request) {
 
     return handleProviderResult({
       companyId: company.id,
-      contactId: contact.id,
+      contactId: contact?.id,
       channel,
       body: messageBody,
       providerResult
@@ -159,7 +160,7 @@ async function handleProviderResult({
   providerResult
 }: {
   companyId: string;
-  contactId: string;
+  contactId?: string;
   channel: "WHATSAPP" | "MESSENGER";
   body: string;
   providerResult: { success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number };
@@ -211,24 +212,36 @@ async function upsertReplyContact({
   channel: "WHATSAPP" | "MESSENGER";
   contactKey: string;
 }) {
-  const existingContact = await prisma.contact.findUnique({ where: { phone: contactKey } });
-
-  if (existingContact) {
-    return prisma.contact.update({
-      where: { id: existingContact.id },
-      data: { companyId }
-    });
-  }
-
-  return prisma.contact.create({
-    data: {
+  const existingContact = await prisma.contact.findFirst({
+    where: {
       companyId,
-      name: channel === "WHATSAPP" ? `WhatsApp ${contactKey}` : `Messenger ${contactKey}`,
-      phone: contactKey,
-      segment: channel === "WHATSAPP" ? "Inbox WhatsApp" : "Inbox Messenger",
-      optedIn: true
+      phone: contactKey
     }
   });
+
+  if (existingContact) {
+    return existingContact;
+  }
+
+  try {
+    return await prisma.contact.create({
+      data: {
+        companyId,
+        name: channel === "WHATSAPP" ? `WhatsApp ${contactKey}` : `Messenger ${contactKey}`,
+        phone: contactKey,
+        segment: channel === "WHATSAPP" ? "Inbox WhatsApp" : "Inbox Messenger",
+        optedIn: true
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      // Current schema keeps Contact.phone globally unique. Do not reassign a
+      // contact from another workspace during beta workspace testing.
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 async function createSafeMessageLog(input: {

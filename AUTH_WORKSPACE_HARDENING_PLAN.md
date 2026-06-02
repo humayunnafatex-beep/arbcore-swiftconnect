@@ -12,6 +12,8 @@ Client workspace onboarding Phase 1 is tracked in `CLIENT_WORKSPACE_ONBOARDING_P
 
 Client workspace Phase 2 adds beta/admin workspace selection using an HTTP-only `arbcore_selected_workspace_id` cookie. This is for admin testing only; production tenant switching still requires Supabase Auth, company membership validation, and role enforcement.
 
+Client workspace Phase 3 audit is documented in `WORKSPACE_ISOLATION_QA_REPORT.md`, with practical testing steps in `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`.
+
 Current behavior:
 
 - Demo login route exists.
@@ -177,6 +179,7 @@ Review `AUTH_IMPLEMENTATION_PHASE_8.md` before expanding guards beyond the selec
 - Add `VIEWER` through migration if needed.
 - Protect Settings, Team, Billing, and provider credentials.
 - Replace beta cookie workspace selection with authenticated membership-based workspace resolution before untrusted client onboarding.
+- Route provider webhooks by WhatsApp Phone Number ID / WABA ID and Messenger Page ID before production multi-client use.
 
 ### Phase 6: Invite Client Users / Team Members
 

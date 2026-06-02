@@ -14,6 +14,8 @@ For Supabase production migration verification, use `SUPABASE_PRODUCTION_MIGRATI
 
 For client workspace setup, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces`.
 
+For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
@@ -71,6 +73,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Select Workspace works only as beta/admin testing preparation.
 - [ ] Clear Selected Workspace restores the default beta fallback.
 - [ ] New client workspaces are not treated as production client access until auth mapping is verified.
+- [ ] Workspace isolation QA findings are reviewed before beta client testing.
+- [ ] Workspace switching test checklist passes for Contacts, Auto Reply, Campaigns, Billing, Inbox, and Message Logs.
 - [ ] `BETA_FEEDBACK_FORM.md` is ready for the tester after the demo.
 - [ ] `SUPPORT_HANDOVER_NOTE.md` is available to the support/admin team.
 - [ ] Tester is reminded not to share or screenshot access tokens.
@@ -163,6 +167,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm `/admin/workspaces` remains beta/admin-assisted and does not switch the current session.
 - [ ] Confirm selected workspace cookie stores only a workspace ID and is not treated as tenant security.
 - [ ] Confirm production SaaS switching is still blocked until user/company membership validation is implemented.
+- [ ] Confirm provider webhooks are not treated as multi-client safe until Phone Number ID/Page ID routing is implemented.
 
 ## 5. Contacts QA
 
