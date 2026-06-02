@@ -149,3 +149,5 @@ Provider routing foundation is documented in `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 Strict routing readiness is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`. Keep strict routing off until every workspace provider ID is verified.
 
 Provider ID uniqueness readiness is documented in `PROVIDER_ID_UNIQUENESS_PLAN.md`. Use `/admin/provider-diagnostics` before enabling strict routing.
+
+Settings now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed for workspaces that are not connected to Meta yet. Database unique constraints are still future work.

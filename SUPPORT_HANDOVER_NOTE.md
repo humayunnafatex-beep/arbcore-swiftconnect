@@ -164,6 +164,9 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Webhooks now have provider-routing foundation, but unmatched events still use beta fallback. Require provider matches before untrusted multi-client production.
 - Strict provider routing is off by default. If enabled, unmatched provider webhooks are acknowledged but not processed into the default workspace.
 - Duplicate provider IDs must be resolved before strict provider routing is enabled.
+- Settings now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces.
+- Empty provider IDs remain allowed for workspaces that are not connected to Meta yet.
+- Database unique constraints for provider IDs are still future work.
 
 ### Manual Payment Status Confusion
 

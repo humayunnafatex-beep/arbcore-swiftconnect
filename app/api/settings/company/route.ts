@@ -3,6 +3,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
+import { normalizeProviderId, validateUniqueProviderIdsForCompany } from "@/lib/provider-id-validation";
 
 async function getCompany() {
   return getCurrentCompany();
@@ -76,8 +77,27 @@ export async function POST(request: NextRequest) {
 
     const businessName = String(body.businessName ?? "").trim();
     const workspace = String(body.workspace ?? "").trim();
+    const whatsappPhoneNumberId = normalizeProviderId(body.whatsappPhoneNumberId);
+    const messengerPageId = normalizeProviderId(body.messengerPageId);
     const whatsappAccessToken = typeof body.whatsappAccessToken === "string" ? body.whatsappAccessToken.trim() : undefined;
     const messengerPageAccessToken = typeof body.messengerPageAccessToken === "string" ? body.messengerPageAccessToken.trim() : undefined;
+    const providerIdValidation = await validateUniqueProviderIdsForCompany({
+      companyId: existingCompany.id,
+      whatsappPhoneNumberId,
+      messengerPageId
+    });
+
+    if (!providerIdValidation.valid) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Provider ID conflict",
+          code: "PROVIDER_ID_CONFLICT",
+          details: providerIdValidation.errors
+        },
+        { status: 409 }
+      );
+    }
 
     const company = await prisma.company.update({
       where: { id: existingCompany.id },
@@ -92,11 +112,11 @@ export async function POST(request: NextRequest) {
         notificationHotLead: Boolean(body.notifications?.hotLead),
         notificationBilling: Boolean(body.notifications?.billing),
         notificationWeekly: Boolean(body.notifications?.weekly),
-        whatsappPhoneNumberId: String(body.whatsappPhoneNumberId ?? "").trim(),
+        whatsappPhoneNumberId,
         ...(whatsappAccessToken ? { whatsappAccessToken } : {}),
         whatsappVerifyToken: String(body.whatsappVerifyToken ?? "").trim(),
         whatsappWebhookUrl: String(body.whatsappWebhookUrl ?? "").trim(),
-        messengerPageId: String(body.messengerPageId ?? "").trim(),
+        messengerPageId,
         ...(messengerPageAccessToken ? { messengerPageAccessToken } : {}),
         messengerVerifyToken: String(body.messengerVerifyToken ?? "").trim(),
         messengerWebhookUrl: String(body.messengerWebhookUrl ?? "").trim(),

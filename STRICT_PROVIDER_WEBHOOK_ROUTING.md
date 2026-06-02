@@ -108,3 +108,7 @@ Do not enable strict mode in production until every live workspace has the corre
 Strict mode is recommended only after workspace provider mapping is verified from Channel Center, Admin Workspaces, and live webhook tests.
 
 Before enabling strict mode, also review `PROVIDER_ID_UNIQUENESS_PLAN.md` and confirm `/admin/provider-diagnostics` shows no duplicate provider IDs.
+
+## Settings Save Guardrail
+
+Settings now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed. This helps keep strict routing readiness clean, but database unique constraints are still future work.

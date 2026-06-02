@@ -1,12 +1,11 @@
 import { handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
+import { findDuplicateProviderIds, hasProviderIdValue } from "@/lib/provider-id-validation";
 import { isStrictProviderWebhookRouting } from "@/lib/provider-routing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type ProviderField = "whatsappPhoneNumberId" | "messengerPageId";
 
 export async function GET() {
   try {
@@ -23,8 +22,8 @@ export async function GET() {
       }
     });
 
-    const whatsappDuplicates = findDuplicates(companies, "whatsappPhoneNumberId");
-    const messengerDuplicates = findDuplicates(companies, "messengerPageId");
+    const whatsappDuplicates = findDuplicateProviderIds(companies, "whatsappPhoneNumberId");
+    const messengerDuplicates = findDuplicateProviderIds(companies, "messengerPageId");
     const strictProviderRouting = isStrictProviderWebhookRouting();
     const warnings = [
       whatsappDuplicates.length || messengerDuplicates.length
@@ -40,8 +39,8 @@ export async function GET() {
       strictProviderRouting,
       summary: {
         workspaceCount: companies.length,
-        whatsappProviderIdsPresent: companies.filter((company) => hasValue(company.whatsappPhoneNumberId)).length,
-        messengerProviderIdsPresent: companies.filter((company) => hasValue(company.messengerPageId)).length,
+        whatsappProviderIdsPresent: companies.filter((company) => hasProviderIdValue(company.whatsappPhoneNumberId)).length,
+        messengerProviderIdsPresent: companies.filter((company) => hasProviderIdValue(company.messengerPageId)).length,
         duplicateWhatsappPhoneNumberIds: whatsappDuplicates.length,
         duplicateMessengerPageIds: messengerDuplicates.length
       },
@@ -54,46 +53,4 @@ export async function GET() {
   } catch (error) {
     return handleApiError(error);
   }
-}
-
-function findDuplicates(
-  companies: Array<{ id: string; name: string; plan: string; whatsappPhoneNumberId: string; messengerPageId: string }>,
-  field: ProviderField
-) {
-  const grouped = new Map<string, Array<{ id: string; name: string; plan: string }>>();
-
-  for (const company of companies) {
-    const providerId = company[field].trim();
-    if (!providerId) continue;
-
-    const workspaces = grouped.get(providerId) ?? [];
-    workspaces.push({
-      id: company.id,
-      name: company.name,
-      plan: company.plan
-    });
-    grouped.set(providerId, workspaces);
-  }
-
-  return Array.from(grouped.entries())
-    .filter(([, workspaces]) => workspaces.length > 1)
-    .map(([providerId, workspaces]) => ({
-      providerIdMasked: maskProviderId(providerId),
-      workspaceCount: workspaces.length,
-      workspaces
-    }));
-}
-
-function hasValue(value: string | null | undefined) {
-  return Boolean(value?.trim());
-}
-
-function maskProviderId(value: string) {
-  const trimmed = value.trim();
-
-  if (trimmed.length <= 8) {
-    return "configured";
-  }
-
-  return `${trimmed.slice(0, 4)}...${trimmed.slice(-4)}`;
 }

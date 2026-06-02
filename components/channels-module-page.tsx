@@ -311,7 +311,7 @@ export function ChannelsModulePage() {
                   <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
                   <div>
                     <p className="font-black">Safety note</p>
-                    <p className="mt-1">Tokens are never displayed. ARBCore does not fake provider success. Inbound WhatsApp routing uses Phone Number ID when available, and Messenger routing uses Page ID when available. Missing provider IDs still fall back to beta/default company behavior for now.</p>
+                    <p className="mt-1">Tokens are never displayed. ARBCore does not fake provider success. Inbound WhatsApp routing uses Phone Number ID when available, and Messenger routing uses Page ID when available. Settings now blocks duplicate provider IDs across workspaces. Missing provider IDs still fall back to beta/default company behavior for now.</p>
                   </div>
                 </div>
               </section>

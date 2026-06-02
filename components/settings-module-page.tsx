@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserMinus, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
-import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
+import { ApiClientError, apiRequest, getApiErrorMessage } from "@/lib/api-client";
 
 type UserRole = "OWNER" | "ADMIN" | "MANAGER" | "AGENT";
 
@@ -181,6 +181,15 @@ async function save(section: string) {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
+        if (result.code === "PROVIDER_ID_CONFLICT") {
+          throw new ApiClientError(
+            response.status,
+            result.code,
+            "This provider ID is already connected to another workspace. Use a unique Meta number/page for each workspace.",
+            result.details
+          );
+        }
+
         throw new Error(result.error || "Unable to save settings");
       }
 
@@ -286,6 +295,7 @@ async function createTeamMember() {
             <p className="mt-1">Customer messages will be received only on the WhatsApp number connected to this Phone Number ID.</p>
             <p className="mt-1">To use Welzz Stride number 01958474577, this number must be added and verified in Meta WhatsApp Cloud API first.</p>
             <p className="mt-1">Current active customer number is the number selected in Meta for the saved Phone Number ID.</p>
+            <p className="mt-1">Each workspace must use a unique WhatsApp Phone Number ID. Settings blocks duplicate provider IDs.</p>
           </div>
           <label className="grid gap-1.5 text-xs font-black text-slate-500">
             API mode
@@ -311,6 +321,7 @@ async function createTeamMember() {
             <p className="font-black text-royal">Messenger foundation</p>
             <p className="mt-1">Messenger support is foundation-ready. Real Messenger receive/reply requires Meta Page webhook setup and Page Access Token.</p>
             <p className="mt-1">ARBCore does not claim Messenger sending is active until Meta setup is configured and tested.</p>
+            <p className="mt-1">Each workspace must use a unique Messenger Page ID. Settings blocks duplicate provider IDs.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Facebook Page ID" value={messenger.pageId} onChange={(value) => setMessenger({ ...messenger, pageId: value })} />

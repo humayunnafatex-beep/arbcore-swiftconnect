@@ -1,6 +1,6 @@
 import { handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
-import { prisma } from "@/lib/prisma";
+import { hasDuplicateProviderId } from "@/lib/provider-id-validation";
 import { isStrictProviderWebhookRouting } from "@/lib/provider-routing";
 
 export const runtime = "nodejs";
@@ -63,21 +63,4 @@ export async function GET() {
   } catch (error) {
     return handleApiError(error);
   }
-}
-
-async function hasDuplicateProviderId(field: "whatsappPhoneNumberId" | "messengerPageId") {
-  const companies = await prisma.company.findMany({
-    where: { NOT: { [field]: "" } },
-    select: { [field]: true }
-  });
-  const seen = new Set<string>();
-
-  for (const company of companies) {
-    const providerId = String(company[field] ?? "").trim();
-    if (!providerId) continue;
-    if (seen.has(providerId)) return true;
-    seen.add(providerId);
-  }
-
-  return false;
 }

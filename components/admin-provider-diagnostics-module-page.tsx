@@ -46,7 +46,7 @@ export function AdminProviderDiagnosticsModulePage() {
             <div>
               <p className="text-xs font-black uppercase text-royal">Admin Diagnostics</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Provider Diagnostics</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Check provider ID uniqueness readiness before strict multi-client webhook routing. Tokens are never shown.</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Check provider ID uniqueness readiness before strict multi-client webhook routing. Settings now blocks duplicate WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Tokens are never shown.</p>
             </div>
           </div>
           <button className={secondaryButtonClassName} onClick={() => diagnostics.reload()} disabled={diagnostics.loading}>

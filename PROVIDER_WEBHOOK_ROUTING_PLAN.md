@@ -62,6 +62,7 @@ Before untrusted multi-client production:
 - Fallback routing should be disabled or converted into a safe unmatched-event quarantine.
 - Each workspace must have unique provider identifiers.
 - Use `/admin/provider-diagnostics` to confirm provider IDs are unique before strict routing.
+- Settings save blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces.
 - Admin/support should be alerted when a provider webhook cannot be matched.
 
 ## Test Checklist
@@ -92,6 +93,7 @@ Before untrusted multi-client production:
 
 ## Future Hardening
 
+- Keep Settings API validation for duplicate non-empty provider IDs.
 - Add tenant-safe provider account models or unique indexes for non-empty provider IDs.
 - Make `Company.whatsappPhoneNumberId` unique when non-empty.
 - Make `Company.messengerPageId` unique when non-empty.
@@ -103,3 +105,7 @@ Before untrusted multi-client production:
 ## Schema Note
 
 Do not add unique constraints yet while provider ID defaults are empty strings. Empty-string defaults can make uniqueness migrations risky. Convert empty provider IDs to `NULL` or use a dedicated provider account model before enforcing uniqueness.
+
+## Phase 7 Validation Note
+
+Provider ID uniqueness is now guarded at Settings save time. Empty provider IDs remain valid for unconfigured beta workspaces, and database uniqueness is still deferred until a deliberate migration plan is ready.

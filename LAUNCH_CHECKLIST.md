@@ -22,6 +22,8 @@ For strict provider routing readiness, review `STRICT_PROVIDER_WEBHOOK_ROUTING.m
 
 For provider ID uniqueness readiness, review `PROVIDER_ID_UNIQUENESS_PLAN.md` and `/admin/provider-diagnostics`.
 
+Settings save now blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed, and database unique constraints are still future work.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
