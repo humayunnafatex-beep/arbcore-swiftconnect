@@ -15,8 +15,11 @@ Use this roadmap with:
 - `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`
 - `ENFORCEMENT_FLAGS_REFERENCE.md`
 - `TECHNICAL_HANDOVER_INDEX.md`
+- `V1_1_IMPLEMENTATION_BACKLOG.md`
 
 This is a planning document. It does not enable production flags or change runtime behavior.
+
+For actionable tasks, owners, priorities, dependencies, acceptance criteria, and verification steps, use `V1_1_IMPLEMENTATION_BACKLOG.md`.
 
 ## Current Beta v1.0 Baseline
 

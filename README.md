@@ -34,6 +34,7 @@ Use the release package docs for handover:
 - `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
 - `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`
 - `V1_1_HARDENING_ROADMAP.md`
+- `V1_1_IMPLEMENTATION_BACKLOG.md`
 
 Production read-only verification:
 
@@ -235,6 +236,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`: Beta feedback, bug, access, provider, billing, security, and documentation issue triage workflow.
 - `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`: Beta outcome, expansion readiness, blocker, and v1.1 follow-up decision guide.
 - `V1_1_HARDENING_ROADMAP.md`: post-Beta v1.0 hardening roadmap before broader production or paid-client expansion.
+- `V1_1_IMPLEMENTATION_BACKLOG.md`: actionable v1.1 hardening tasks organized by workstream, priority, owner, dependencies, and verification.
 - `LAUNCH_CHECKLIST.md`: production launch, QA, channel, auth, and rollback checklist.
 - `BETA_RELEASE_NOTES.md`: current Enterprise Beta status and testing scope.
 - `CLIENT_ONBOARDING_GUIDE.md`: beta client onboarding workflow.

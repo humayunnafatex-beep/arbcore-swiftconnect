@@ -147,9 +147,17 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 ## Roadmap And Next Phase Docs
 
 - `V1_1_HARDENING_ROADMAP.md`
+- `V1_1_IMPLEMENTATION_BACKLOG.md`
 - `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`
 - `SAAS_ARCHITECTURE_PLAN.md`
 - `AUTH_WORKSPACE_HARDENING_PLAN.md`
+
+## Roadmap And Implementation Planning Docs
+
+- `V1_1_HARDENING_ROADMAP.md`
+- `V1_1_IMPLEMENTATION_BACKLOG.md`
+- `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
+- `PAID_CLIENT_GO_LIVE_GATE.md`
 
 ## Important Runtime Pages
 
