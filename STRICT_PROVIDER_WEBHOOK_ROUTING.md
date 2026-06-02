@@ -106,3 +106,5 @@ Do not enable strict mode in production until every live workspace has the corre
 - Messenger Page ID
 
 Strict mode is recommended only after workspace provider mapping is verified from Channel Center, Admin Workspaces, and live webhook tests.
+
+Before enabling strict mode, also review `PROVIDER_ID_UNIQUENESS_PLAN.md` and confirm `/admin/provider-diagnostics` shows no duplicate provider IDs.

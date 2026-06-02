@@ -1,5 +1,6 @@
 import { handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { prisma } from "@/lib/prisma";
 import { isStrictProviderWebhookRouting } from "@/lib/provider-routing";
 
 export const runtime = "nodejs";
@@ -27,6 +28,11 @@ export async function GET() {
       !company.messengerWebhookUrl ? "messengerWebhookUrl" : null
     ].filter(Boolean) as string[];
     const strictProviderRouting = isStrictProviderWebhookRouting();
+    const [duplicateWhatsappProviderIds, duplicateMessengerProviderIds] = await Promise.all([
+      hasDuplicateProviderId("whatsappPhoneNumberId"),
+      hasDuplicateProviderId("messengerPageId")
+    ]);
+    const duplicateProviderIdsDetected = duplicateWhatsappProviderIds || duplicateMessengerProviderIds;
 
     return ok({
       whatsapp: {
@@ -45,12 +51,33 @@ export async function GET() {
       },
       providerRouting: {
         strict: strictProviderRouting,
+        duplicateProviderIdsDetected,
         message: strictProviderRouting
           ? "Strict routing is on. Unmatched provider webhooks are not processed into default workspace."
-          : "Beta fallback is active. Unmatched provider webhooks may route to default workspace."
+          : "Beta fallback is active. Unmatched provider webhooks may route to default workspace.",
+        warning: duplicateProviderIdsDetected
+          ? "Provider ID duplicate detected. Check Admin Provider Diagnostics before enabling strict routing."
+          : null
       }
     });
   } catch (error) {
     return handleApiError(error);
   }
+}
+
+async function hasDuplicateProviderId(field: "whatsappPhoneNumberId" | "messengerPageId") {
+  const companies = await prisma.company.findMany({
+    where: { NOT: { [field]: "" } },
+    select: { [field]: true }
+  });
+  const seen = new Set<string>();
+
+  for (const company of companies) {
+    const providerId = String(company[field] ?? "").trim();
+    if (!providerId) continue;
+    if (seen.has(providerId)) return true;
+    seen.add(providerId);
+  }
+
+  return false;
 }

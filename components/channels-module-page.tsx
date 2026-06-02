@@ -51,7 +51,9 @@ type ChannelDiagnostics = {
   };
   providerRouting: {
     strict: boolean;
+    duplicateProviderIdsDetected: boolean;
     message: string;
+    warning: string | null;
   };
 };
 
@@ -218,6 +220,11 @@ export function ChannelsModulePage() {
                       <div>
                         <p className="font-black">Strict provider routing: {diagnostics.data.providerRouting.strict ? "On" : "Off"}</p>
                         <p className="mt-1">{diagnostics.data.providerRouting.message}</p>
+                        {diagnostics.data.providerRouting.warning ? (
+                          <p className="mt-2">
+                            {diagnostics.data.providerRouting.warning} <Link className="underline" href="/admin/provider-diagnostics">Open diagnostics</Link>.
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </section>

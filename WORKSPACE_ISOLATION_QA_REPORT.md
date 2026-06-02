@@ -118,6 +118,8 @@ Webhook routing was inspected in Phase 3 and provider-routing foundation was add
 
 Strict unmatched-provider behavior is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
 
+Provider ID uniqueness diagnostics are documented in `PROVIDER_ID_UNIQUENESS_PLAN.md` and available at `/admin/provider-diagnostics`.
+
 Current limitation:
 
 - WhatsApp webhook POST can route by Phone Number ID when available.

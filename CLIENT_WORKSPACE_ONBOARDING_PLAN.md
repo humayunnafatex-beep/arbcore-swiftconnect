@@ -147,3 +147,5 @@ The QA pass confirms the major app modules are scoped by current company for bet
 Provider routing foundation is documented in `PROVIDER_WEBHOOK_ROUTING_PLAN.md`. Current webhook POST handling can match WhatsApp by Phone Number ID and Messenger by Page ID, with beta fallback preserved for unmatched events.
 
 Strict routing readiness is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`. Keep strict routing off until every workspace provider ID is verified.
+
+Provider ID uniqueness readiness is documented in `PROVIDER_ID_UNIQUENESS_PLAN.md`. Use `/admin/provider-diagnostics` before enabling strict routing.

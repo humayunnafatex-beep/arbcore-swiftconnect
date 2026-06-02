@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { Building2, CheckCircle2, LogOut, Plus, RefreshCw, ShieldAlert, Users } from "lucide-react";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { AppShell } from "./app-shell";
@@ -132,6 +133,10 @@ export function AdminWorkspacesModulePage() {
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
+          <Link href="/admin/provider-diagnostics" className={secondaryButtonClassName}>
+            <ShieldAlert className="h-4 w-4" />
+            Provider Diagnostics
+          </Link>
         </div>
       </section>
 
@@ -170,7 +175,7 @@ export function AdminWorkspacesModulePage() {
           <div>
             <p className="text-xs font-black uppercase text-royal">Create Workspace</p>
             <h2 className="mt-1 text-xl font-black text-ink">Admin-assisted setup</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">Channel credentials must be configured separately. Do not reuse another company&apos;s WhatsApp or Messenger tokens.</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">Channel credentials must be configured separately. Do not reuse another company&apos;s WhatsApp or Messenger tokens. Provider IDs should be unique before strict multi-client routing.</p>
           </div>
 
           <form className="mt-5 grid gap-4" onSubmit={(event) => void createWorkspace(event)}>

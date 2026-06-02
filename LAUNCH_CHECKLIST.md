@@ -20,6 +20,8 @@ For provider webhook routing, review `PROVIDER_WEBHOOK_ROUTING_PLAN.md`.
 
 For strict provider routing readiness, review `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
 
+For provider ID uniqueness readiness, review `PROVIDER_ID_UNIQUENESS_PLAN.md` and `/admin/provider-diagnostics`.
+
 For live Meta WhatsApp Cloud API setup, follow `META_WHATSAPP_SETUP_GUIDE.md` before running outbound or inbound production tests.
 
 For Welzz Stride's real number setup, follow `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`.
@@ -177,6 +179,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Confirm `STRICT_PROVIDER_WEBHOOK_ROUTING=false` unless strict routing has been tested in local/staging.
 - [ ] Confirm Channel Center shows strict provider routing status.
 - [ ] Confirm Admin Workspaces shows WhatsApp Phone Number ID and Messenger Page ID presence only.
+- [ ] Confirm `/admin/provider-diagnostics` shows zero duplicate WhatsApp Phone Number IDs.
+- [ ] Confirm `/admin/provider-diagnostics` shows zero duplicate Messenger Page IDs.
 
 ## 5. Contacts QA
 

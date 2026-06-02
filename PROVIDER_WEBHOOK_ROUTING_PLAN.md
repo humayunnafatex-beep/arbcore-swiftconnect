@@ -8,6 +8,8 @@ This phase does not enable full multi-client production enforcement.
 
 Strict-mode readiness is documented in `STRICT_PROVIDER_WEBHOOK_ROUTING.md`.
 
+Provider ID uniqueness readiness is documented in `PROVIDER_ID_UNIQUENESS_PLAN.md`.
+
 ## WhatsApp Routing
 
 WhatsApp Cloud API webhooks include provider identifiers inside the webhook payload.
@@ -59,6 +61,7 @@ Before untrusted multi-client production:
 - Provider match should be required for inbound webhooks.
 - Fallback routing should be disabled or converted into a safe unmatched-event quarantine.
 - Each workspace must have unique provider identifiers.
+- Use `/admin/provider-diagnostics` to confirm provider IDs are unique before strict routing.
 - Admin/support should be alerted when a provider webhook cannot be matched.
 
 ## Test Checklist
