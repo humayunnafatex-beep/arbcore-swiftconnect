@@ -35,12 +35,6 @@ const safeFalseFlags = [
   "STRICT_PROVIDER_WEBHOOK_ROUTING",
 ];
 
-const serverSecretEnv = [
-  "DATABASE_URL",
-  "DIRECT_URL",
-  "SESSION_SECRET",
-];
-
 const authEnv = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -149,6 +143,86 @@ function visibleValue(name) {
   return hasValue(name) ? "present" : "missing";
 }
 
+function classifyDatabaseUrl(name) {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    return {
+      present: false,
+      classification: "missing",
+      reasons: [],
+    };
+  }
+
+  if (value.startsWith("file:")) {
+    return {
+      present: true,
+      classification: "sqlite/local",
+      reasons: ["uses file: scheme"],
+    };
+  }
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    const port = url.port;
+    const query = url.search.toLowerCase();
+    const reasons = [];
+    let pooledScore = 0;
+    let directScore = 0;
+
+    if (host.includes("pooler.supabase.com")) {
+      pooledScore += 2;
+      reasons.push("host matches Supabase pooler");
+    }
+
+    if (port === "6543") {
+      pooledScore += 1;
+      reasons.push("port 6543");
+    }
+
+    if (query.includes("pgbouncer") || query.includes("pool")) {
+      pooledScore += 1;
+      reasons.push("pool-related query option");
+    }
+
+    if (host.startsWith("db.") && host.includes("supabase.co")) {
+      directScore += 2;
+      reasons.push("host matches direct Supabase database");
+    }
+
+    if (port === "5432") {
+      directScore += 1;
+      reasons.push("port 5432");
+    }
+
+    let classification = "unknown";
+    if (pooledScore > directScore && pooledScore > 0) {
+      classification = "likely pooled";
+    } else if (directScore > pooledScore && directScore > 0) {
+      classification = "likely direct";
+    }
+
+    return {
+      present: true,
+      classification,
+      reasons,
+    };
+  } catch {
+    return {
+      present: true,
+      classification: "unknown",
+      reasons: ["could not parse URL"],
+    };
+  }
+}
+
+function formatDbClassification(name) {
+  const result = classifyDatabaseUrl(name);
+  const detail = result.reasons.length ? ` (${result.reasons.join(", ")})` : "";
+  return `${visibleValue(name)}; ${result.classification}${detail}`;
+}
+
 function collectPatternEnv(patterns) {
   return Object.keys(process.env)
     .filter((name) => patterns.some((pattern) => pattern.test(name)))
@@ -171,34 +245,57 @@ function auditEnvironment() {
       : `Verification target is ${baseUrl}. Use HTTPS for production readiness checks.`,
   );
 
-  for (const name of serverSecretEnv) {
-    addEnvCheck(
-      checks,
-      hasValue(name) ? "OK" : "WARN",
-      name,
-      hasValue(name)
-        ? `${name} is present in the local verification environment.`
-        : `${name} is missing locally. Confirm it exists in Vercel before production deployment.`,
-    );
-  }
+  const databaseUrl = classifyDatabaseUrl("DATABASE_URL");
+  const directUrl = classifyDatabaseUrl("DIRECT_URL");
 
-  if (hasValue("DATABASE_URL") && process.env.DATABASE_URL?.includes("file:")) {
+  addEnvCheck(
+    checks,
+    databaseUrl.present
+      ? databaseUrl.classification === "likely direct" ? "WARN" : "OK"
+      : "BLOCK",
+    "DATABASE_URL",
+    databaseUrl.present
+      ? `DATABASE_URL is ${formatDbClassification("DATABASE_URL")}. Runtime should usually use the pooled Supabase connection.`
+      : "DATABASE_URL is missing. Production runtime cannot safely use Prisma without it.",
+  );
+
+  if (databaseUrl.classification === "sqlite/local") {
     addEnvCheck(
       checks,
-      "WARN",
+      "BLOCK",
       "DATABASE_URL",
       "DATABASE_URL appears to use SQLite. Production should use Supabase PostgreSQL.",
     );
   }
 
-  if (hasValue("DIRECT_URL") && process.env.DIRECT_URL?.includes("pooler")) {
+  addEnvCheck(
+    checks,
+    directUrl.present
+      ? directUrl.classification === "likely pooled" ? "WARN" : "OK"
+      : "WARN",
+    "DIRECT_URL",
+    directUrl.present
+      ? `DIRECT_URL is ${formatDbClassification("DIRECT_URL")}. Prisma production migrations should use the direct Supabase connection.`
+      : "DIRECT_URL is missing. Build/runtime may still work, but production migrations need a direct Supabase connection.",
+  );
+
+  if (directUrl.classification === "sqlite/local") {
     addEnvCheck(
       checks,
       "WARN",
       "DIRECT_URL",
-      "DIRECT_URL appears to use a pooled URL. Prisma migrations should use the direct Supabase connection.",
+      "DIRECT_URL appears to use SQLite/local file storage. Production migrations need the direct Supabase PostgreSQL URL.",
     );
   }
+
+  addEnvCheck(
+    checks,
+    hasValue("SESSION_SECRET") ? "OK" : "WARN",
+    "SESSION_SECRET",
+    hasValue("SESSION_SECRET")
+      ? "SESSION_SECRET is present in the local verification environment."
+      : "SESSION_SECRET is missing locally. Confirm it exists in Vercel before production deployment.",
+  );
 
   if (hasValue("SESSION_SECRET") && process.env.SESSION_SECRET.trim().length < 32) {
     addEnvCheck(

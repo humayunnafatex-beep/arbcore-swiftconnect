@@ -13,6 +13,8 @@ This guide must not be used to reset production data, expose secrets, or force a
 - [ ] `npx prisma generate` passes.
 - [ ] `npm.cmd run build` passes.
 - [ ] Migrations are reviewed before deployment.
+- [ ] `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` is completed before applying Prisma migrations.
+- [ ] `SUPABASE_DB_CONNECTION_GUIDE.md` is reviewed before changing `DATABASE_URL` or `DIRECT_URL`.
 - [ ] No secrets are committed.
 - [ ] `.env.example` contains placeholders only.
 - [ ] `AUTH_ENFORCED=false` unless a deliberate local/staging test is being run.
@@ -22,6 +24,8 @@ This guide must not be used to reset production data, expose secrets, or force a
 
 - [ ] `DATABASE_URL` is configured in Vercel.
 - [ ] `DIRECT_URL` is configured in Vercel.
+- [ ] `DATABASE_URL` is suitable for runtime, usually the pooled Supabase URL.
+- [ ] `DIRECT_URL` is suitable for migrations, usually the direct Supabase URL.
 - [ ] Migrations have been applied safely.
 - [ ] Production database has not been reset.
 - [ ] Backups are enabled.
@@ -181,6 +185,7 @@ npm.cmd run verify:production
 ```
 
 The script performs GET checks only. It does not call send endpoints, webhook POST endpoints, or mutation endpoints.
+It also classifies database URLs safely as present/missing, likely pooled, likely direct, local SQLite, or unknown without printing real URLs.
 
 ## Rollback Checklist
 

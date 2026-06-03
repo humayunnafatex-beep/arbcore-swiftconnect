@@ -21,6 +21,8 @@ The script now includes a safe environment readiness audit that reads the shell 
 
 For Supabase production migration verification, use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`.
 
+Before applying Prisma migrations to Supabase production, complete `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` and review `SUPABASE_DB_CONNECTION_GUIDE.md`.
+
 For client workspace setup, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces`.
 
 For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`.
@@ -65,6 +67,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 - [ ] `DATABASE_URL` is set to the production pooled PostgreSQL URL.
 - [ ] `DIRECT_URL` is set to the direct PostgreSQL migration URL.
+- [ ] `npm.cmd run verify:production` classifies `DATABASE_URL` and `DIRECT_URL` without printing either value.
+- [ ] Any `DIRECT_URL` pooled warning is resolved before running Prisma production migrations.
 - [ ] `SESSION_SECRET` is long, random, private, and stored only in platform secrets.
 - [ ] `NEXT_PUBLIC_APP_URL` matches the production domain.
 - [ ] `OPENAI_API_KEY` is blank for beta fallback mode or set only in server secrets.
@@ -110,6 +114,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 - [ ] Supabase project is healthy.
 - [ ] Database backups are enabled.
+- [ ] `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` has been completed before applying migrations.
+- [ ] `SUPABASE_DB_CONNECTION_GUIDE.md` has been reviewed for pooled vs direct URL classification.
 - [ ] `npx prisma migrate deploy` has run for pending migrations.
 - [ ] `npx prisma generate` has run after schema changes.
 - [ ] Basic record counts look correct after deploy.

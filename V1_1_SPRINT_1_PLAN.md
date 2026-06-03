@@ -29,6 +29,7 @@ Prove that ARBCore SwiftConnect can safely move toward production SaaS hardening
 - Provider/Meta webhook routing review.
 - Environment variable validation.
 - Production verifier environment audit added to report required, optional, provider, billing, monitoring, and safe enforcement flag values by name/presence only.
+- Sprint 2 extends the verifier with safe `DATABASE_URL`/`DIRECT_URL` classification for migration readiness.
 - Production verification reliability.
 - Support/runbook alignment.
 

@@ -22,6 +22,8 @@ Before production verification, review:
 
 ```text
 MIGRATION_AUDIT.md
+PRODUCTION_MIGRATION_READINESS_CHECKLIST.md
+SUPABASE_DB_CONNECTION_GUIDE.md
 ```
 
 Latest key migration areas to confirm:
@@ -62,8 +64,11 @@ npx prisma generate
    - `DIRECT_URL`
    - Supabase Auth public values if login testing is needed
    - Meta channel settings only in protected environment/settings storage
-7. Confirm migrations are applied safely in production deployment flow.
-8. Check Supabase tables exist:
+7. Confirm `DATABASE_URL` is suitable for app/runtime use, usually the pooled Supabase connection.
+8. Confirm `DIRECT_URL` is suitable for migration use, usually the direct Supabase connection.
+9. Resolve any `DIRECT_URL` pooled warning before applying Prisma migrations.
+10. Confirm migrations are applied safely in production deployment flow.
+11. Check Supabase tables exist:
    - `Company`
    - `User`
    - `Contact`
@@ -74,15 +79,15 @@ npx prisma generate
    - `Subscription`
    - `PaymentRecord`
    - `Campaign`
-9. Confirm Vercel deployment is Ready.
-10. Run the read-only production verification script:
+12. Confirm Vercel deployment is Ready.
+13. Run the read-only production verification script:
 
 ```powershell
 $env:PRODUCTION_URL="https://arbcore-swiftconnect.vercel.app"
 npm.cmd run verify:production
 ```
 
-11. Confirm these production pages load:
+14. Confirm these production pages load:
    - `/dashboard`
    - `/channels`
    - `/inbox`
@@ -92,7 +97,7 @@ npm.cmd run verify:production
    - `/campaigns`
    - `/billing`
    - `/settings`
-12. Confirm safe APIs return data without secrets:
+15. Confirm safe APIs return data without secrets:
    - `/api/dashboard/statistics`
    - `/api/channels/status`
    - `/api/channels/diagnostics`
@@ -124,6 +129,8 @@ PERMISSIONS_ENFORCED=false
 
 - [ ] Prisma generate passed.
 - [ ] Vercel deployment is Ready.
+- [ ] `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` completed.
+- [ ] `DATABASE_URL` and `DIRECT_URL` classification reviewed.
 - [ ] Supabase tables exist.
 - [ ] Production verification script passes.
 - [ ] Critical pages load.

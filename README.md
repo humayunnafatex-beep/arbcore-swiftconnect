@@ -36,6 +36,8 @@ Use the release package docs for handover:
 - `V1_1_HARDENING_ROADMAP.md`
 - `V1_1_IMPLEMENTATION_BACKLOG.md`
 - `V1_1_SPRINT_1_PLAN.md`
+- `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`
+- `SUPABASE_DB_CONNECTION_GUIDE.md`
 
 Production read-only verification:
 
@@ -128,6 +130,8 @@ Do not point the current SQLite `schema.prisma` provider at a PostgreSQL URL. Sw
 See `POSTGRES_MIGRATION_GUIDE.md` for the full production-postgres branch plan, provider-specific `DATABASE_URL`/`DIRECT_URL` notes, seeding guidance, and rollback notes.
 
 For a Vercel deployment using Supabase PostgreSQL, see `VERCEL_SUPABASE_DEPLOYMENT_GUIDE.md`.
+
+Before applying Prisma migrations to Supabase production, complete `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` and confirm connection-string classification with `SUPABASE_DB_CONNECTION_GUIDE.md`.
 
 ### Supabase, Neon, And Railway Notes
 
@@ -263,7 +267,9 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - Settings save blocks duplicate non-empty WhatsApp Phone Number IDs and Messenger Page IDs across workspaces. Empty provider IDs remain allowed; database unique constraints are still future work.
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment production verification guide.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: manual production QA checklist.
+- `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`: pre-migration safety gate before applying Prisma migrations to Supabase production.
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: Supabase production migration verification checklist.
+- `SUPABASE_DB_CONNECTION_GUIDE.md`: safe guide for pooled `DATABASE_URL` and direct `DIRECT_URL` usage.
 
 Read-only production verification script:
 
@@ -274,6 +280,7 @@ npm.cmd run verify:production
 
 The verification script performs GET checks only. It does not call send endpoints, webhook POST endpoints, or mutation endpoints.
 It also prints environment readiness warnings and blockers without printing secret values. The script reads the current shell environment and `.env` file when present. `AUTH_ENFORCED`, `PERMISSIONS_ENFORCED`, `TENANT_MEMBERSHIP_ENFORCED`, and `STRICT_PROVIDER_WEBHOOK_ROUTING` should remain `false` for Beta v1.0 production unless a documented staging approval is complete.
+The script classifies `DATABASE_URL` and `DIRECT_URL` as missing, likely pooled, likely direct, local SQLite, or unknown without printing the URLs.
 
 ### Production Environment Checklist
 
