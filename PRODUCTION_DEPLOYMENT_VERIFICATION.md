@@ -15,6 +15,9 @@ This guide must not be used to reset production data, expose secrets, or force a
 - [ ] Migrations are reviewed before deployment.
 - [ ] `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` is completed before applying Prisma migrations.
 - [ ] `SUPABASE_DB_CONNECTION_GUIDE.md` is reviewed before changing `DATABASE_URL` or `DIRECT_URL`.
+- [ ] `OBSERVABILITY_AND_MONITORING_PLAN.md` has been reviewed.
+- [ ] `INCIDENT_RESPONSE_RUNBOOK.md` has been reviewed by the support/technical owner.
+- [ ] `PRODUCTION_MONITORING_CHECKLIST.md` is ready for post-deployment checks.
 - [ ] No secrets are committed.
 - [ ] `.env.example` contains placeholders only.
 - [ ] `AUTH_ENFORCED=false` unless a deliberate local/staging test is being run.
@@ -174,6 +177,8 @@ Checklist:
 - [ ] `AUTH_ENFORCED=false` unless deliberately testing.
 - [ ] `PERMISSIONS_ENFORCED=false` unless deliberately testing.
 - [ ] Message success is never claimed unless provider-backed logs show `SENT`.
+- [ ] Server logs use safe summaries and do not expose database URLs, tokens, cookies, raw sessions, or raw webhook payloads.
+- [ ] `lib/safe-error.ts` remains the shared sanitizer for generic API error logs.
 
 ## Optional Read-Only Script
 
@@ -186,6 +191,8 @@ npm.cmd run verify:production
 
 The script performs GET checks only. It does not call send endpoints, webhook POST endpoints, or mutation endpoints.
 It also classifies database URLs safely as present/missing, likely pooled, likely direct, local SQLite, or unknown without printing real URLs.
+
+After the script passes, complete `PRODUCTION_MONITORING_CHECKLIST.md` for log, failed-message, webhook, and diagnostics review.
 
 ## Rollback Checklist
 

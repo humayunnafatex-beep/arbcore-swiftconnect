@@ -38,6 +38,9 @@ Use the release package docs for handover:
 - `V1_1_SPRINT_1_PLAN.md`
 - `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`
 - `SUPABASE_DB_CONNECTION_GUIDE.md`
+- `OBSERVABILITY_AND_MONITORING_PLAN.md`
+- `INCIDENT_RESPONSE_RUNBOOK.md`
+- `PRODUCTION_MONITORING_CHECKLIST.md`
 
 Production read-only verification:
 
@@ -270,6 +273,9 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`: pre-migration safety gate before applying Prisma migrations to Supabase production.
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: Supabase production migration verification checklist.
 - `SUPABASE_DB_CONNECTION_GUIDE.md`: safe guide for pooled `DATABASE_URL` and direct `DIRECT_URL` usage.
+- `OBSERVABILITY_AND_MONITORING_PLAN.md`: safe production monitoring plan for provider, webhook, database, deployment, and environment readiness signals.
+- `INCIDENT_RESPONSE_RUNBOOK.md`: incident steps for WhatsApp, Messenger, webhook, workspace routing, migration, deployment, auth, and billing issues.
+- `PRODUCTION_MONITORING_CHECKLIST.md`: daily, weekly, post-deployment, Meta-change, migration, and paid-client monitoring checklist.
 
 Read-only production verification script:
 
@@ -305,6 +311,9 @@ AUTH_ENFORCED=false
 PERMISSIONS_ENFORCED=false
 TENANT_MEMBERSHIP_ENFORCED=false
 STRICT_PROVIDER_WEBHOOK_ROUTING=false
+SENTRY_DSN=
+NEXT_PUBLIC_SENTRY_DSN=
+UPTIME_MONITOR_URL=
 ```
 
 Security notes:
@@ -316,6 +325,7 @@ Security notes:
 - Use PostgreSQL in production, not SQLite.
 - Enable database backups.
 - Keep `SESSION_SECRET` long, random, private, and rotated if exposed.
+- Optional observability variables are placeholders only until a monitoring integration is approved.
 
 ## Useful API Checks
 

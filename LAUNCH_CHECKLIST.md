@@ -23,6 +23,8 @@ For Supabase production migration verification, use `SUPABASE_PRODUCTION_MIGRATI
 
 Before applying Prisma migrations to Supabase production, complete `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` and review `SUPABASE_DB_CONNECTION_GUIDE.md`.
 
+For observability and incident readiness, review `OBSERVABILITY_AND_MONITORING_PLAN.md`, `INCIDENT_RESPONSE_RUNBOOK.md`, and `PRODUCTION_MONITORING_CHECKLIST.md`.
+
 For client workspace setup, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces`.
 
 For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`.
@@ -91,6 +93,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `PRODUCTION_DEPLOYMENT_VERIFICATION.md` has been completed after deployment.
 - [ ] `PRODUCTION_MANUAL_QA_CHECKLIST.md` has been completed for critical modules.
 - [ ] Optional `npm.cmd run verify:production` read-only checks pass or expected auth-gated responses are reviewed.
+- [ ] `PRODUCTION_MONITORING_CHECKLIST.md` has been completed after deployment.
+- [ ] Support owner can access Vercel and Supabase logs.
+- [ ] Incident response owner has reviewed `INCIDENT_RESPONSE_RUNBOOK.md`.
 
 ## 2A. Beta Client Onboarding Docs
 

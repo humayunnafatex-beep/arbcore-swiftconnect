@@ -61,6 +61,9 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `PROVIDER_WEBHOOK_ROUTING_PLAN.md`
 - `STRICT_PROVIDER_WEBHOOK_ROUTING.md`
 - `PROVIDER_ID_UNIQUENESS_PLAN.md`
+- `OBSERVABILITY_AND_MONITORING_PLAN.md`
+- `INCIDENT_RESPONSE_RUNBOOK.md`
+- `PRODUCTION_MONITORING_CHECKLIST.md`
 
 ## Common Support Tasks
 
@@ -78,6 +81,9 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `PROVIDER_WEBHOOK_ROUTING_PLAN.md` when testing inbound WhatsApp/Messenger routing across more than one workspace.
 - Use `STRICT_PROVIDER_WEBHOOK_ROUTING.md` before enabling strict unmatched-provider behavior in local, staging, or production.
 - Use `/admin/provider-diagnostics` and `PROVIDER_ID_UNIQUENESS_PLAN.md` to check duplicate provider IDs before strict routing.
+- Use `OBSERVABILITY_AND_MONITORING_PLAN.md` to understand current production signals and safe logging rules.
+- Use `INCIDENT_RESPONSE_RUNBOOK.md` during provider, webhook, database, deployment, auth, or billing incidents.
+- Use `PRODUCTION_MONITORING_CHECKLIST.md` for daily, weekly, post-deployment, post-Meta-change, and post-migration checks.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Check Admin Workspaces for workspace summary counts when preparing an external beta client.
@@ -202,6 +208,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not claim provider success unless Message Logs show `SENT`.
 - Do not claim payment success unless the manual payment record has been verified by an admin.
 - Do not expose raw webhook payloads if they may contain customer data.
+- Do not paste database URLs, cookies, raw sessions, authorization headers, or provider tokens into logs, screenshots, tickets, or chats.
 
 ## Escalation Checklist
 
@@ -213,4 +220,5 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - [ ] Check Channel Center diagnostics.
 - [ ] Check Message Logs for affected time range.
 - [ ] Check the latest commit and build result.
+- [ ] Follow `INCIDENT_RESPONSE_RUNBOOK.md` for the affected incident type.
 - [ ] Collect the user action, page, time, channel, and safe error text.

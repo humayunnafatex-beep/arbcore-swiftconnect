@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { ZodError, type ZodSchema } from "zod";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export class ApiError extends Error {
   status: number;
@@ -65,7 +66,7 @@ export function handleApiError(error: unknown) {
     }
   }
 
-  console.error(error);
+  console.error("Unhandled API error:", sanitizeLogMetadata(error));
 
   return NextResponse.json(
     {

@@ -74,6 +74,7 @@ const monitoringEnvPatterns = [
   /^NEXT_PUBLIC_ANALYTICS_/,
   /^MONITORING_/,
   /^NEXT_PUBLIC_VERCEL_ANALYTICS/,
+  /^UPTIME_MONITOR_/,
 ];
 
 function loadDotEnvFile() {

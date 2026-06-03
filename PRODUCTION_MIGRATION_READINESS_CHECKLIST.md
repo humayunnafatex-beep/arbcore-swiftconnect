@@ -20,6 +20,8 @@ This checklist is designed to reduce migration risk. It does not authorize destr
 - [ ] Confirm no destructive SQL will be run.
 - [ ] Confirm a backup/export plan exists.
 - [ ] Confirm rollback owner and decision owner are available.
+- [ ] Confirm incident response owner has reviewed `INCIDENT_RESPONSE_RUNBOOK.md`.
+- [ ] Confirm post-migration monitoring uses `PRODUCTION_MONITORING_CHECKLIST.md`.
 - [ ] Confirm production enforcement flags remain safe unless separately approved:
 
 ```env
@@ -76,6 +78,7 @@ Then manually check:
 - [ ] `/api/channels/status` returns token presence booleans only.
 - [ ] `/api/auth/me` returns safe auth mapping status only.
 - [ ] No access tokens, database URLs, cookies, or raw sessions are exposed.
+- [ ] Vercel and Supabase logs have been reviewed for migration-related errors.
 
 ## Rollback
 

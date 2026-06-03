@@ -1,0 +1,120 @@
+# Observability And Monitoring Plan
+
+## Purpose
+
+This plan defines how ARBCore SwiftConnect should detect and investigate production errors safely during Enterprise Beta and v1.1 hardening.
+
+The goal is to catch failed sends, webhook issues, database issues, environment misconfiguration, and deployment problems without exposing access tokens, database URLs, cookies, raw sessions, or raw webhook payloads.
+
+## Current Observability
+
+Current production readiness signals include:
+
+- Vercel deployment logs.
+- Supabase database and API logs.
+- `MessageLog` statuses for `SENT`, `FAILED`, `RECEIVED`, and attempted/queued workflows.
+- `WebhookEvent` summaries for inbound provider activity.
+- `npm.cmd run verify:production` route and environment readiness checks.
+- Channel Center diagnostics at `/channels`.
+- Provider diagnostics at `/admin/provider-diagnostics`.
+- Auth mapping status at `/auth/status`.
+- Permission status at `/auth/permissions`.
+- Tenant access status at `/auth/tenant-access`.
+- Dashboard CRM/support metrics.
+
+## What To Monitor
+
+- Failed WhatsApp sends.
+- Failed Messenger sends.
+- Webhook verification failures.
+- Webhooks that stop creating inbound `RECEIVED` logs.
+- Unmatched provider webhooks.
+- Provider ID duplicates.
+- Auth mapping problems.
+- Tenant access warnings.
+- Permission readiness warnings.
+- Billing or manual payment status issues.
+- Campaign draft and audience preview errors.
+- Prisma/database errors.
+- Build and deployment failures.
+- Environment validation blockers from `npm.cmd run verify:production`.
+
+## Safe Logging Rules
+
+- Never log WhatsApp Access Tokens.
+- Never log Messenger Page Access Tokens.
+- Never log database URLs.
+- Never log cookies.
+- Never log raw Supabase sessions.
+- Avoid logging raw webhook payloads if they may include customer data.
+- Log provider error summaries only.
+- Log message previews only when necessary and safe.
+- Prefer IDs, statuses, route names, channel names, and timestamps over full payloads.
+- Redact authorization headers, bearer tokens, password-like values, and connection strings.
+
+## Recommended Tools
+
+- Vercel Logs for deployment, runtime, and route errors.
+- Supabase Logs for database and platform-level errors.
+- ARBCore Message Logs for channel send/receive status.
+- Channel Center for provider setup readiness.
+- Provider Diagnostics for duplicate or missing provider IDs.
+- Optional Sentry later for grouped application exceptions.
+- Optional uptime monitor later for external HTTP checks.
+
+Do not install or enable paid monitoring packages until the integration scope is approved.
+
+## Alert Priorities
+
+### Critical
+
+- Production app is unavailable.
+- Database connection is unavailable.
+- Webhooks are failing broadly.
+- Provider sends fail across all configured channels.
+- Secret exposure is suspected.
+
+### High
+
+- One channel cannot send or receive.
+- Strict provider routing blocks expected live messages in staging or future production.
+- Auth mapping blocks an approved admin in an enforcement test.
+- A migration warning is ignored before production migration.
+
+### Medium
+
+- Some messages fail with provider errors.
+- Duplicate provider IDs are detected.
+- Billing records are unclear or disputed.
+- Campaign audience preview errors affect planning.
+
+### Low
+
+- Documentation confusion.
+- Minor UI status mismatch.
+- Non-blocking environment readiness warning.
+- Optional monitoring variable missing.
+
+## Incident Response Flow
+
+1. Identify the issue, affected route, workspace, channel, user action, and time range.
+2. Check Vercel deployment and runtime logs.
+3. Check Supabase database/log health.
+4. Check Message Logs for `FAILED`, `RECEIVED`, and `SENT` status patterns.
+5. Check Channel Center diagnostics.
+6. Check Provider Diagnostics for duplicate provider IDs or routing issues.
+7. Check Auth, Permission, and Tenant status pages if access is involved.
+8. Roll back Vercel deployment if production behavior is broken and rollback is safer than forward fix.
+9. Keep the production database intact unless a deliberate backup/restore decision is approved.
+10. Document the incident, safe evidence, root cause, action taken, and follow-up.
+
+## Future Monitoring Integrations
+
+Future v1.1 or production expansion may add:
+
+- Sentry server-side exception grouping.
+- Uptime monitor for `/`, `/dashboard`, `/channels`, and `/api/health`.
+- Alert routing for failed message spikes.
+- Dashboard trend for provider failure rate.
+
+Until implemented, these are planning placeholders only.
