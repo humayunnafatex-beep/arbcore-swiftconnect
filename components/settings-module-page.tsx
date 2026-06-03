@@ -328,9 +328,12 @@ async function createTeamMember() {
             API mode
             <select className={inputClassName} value={apiMode} onChange={(event) => setApiMode(event.target.value)}>
               <option>Mock/local API</option>
-              <option disabled>WhatsApp Cloud API - planned</option>
-              <option disabled>Webhook production mode - planned</option>
+              <option>WhatsApp Cloud API</option>
+              <option>Webhook receive mode</option>
             </select>
+            <span className="text-xs font-semibold leading-5 text-slate-500">
+              Outbound sending uses Meta WhatsApp Cloud API when a valid Phone Number ID and Access Token are saved.
+            </span>
           </label>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Field label="Phone number ID" value={whatsapp.phoneNumberId} onChange={(value) => setWhatsapp({ ...whatsapp, phoneNumberId: value })} />
