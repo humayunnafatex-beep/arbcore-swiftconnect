@@ -29,6 +29,7 @@
 - [ ] Open `/channels`.
 - [ ] Open `/inbox`.
 - [ ] Open `/message-logs`.
+- [ ] Open `/exports`.
 - [ ] Review Vercel logs for new errors.
 
 ## After Meta Settings Change
@@ -49,6 +50,15 @@
 - [ ] Check Dashboard, Settings, Channel Center, Inbox, Message Logs, Billing, and Campaigns.
 - [ ] Check Supabase logs for database errors.
 - [ ] Do not reset the production database.
+
+## Data Export Checks
+
+- [ ] Review `DATA_EXPORT_READINESS_PLAN.md`.
+- [ ] Confirm `/exports` loads.
+- [ ] Confirm Contacts CSV export is workspace-scoped.
+- [ ] Confirm Message Logs CSV export is workspace-scoped and uses safe previews.
+- [ ] Confirm Billing CSV export contains manual records only.
+- [ ] Confirm exported CSV files are shared only with approved people.
 
 ## Before Paid Client Onboarding
 

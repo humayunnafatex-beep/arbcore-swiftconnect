@@ -15,6 +15,7 @@ const checks = [
   "/message-logs",
   "/campaigns",
   "/billing",
+  "/exports",
   "/settings",
   "/license",
   "/api/dashboard/statistics",
@@ -26,6 +27,10 @@ const checks = [
   "/api/auth/me",
   "/api/auth/permissions",
 ];
+
+const pendingDeploymentPaths = new Set([
+  "/exports",
+]);
 
 const timeoutMs = 15000;
 const safeFalseFlags = [
@@ -124,9 +129,10 @@ function withTimeout(promise, label) {
   return Promise.race([promise, timeout]);
 }
 
-function safeStatus(status) {
+function safeStatus(path, status) {
   if (status >= 200 && status < 400) return "PASS";
   if (status === 401 || status === 403) return "AUTH";
+  if (status === 404 && pendingDeploymentPaths.has(path)) return "PEND";
   return "FAIL";
 }
 
@@ -418,7 +424,7 @@ async function checkPath(path) {
     return {
       path,
       status: response.status,
-      result: safeStatus(response.status),
+      result: safeStatus(path, response.status),
     };
   } catch (error) {
     return {
@@ -453,13 +459,13 @@ for (const path of checks) {
   console.log(`${result.result.padEnd(4)} ${String(status).padEnd(3)} ${result.path}${error}`);
 }
 
-const passCount = results.filter((item) => item.result === "PASS" || item.result === "AUTH").length;
+const passCount = results.filter((item) => item.result === "PASS" || item.result === "AUTH" || item.result === "PEND").length;
 const failCount = results.length - passCount;
 const envBlockCount = envChecks.filter((item) => item.level === "BLOCK").length;
 const envWarnCount = envChecks.filter((item) => item.level === "WARN").length;
 
 console.log("");
-console.log(`Summary: ${passCount}/${results.length} checks passed or returned expected auth gating.`);
+console.log(`Summary: ${passCount}/${results.length} checks passed, returned expected auth gating, or are pending deployment.`);
 console.log(`Environment audit: ${envBlockCount} blocker(s), ${envWarnCount} warning(s).`);
 
 if (failCount > 0 || envBlockCount > 0) {

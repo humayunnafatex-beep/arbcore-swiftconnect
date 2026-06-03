@@ -41,6 +41,7 @@ Use the release package docs for handover:
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`
 - `INCIDENT_RESPONSE_RUNBOOK.md`
 - `PRODUCTION_MONITORING_CHECKLIST.md`
+- `DATA_EXPORT_READINESS_PLAN.md`
 
 Production read-only verification:
 
@@ -276,6 +277,8 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`: safe production monitoring plan for provider, webhook, database, deployment, and environment readiness signals.
 - `INCIDENT_RESPONSE_RUNBOOK.md`: incident steps for WhatsApp, Messenger, webhook, workspace routing, migration, deployment, auth, and billing issues.
 - `PRODUCTION_MONITORING_CHECKLIST.md`: daily, weekly, post-deployment, Meta-change, migration, and paid-client monitoring checklist.
+- `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, and Billing records.
+- `/exports`: CSV export page for approved workspace data exports.
 
 Read-only production verification script:
 
@@ -287,6 +290,8 @@ npm.cmd run verify:production
 The verification script performs GET checks only. It does not call send endpoints, webhook POST endpoints, or mutation endpoints.
 It also prints environment readiness warnings and blockers without printing secret values. The script reads the current shell environment and `.env` file when present. `AUTH_ENFORCED`, `PERMISSIONS_ENFORCED`, `TENANT_MEMBERSHIP_ENFORCED`, and `STRICT_PROVIDER_WEBHOOK_ROUTING` should remain `false` for Beta v1.0 production unless a documented staging approval is complete.
 The script classifies `DATABASE_URL` and `DIRECT_URL` as missing, likely pooled, likely direct, local SQLite, or unknown without printing the URLs.
+The script checks `/exports` page health but does not call CSV export APIs to avoid downloading customer data during verification.
+If a newly added page is not deployed yet, the verifier can show `PEND` for that page until Vercel serves the latest commit.
 
 ### Production Environment Checklist
 

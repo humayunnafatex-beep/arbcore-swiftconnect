@@ -64,6 +64,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`
 - `INCIDENT_RESPONSE_RUNBOOK.md`
 - `PRODUCTION_MONITORING_CHECKLIST.md`
+- `DATA_EXPORT_READINESS_PLAN.md`
 
 ## Common Support Tasks
 
@@ -84,6 +85,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `OBSERVABILITY_AND_MONITORING_PLAN.md` to understand current production signals and safe logging rules.
 - Use `INCIDENT_RESPONSE_RUNBOOK.md` during provider, webhook, database, deployment, auth, or billing incidents.
 - Use `PRODUCTION_MONITORING_CHECKLIST.md` for daily, weekly, post-deployment, post-Meta-change, and post-migration checks.
+- Use `DATA_EXPORT_READINESS_PLAN.md` before sharing Contacts, Message Logs, or Billing CSV exports.
+- Use `/exports` to download approved workspace-scoped CSV exports.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
 - Check Admin Workspaces for workspace summary counts when preparing an external beta client.
@@ -209,6 +212,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not claim payment success unless the manual payment record has been verified by an admin.
 - Do not expose raw webhook payloads if they may contain customer data.
 - Do not paste database URLs, cookies, raw sessions, authorization headers, or provider tokens into logs, screenshots, tickets, or chats.
+- Do not upload CSV exports to public links or share them with unapproved users.
 
 ## Escalation Checklist
 

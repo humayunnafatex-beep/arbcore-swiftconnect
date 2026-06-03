@@ -206,6 +206,20 @@ Use the diagnostics section in Channel Center to see outbound readiness, webhook
 
 The logs page supports filters by channel, direction, status, result limit, and search. Search can be used for phone number, Messenger PSID, message preview, or provider message ID.
 
+## 8A. Data Exports
+
+Data Exports at `/exports` lets approved operators download workspace-scoped CSV files for Contacts, Message Logs, and Billing records.
+
+Use `DATA_EXPORT_READINESS_PLAN.md` before sharing export files. Exports may include customer names, phone numbers, emails, message previews, payment references, and internal notes. Share carefully and never upload export files to public links.
+
+Current export routes:
+
+1. `/api/exports/contacts`: Contacts CSV.
+2. `/api/exports/message-logs`: Message Logs CSV with optional channel, direction, and status filters.
+3. `/api/exports/billing`: Billing/payment records CSV.
+
+Exports do not include access tokens, database URLs, cookies, raw sessions, raw webhook payloads, or provider access tokens.
+
 Message log status meanings:
 
 1. `SENT`: the outbound message was accepted for sending.

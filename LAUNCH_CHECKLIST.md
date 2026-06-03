@@ -25,6 +25,8 @@ Before applying Prisma migrations to Supabase production, complete `PRODUCTION_M
 
 For observability and incident readiness, review `OBSERVABILITY_AND_MONITORING_PLAN.md`, `INCIDENT_RESPONSE_RUNBOOK.md`, and `PRODUCTION_MONITORING_CHECKLIST.md`.
 
+For data export readiness, review `DATA_EXPORT_READINESS_PLAN.md` and confirm `/exports` is used only by approved operators.
+
 For client workspace setup, review `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces`.
 
 For workspace isolation QA, review `WORKSPACE_ISOLATION_QA_REPORT.md` and run `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`.
@@ -96,6 +98,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `PRODUCTION_MONITORING_CHECKLIST.md` has been completed after deployment.
 - [ ] Support owner can access Vercel and Supabase logs.
 - [ ] Incident response owner has reviewed `INCIDENT_RESPONSE_RUNBOOK.md`.
+- [ ] `/exports` loads and CSV export access is limited to approved operators.
+- [ ] Exported CSV files are not shared through public links.
 
 ## 2A. Beta Client Onboarding Docs
 
@@ -179,6 +183,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Payment gateway automation is not presented as active.
 - [ ] No card data or payment credentials are stored.
 - [ ] Admin confirms payment manually before marking it `CONFIRMED`.
+- [ ] Billing CSV export downloads manual payment records only and does not include card data or gateway secrets.
 
 ## 4A. Auth Mapping QA
 
@@ -296,6 +301,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] WhatsApp Logs opens at `/whatsapp-logs`.
 - [ ] Message Logs alias opens at `/message-logs`.
 - [ ] Logs filters work for channel, direction, status, search, and limit.
+- [ ] Message Logs CSV export respects workspace scope and safe fields only.
 - [ ] Inbox groups WhatsApp and Messenger logs into business conversations without exposing raw webhook payloads or tokens.
 - [ ] Inbox filters work for all channels, WhatsApp, Messenger, and search.
 - [ ] Inbox reply with empty text shows `validation_failed`.

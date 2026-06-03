@@ -34,6 +34,7 @@ Use this index as the main table of contents for developers, support, QA, and op
 - `POSTGRES_MIGRATION_GUIDE.md`
 - `MIGRATION_AUDIT.md`
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`
+- `DATA_EXPORT_READINESS_PLAN.md`
 
 ## QA Docs
 
@@ -43,6 +44,7 @@ Use this index as the main table of contents for developers, support, QA, and op
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`
 - `PRODUCTION_MONITORING_CHECKLIST.md`
 - `BETA_FEEDBACK_FORM.md`
+- `DATA_EXPORT_READINESS_PLAN.md`
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`
 - `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`
 
@@ -140,6 +142,7 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`
 - `INCIDENT_RESPONSE_RUNBOOK.md`
 - `PRODUCTION_MONITORING_CHECKLIST.md`
+- `DATA_EXPORT_READINESS_PLAN.md`
 - `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`
 - `BETA_FEEDBACK_FORM.md`
 - `BETA_TESTING_GUIDE.md`
