@@ -43,6 +43,8 @@ Production read-only verification:
 npm.cmd run verify:production
 ```
 
+The verifier also prints an environment readiness audit. It reads the local shell environment and `.env` file when present, then reports required database/session values, safe enforcement flag defaults, auth helper values, provider/Meta fallbacks, billing variables, and monitoring variables by presence only. Secrets and tokens are never printed.
+
 ## Quick Start
 
 ```bash
@@ -271,12 +273,16 @@ npm.cmd run verify:production
 ```
 
 The verification script performs GET checks only. It does not call send endpoints, webhook POST endpoints, or mutation endpoints.
+It also prints environment readiness warnings and blockers without printing secret values. The script reads the current shell environment and `.env` file when present. `AUTH_ENFORCED`, `PERMISSIONS_ENFORCED`, `TENANT_MEMBERSHIP_ENFORCED`, and `STRICT_PROVIDER_WEBHOOK_ROUTING` should remain `false` for Beta v1.0 production unless a documented staging approval is complete.
 
 ### Production Environment Checklist
 
 ```env
 DATABASE_URL=
 DIRECT_URL=
+NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 OPENAI_API_KEY=
 OPENAI_MODEL=
 WHATSAPP_ACCESS_TOKEN=
@@ -285,7 +291,13 @@ WHATSAPP_BUSINESS_ACCOUNT_ID=
 WHATSAPP_VERIFY_TOKEN=
 WHATSAPP_APP_SECRET=
 WHATSAPP_API_VERSION=
+MESSENGER_VERIFY_TOKEN=
+MESSENGER_API_VERSION=
 SESSION_SECRET=
+AUTH_ENFORCED=false
+PERMISSIONS_ENFORCED=false
+TENANT_MEMBERSHIP_ENFORCED=false
+STRICT_PROVIDER_WEBHOOK_ROUTING=false
 ```
 
 Security notes:

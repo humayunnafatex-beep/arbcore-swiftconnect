@@ -17,6 +17,7 @@ For beta client onboarding and support handover, review `CLIENT_ONBOARDING_GUIDE
 For Welzz Stride internal beta operations, use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`.
 
 For post-deployment verification, review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` and `PRODUCTION_MANUAL_QA_CHECKLIST.md`. The optional read-only script is `scripts/verify-production.mjs`.
+The script now includes a safe environment readiness audit that reads the shell environment and local `.env` file, reports missing/unsafe values by name only, and never prints tokens or secrets.
 
 For Supabase production migration verification, use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`.
 
@@ -72,6 +73,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `WHATSAPP_VERIFY_TOKEN` matches the token configured in Meta webhooks, or the saved Settings verify token is used.
 - [ ] `WHATSAPP_APP_SECRET` is set before trusting webhook signatures.
 - [ ] `MESSENGER_VERIFY_TOKEN` is set only if using environment fallback for Messenger webhook verification.
+- [ ] `AUTH_ENFORCED=false`, `PERMISSIONS_ENFORCED=false`, `TENANT_MEMBERSHIP_ENFORCED=false`, and `STRICT_PROVIDER_WEBHOOK_ROUTING=false` remain the Beta v1.0 production defaults unless staging approval is complete.
+- [ ] `npm.cmd run verify:production` environment audit has no blockers and any warnings are understood.
 - [ ] No real values are committed to Git.
 
 ## 2. Vercel Deployment

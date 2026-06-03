@@ -28,6 +28,7 @@ Prove that ARBCore SwiftConnect can safely move toward production SaaS hardening
 - Enforcement flag safety review.
 - Provider/Meta webhook routing review.
 - Environment variable validation.
+- Production verifier environment audit added to report required, optional, provider, billing, monitoring, and safe enforcement flag values by name/presence only.
 - Production verification reliability.
 - Support/runbook alignment.
 
