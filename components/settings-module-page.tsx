@@ -17,6 +17,30 @@ type TeamMember = {
   createdAt: string;
   updatedAt: string;
 };
+
+type CompanySettingsResponse = {
+  businessName?: string | null;
+  workspace?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  timezone?: string | null;
+  language?: string | null;
+  notifications?: {
+    failed?: boolean | null;
+    hotLeads?: boolean | null;
+    hotLead?: boolean | null;
+    billing?: boolean | null;
+    weekly?: boolean | null;
+  } | null;
+  whatsappPhoneNumberId?: string | null;
+  whatsappAccessToken?: string | null;
+  whatsappVerifyToken?: string | null;
+  whatsappWebhookUrl?: string | null;
+  messengerPageId?: string | null;
+  messengerPageAccessToken?: string | null;
+  messengerVerifyToken?: string | null;
+  messengerWebhookUrl?: string | null;
+};
 type WhatsAppSettings = {
   phoneNumberId: string;
   accessToken: string;
@@ -67,8 +91,8 @@ export function SettingsModulePage() {
     setTeamError("");
 
     try {
-      const response = await apiRequest<{ items: TeamMember[] }>("/api/team");
-      setTeam(response.items);
+      const response = await apiRequest<{ items?: Partial<TeamMember>[] }>("/api/team");
+      setTeam((response.items ?? []).map(normalizeTeamMember));
     } catch (error) {
       setTeamError(getApiErrorMessage(error));
     } finally {
@@ -80,43 +104,46 @@ async function loadCompanySettings() {
     const response = await fetch("/api/settings/company");
     const result = await response.json();
 
-    if (!response.ok || !result.success) {
+    if (!response.ok || !result?.success) {
+      showToast("Unable to load company settings. Existing defaults are still available.", "error");
       return;
     }
+    const data = (result.data ?? {}) as CompanySettingsResponse;
 
-    setProfile({
-      businessName: result.data.businessName || profile.businessName,
-      workspace: result.data.workspace || profile.workspace,
-      phone: result.data.phone || profile.phone,
-      website: result.data.website || profile.website,
-      timezone: result.data.timezone || profile.timezone,
-    });
+    setProfile((current) => ({
+      businessName: data.businessName ?? current.businessName,
+      workspace: data.workspace ?? current.workspace,
+      phone: data.phone ?? current.phone,
+      website: data.website ?? current.website,
+      timezone: data.timezone ?? current.timezone,
+    }));
     setWhatsapp({
-     phoneNumberId: result.data.whatsappPhoneNumberId || "",
-     accessToken: result.data.whatsappAccessToken || "",
-     verifyToken: result.data.whatsappVerifyToken || "",
-     webhookUrl: result.data.whatsappWebhookUrl || "",
+     phoneNumberId: data.whatsappPhoneNumberId ?? "",
+     accessToken: data.whatsappAccessToken ?? "",
+     verifyToken: data.whatsappVerifyToken ?? "",
+     webhookUrl: data.whatsappWebhookUrl ?? "",
     });
     setMessenger({
-      pageId: result.data.messengerPageId || "",
-      pageAccessToken: result.data.messengerPageAccessToken || "",
-      verifyToken: result.data.messengerVerifyToken || "",
-      webhookUrl: result.data.messengerWebhookUrl || "",
+      pageId: data.messengerPageId ?? "",
+      pageAccessToken: data.messengerPageAccessToken ?? "",
+      verifyToken: data.messengerVerifyToken ?? "",
+      webhookUrl: data.messengerWebhookUrl ?? "",
     });
-    if (result.data.language) {
-      setLanguage(result.data.language);
+    if (data.language) {
+      setLanguage(data.language);
     }
 
-    if (result.data.notifications) {
+    if (data.notifications) {
       setNotifications({
-        failed: Boolean(result.data.notifications.failed),
-        hotLeads: Boolean(result.data.notifications.hotLeads ?? result.data.notifications.hotLead),
-        billing: Boolean(result.data.notifications.billing),
-        weekly: Boolean(result.data.notifications.weekly),
+        failed: Boolean(data.notifications.failed),
+        hotLeads: Boolean(data.notifications.hotLeads ?? data.notifications.hotLead),
+        billing: Boolean(data.notifications.billing),
+        weekly: Boolean(data.notifications.weekly),
       });
     }
   } catch (error) {
     console.error("Unable to load company settings", error);
+    showToast("Unable to load company settings. Existing defaults are still available.", "error");
   }
 }
 useEffect(() => {
@@ -241,7 +268,7 @@ async function createTeamMember() {
         method: "PUT",
         body: JSON.stringify({ role })
       });
-      showToast(`${member.name}'s role updated.`);
+      showToast(`${member.name || "Unnamed user"}'s role updated.`);
       await loadTeam();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
@@ -253,7 +280,7 @@ async function createTeamMember() {
       await apiRequest<TeamMember>(`/api/team/${member.id}/deactivate`, {
         method: "PATCH"
       });
-      showToast(`${member.name} deactivated.`);
+      showToast(`${member.name || "Unnamed user"} deactivated.`);
       await loadTeam();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
@@ -394,7 +421,7 @@ async function createTeamMember() {
             ) : (
               team.map((member) => (
                 <div key={member.id} className="grid grid-cols-[1.3fr_1.4fr_150px_110px_120px] items-center gap-3 border-t border-blue-100 px-4 py-3 text-sm">
-                  <span className="font-black text-ink">{member.name}</span>
+                  <span className="font-black text-ink">{member.name || "Unnamed user"}</span>
                   <span className="truncate font-semibold text-slate-500">{member.email}</span>
                   <select className={`${inputClassName} h-10`} value={member.role} onChange={(event) => changeRole(member, event.target.value as UserRole)} disabled={!member.isActive}>
                     {["OWNER", "ADMIN", "MANAGER", "AGENT"].map((role) => (
@@ -431,6 +458,18 @@ function Panel({ icon, title, action, children }: { icon: React.ReactNode; title
       {children}
     </section>
   );
+}
+
+function normalizeTeamMember(member: Partial<TeamMember>): TeamMember {
+  return {
+    id: member.id ?? crypto.randomUUID(),
+    name: member.name ?? "Unnamed user",
+    email: member.email ?? "",
+    role: member.role ?? "AGENT",
+    isActive: member.isActive ?? true,
+    createdAt: member.createdAt ?? new Date(0).toISOString(),
+    updatedAt: member.updatedAt ?? new Date(0).toISOString()
+  };
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {

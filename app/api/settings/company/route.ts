@@ -126,8 +126,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        businessName: company.name,
-        workspace: company.plan || "Enterprise Workspace",
+        businessName: company.businessName || company.name || "",
+        workspace: company.workspaceName || company.plan || "Enterprise Workspace",
         phone: company.phone || "",
         website: company.website || "",
         timezone: company.timezone || "Asia/Dhaka",

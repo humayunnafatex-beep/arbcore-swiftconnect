@@ -17,14 +17,18 @@ import { apiRequest } from "@/lib/api-client";
 import { RobotAvatar } from "./robot-avatar";
 
 type AuthMe = {
-  user: {
+  user?: {
     name: string;
     email: string;
     role: string;
   };
-  company: {
+  company?: {
     name: string;
     plan: string;
+  };
+  prismaUser?: {
+    email: string | null;
+    role: string | null;
   };
 };
 
@@ -50,7 +54,7 @@ export function Topbar() {
   }, []);
 
   const initials = useMemo(() => {
-    const name = auth?.user.name ?? "Admin User";
+    const name = auth?.user?.name ?? auth?.prismaUser?.email ?? "Admin User";
     return name
       .split(" ")
       .filter(Boolean)
@@ -58,7 +62,7 @@ export function Topbar() {
       .map((part) => part[0])
       .join("")
       .toUpperCase();
-  }, [auth?.user.name]);
+  }, [auth?.prismaUser?.email, auth?.user?.name]);
 
   async function logout() {
     await apiRequest("/api/auth/logout", { method: "POST" });
@@ -84,8 +88,8 @@ export function Topbar() {
               <BriefcaseBusiness className="h-5 w-5" />
             </span>
             <span className="min-w-0 text-left">
-              <span className="block truncate text-sm font-bold text-ink">{auth?.company.name ?? "ARBCore AI"}</span>
-              <span className="block truncate text-xs font-medium text-slate-500">{auth?.company.plan ?? "Enterprise"} Workspace</span>
+              <span className="block truncate text-sm font-bold text-ink">{auth?.company?.name ?? "ARBCore AI"}</span>
+              <span className="block truncate text-xs font-medium text-slate-500">{auth?.company?.plan ?? "Enterprise"} Workspace</span>
             </span>
           </span>
           <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" />
@@ -125,8 +129,8 @@ export function Topbar() {
                 <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
               </span>
               <span className="hidden min-w-0 text-left xl:block">
-                <span className="block truncate text-sm font-bold text-ink">{auth?.user.name ?? "Rasel Ahmed"}</span>
-                <span className="block truncate text-xs font-medium text-slate-500">{auth?.user.role ?? "Admin"}</span>
+                <span className="block truncate text-sm font-bold text-ink">{auth?.user?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}</span>
+                <span className="block truncate text-xs font-medium text-slate-500">{auth?.user?.role ?? auth?.prismaUser?.role ?? "Admin"}</span>
               </span>
               <ChevronDown className="hidden h-4 w-4 text-slate-500 xl:block" />
             </button>
@@ -136,10 +140,10 @@ export function Topbar() {
                 <div className="rounded-[16px] bg-blue-50 p-3">
                   <p className="flex items-center gap-2 text-sm font-black text-ink">
                     <UserRound className="h-4 w-4 text-royal" />
-                    {auth?.user.name ?? "Rasel Ahmed"}
+                    {auth?.user?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}
                   </p>
-                  <p className="mt-1 truncate text-xs font-semibold text-slate-500">{auth?.user.email ?? "admin@arbcore.ai"}</p>
-                  <p className="mt-2 text-xs font-bold text-royal">{auth?.company.name ?? "ARBCore AI"}</p>
+                  <p className="mt-1 truncate text-xs font-semibold text-slate-500">{auth?.user?.email ?? auth?.prismaUser?.email ?? "admin@arbcore.ai"}</p>
+                  <p className="mt-2 text-xs font-bold text-royal">{auth?.company?.name ?? "ARBCore AI"}</p>
                 </div>
                 <button
                   onClick={logout}
