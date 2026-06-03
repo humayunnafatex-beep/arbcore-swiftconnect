@@ -5,7 +5,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
-import { sendWhatsAppTextMessage } from "@/lib/whatsapp-service";
+import { getSafeWhatsAppProviderErrorSummary, sendWhatsAppTextMessage, type SafeWhatsAppProviderError } from "@/lib/whatsapp-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -163,16 +163,20 @@ async function handleProviderResult({
   contactId?: string;
   channel: "WHATSAPP" | "MESSENGER";
   body: string;
-  providerResult: { success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number };
+  providerResult: { success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number; providerError?: SafeWhatsAppProviderError };
 }) {
   if (!providerResult.success) {
+    const safeErrorMessage = channel === "WHATSAPP"
+      ? getSafeWhatsAppProviderErrorSummary(providerResult.providerError)
+      : providerResult.error;
+
     await createSafeMessageLog({
       companyId,
       contactId,
       channel,
       body,
       status: "FAILED",
-      errorMessage: providerResult.error
+      errorMessage: safeErrorMessage
     });
 
     return NextResponse.json(
@@ -180,6 +184,7 @@ async function handleProviderResult({
         success: false,
         status: "provider_error",
         error: providerResult.error,
+        providerError: channel === "WHATSAPP" ? providerResult.providerError : undefined,
         data: { providerStatus: providerResult.providerStatus }
       },
       { status: 502 }

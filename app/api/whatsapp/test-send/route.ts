@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
-import { sendWhatsAppTextMessage } from "@/lib/whatsapp-service";
+import { getSafeWhatsAppProviderErrorSummary, sendWhatsAppTextMessage } from "@/lib/whatsapp-service";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -128,12 +128,14 @@ export async function POST(request: Request) {
     });
 
     if (!providerResult.success) {
+      const safeErrorMessage = getSafeWhatsAppProviderErrorSummary(providerResult.providerError);
+
       await createSafeMessageLog({
         companyId: company.id,
         contactId: contact.id,
         body: messageBody,
         status: "FAILED",
-        errorMessage: providerResult.error
+        errorMessage: safeErrorMessage
       });
 
       return NextResponse.json(
@@ -141,6 +143,7 @@ export async function POST(request: Request) {
           success: false,
           status: "provider_error",
           error: providerResult.error,
+          providerError: providerResult.providerError,
           data: { providerStatus: providerResult.providerStatus }
         },
         { status: 502 }

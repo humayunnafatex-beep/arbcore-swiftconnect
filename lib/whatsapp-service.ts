@@ -34,6 +34,18 @@ export class WhatsAppServiceError extends Error {
   }
 }
 
+export type SafeWhatsAppProviderError = {
+  message?: string;
+  type?: string;
+  code?: number | string;
+  subcode?: number | string;
+  fbtraceId?: string;
+};
+
+export type WhatsAppSendResult =
+  | { success: true; providerMessageId?: string }
+  | { success: false; error: string; providerStatus?: number; providerError?: SafeWhatsAppProviderError };
+
 export function isWhatsAppConfigured() {
   return Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
 }
@@ -72,7 +84,7 @@ export async function sendWhatsAppTextMessage({
   to: string;
   body: string;
   apiVersion?: string;
-}): Promise<{ success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number }> {
+}): Promise<WhatsAppSendResult> {
   const normalizedPhone = normalizePhone(to);
 
   if (!phoneNumberId || !accessToken) {
@@ -101,10 +113,12 @@ export async function sendWhatsAppTextMessage({
     const responseBody = await response.json().catch(() => ({}));
 
     if (!response.ok) {
+      const providerError = getSafeMetaError(responseBody);
       return {
         success: false,
         error: "WhatsApp provider rejected the message.",
-        providerStatus: response.status
+        providerStatus: response.status,
+        providerError
       };
     }
 
@@ -252,6 +266,45 @@ function getProviderMessageId(payload: unknown) {
 
   const first = payload.messages[0];
   return isRecord(first) && typeof first.id === "string" ? first.id : undefined;
+}
+
+export function getSafeWhatsAppProviderErrorSummary(providerError?: SafeWhatsAppProviderError) {
+  if (!providerError) {
+    return "WhatsApp provider rejected the message.";
+  }
+
+  const parts = [
+    providerError.message,
+    providerError.type ? `type ${providerError.type}` : null,
+    providerError.code !== undefined ? `code ${providerError.code}` : null,
+    providerError.subcode !== undefined ? `subcode ${providerError.subcode}` : null,
+    providerError.fbtraceId ? `fbtrace ${providerError.fbtraceId}` : null
+  ].filter(Boolean);
+
+  return parts.length ? `WhatsApp provider rejected the message: ${parts.join("; ")}.` : "WhatsApp provider rejected the message.";
+}
+
+function getSafeMetaError(payload: unknown): SafeWhatsAppProviderError | undefined {
+  if (!isRecord(payload) || !isRecord(payload.error)) {
+    return undefined;
+  }
+
+  const error = payload.error;
+  return {
+    message: getString(error.message),
+    type: getString(error.type),
+    code: getStringOrNumber(error.code),
+    subcode: getStringOrNumber(error.error_subcode),
+    fbtraceId: getString(error.fbtrace_id)
+  };
+}
+
+function getString(value: unknown) {
+  return typeof value === "string" ? value : undefined;
+}
+
+function getStringOrNumber(value: unknown) {
+  return typeof value === "string" || typeof value === "number" ? value : undefined;
 }
 
 function safeCompare(a: string, b: string) {

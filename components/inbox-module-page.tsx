@@ -102,6 +102,13 @@ type ReplyResponse = {
   success: boolean;
   status: ReplyStatus;
   error?: string;
+  providerError?: {
+    message?: string;
+    type?: string;
+    code?: number | string;
+    subcode?: number | string;
+    fbtraceId?: string;
+  };
 };
 
 type AssigneesResponse = {
@@ -182,6 +189,7 @@ export function InboxModulePage() {
   const [replyBody, setReplyBody] = useState("");
   const [replyStatus, setReplyStatus] = useState<ReplyStatus | null>(null);
   const [replyError, setReplyError] = useState<string | null>(null);
+  const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
   const [draftState, setDraftState] = useState<{ status: ConversationStatus; assignedToId: string }>({
     status: "OPEN",
@@ -336,6 +344,7 @@ export function InboxModulePage() {
     const body = replyBody.trim();
     setReplyStatus(null);
     setReplyError(null);
+    setReplyProviderError(null);
 
     if (!body) {
       setReplyStatus("validation_failed");
@@ -357,6 +366,7 @@ export function InboxModulePage() {
       });
       const result = (await response.json()) as ReplyResponse;
       setReplyStatus(result.status);
+      setReplyProviderError(formatProviderError(result.providerError));
 
       if (!response.ok || !result.success || result.status !== "sent_successfully") {
         setReplyError(result.error || replyStatusText[result.status] || "Reply was not sent.");
@@ -375,6 +385,7 @@ export function InboxModulePage() {
     } catch (requestError) {
       setReplyStatus("provider_error");
       setReplyError(getApiErrorMessage(requestError));
+      setReplyProviderError(null);
     } finally {
       setReplySending(false);
     }
@@ -829,7 +840,10 @@ export function InboxModulePage() {
                           : "border-amber-100 bg-amber-50 text-amber-700"
                       )}
                     >
-                      {replyError || replyStatusText[replyStatus]}
+                      <p>{replyError || replyStatusText[replyStatus]}</p>
+                      {replyProviderError ? (
+                        <p className="mt-1 text-xs font-semibold">{replyProviderError}</p>
+                      ) : null}
                     </div>
                   ) : null}
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -943,4 +957,18 @@ function getInitialFilters() {
     followUp: parseFollowUpFilter(params.get("followUp")),
     assignedTo: params.get("assignedTo")?.trim() || "ALL"
   };
+}
+
+function formatProviderError(providerError: ReplyResponse["providerError"]) {
+  if (!providerError) return null;
+
+  const parts = [
+    providerError.message,
+    providerError.type ? `type ${providerError.type}` : null,
+    providerError.code !== undefined ? `code ${providerError.code}` : null,
+    providerError.subcode !== undefined ? `subcode ${providerError.subcode}` : null,
+    providerError.fbtraceId ? `fbtrace ${providerError.fbtraceId}` : null
+  ].filter(Boolean);
+
+  return parts.length ? parts.join("; ") : null;
 }
