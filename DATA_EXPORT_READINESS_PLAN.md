@@ -13,6 +13,7 @@ Sprint 4 supports CSV exports for:
 - Contacts
 - Message Logs
 - Billing/Payment records
+- Auto Reply Analytics
 
 ## Export Rules
 
@@ -27,6 +28,7 @@ Sprint 4 supports CSV exports for:
 - Do not export service-role keys or provider secrets.
 - Message bodies should use safe previews where practical.
 - Billing exports are manual payment records only and must not contain card data.
+- Auto Reply Analytics exports use safe previews only and must not contain raw provider responses.
 
 ## Current Export Routes
 
@@ -34,6 +36,7 @@ Sprint 4 supports CSV exports for:
 - `/api/exports/contacts`: contacts CSV.
 - `/api/exports/message-logs`: message logs CSV with optional filters.
 - `/api/exports/billing`: manual billing/payment records CSV.
+- `/api/exports/auto-reply-analytics`: auto reply event analytics CSV with optional channel and day-range filters.
 
 ## Future Exports
 

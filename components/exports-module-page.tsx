@@ -26,6 +26,10 @@ export function ExportsModulePage() {
     direction: "ALL",
     status: "ALL"
   });
+  const [autoReplyFilters, setAutoReplyFilters] = useState({
+    channel: "ALL",
+    days: "30"
+  });
 
   const messageLogsHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -38,6 +42,16 @@ export function ExportsModulePage() {
     const query = params.toString();
     return `/api/exports/message-logs${query ? `?${query}` : ""}`;
   }, [filters]);
+
+  const autoReplyAnalyticsHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (autoReplyFilters.channel !== "ALL") {
+      params.set("channel", autoReplyFilters.channel);
+    }
+    params.set("days", autoReplyFilters.days);
+
+    return `/api/exports/auto-reply-analytics?${params.toString()}`;
+  }, [autoReplyFilters]);
 
   return (
     <AppShell>
@@ -60,7 +74,7 @@ export function ExportsModulePage() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-4">
           {exportCards.map((card) => (
             <ExportCard key={card.title} {...card} />
           ))}
@@ -85,6 +99,38 @@ export function ExportsModulePage() {
             <a className={`${primaryButtonClassName} mt-5 w-full`} href={messageLogsHref}>
               <Download className="h-4 w-4" />
               Download Message Logs
+            </a>
+          </div>
+
+          <div className="rounded-[24px] border border-blue-100 bg-white p-5 shadow-panel">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-blue-50 p-3 text-royal">
+                <FileDown className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-ink">Auto Reply Analytics CSV</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-500">Rule trigger attempts, sent/failed outcomes, provider IDs, and safe message previews only.</p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <FilterSelect
+                label="Channel"
+                value={autoReplyFilters.channel}
+                options={["ALL", "WHATSAPP", "MESSENGER"]}
+                onChange={(value) => setAutoReplyFilters((current) => ({ ...current, channel: value }))}
+              />
+              <FilterSelect
+                label="Days"
+                value={autoReplyFilters.days}
+                options={["7", "30", "90"]}
+                onChange={(value) => setAutoReplyFilters((current) => ({ ...current, days: value }))}
+              />
+            </div>
+
+            <a className={`${primaryButtonClassName} mt-5 w-full`} href={autoReplyAnalyticsHref}>
+              <Download className="h-4 w-4" />
+              Download Auto Reply Analytics
             </a>
           </div>
         </section>

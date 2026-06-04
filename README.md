@@ -278,9 +278,9 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`: safe production monitoring plan for provider, webhook, database, deployment, and environment readiness signals.
 - `INCIDENT_RESPONSE_RUNBOOK.md`: incident steps for WhatsApp, Messenger, webhook, workspace routing, migration, deployment, auth, and billing issues.
 - `PRODUCTION_MONITORING_CHECKLIST.md`: daily, weekly, post-deployment, Meta-change, migration, and paid-client monitoring checklist.
-- `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, and Billing records.
+- `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
 - `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md`: mobile browser QA checklist for Inbox, Message Logs, Contacts, Settings, Auto Reply, and Send Messages.
-- `/exports`: CSV export page for approved workspace data exports.
+- `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, and Auto Reply Analytics.
 
 Read-only production verification script:
 

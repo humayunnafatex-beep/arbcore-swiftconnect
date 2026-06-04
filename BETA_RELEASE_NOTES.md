@@ -19,6 +19,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Settings persistence for Business Profile, WhatsApp/API, Messenger/Page API, team, and preferences.
 - License page for beta plan visibility.
 - Billing page for manual subscription tracking, billing summary metrics, report-only plan usage, payment history, and printable manual receipts.
+- Data Exports page for company-scoped Contacts, Message Logs, Billing Records, and Auto Reply Analytics CSV files.
 - Supabase Auth and permission readiness routes, not enforced by default.
 - Tenant membership readiness and paid-client go-live checklists, not enforced by default.
 
@@ -43,6 +44,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Open Contacts and confirm duplicate phone messages remain friendly.
 - Open Auto Reply and confirm active rule workflow.
 - Open Auto Reply Analytics and confirm rule performance loads without exposing tokens or raw webhook payloads.
+- Open Data Exports and confirm CSV options are available without exposing tokens or raw webhook payloads.
 - Open Campaigns and confirm draft create/edit/archive works without any send button.
 - Preview Campaign audience and confirm the list is Contacts-only and sends nothing.
 - Open Send Messages and confirm missing WhatsApp API does not fake success.

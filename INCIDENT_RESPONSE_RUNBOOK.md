@@ -102,6 +102,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not mark payment `CONFIRMED` without admin approval. Do not store card data.
 - Escalation: Business/admin owner decides correction.
 
+## Data Export Request
+
+- Symptoms: Support, QA, or a beta stakeholder requests CSV evidence for Contacts, Message Logs, Billing Records, or Auto Reply Analytics.
+- Where to check: `/exports` and `DATA_EXPORT_READINESS_PLAN.md`.
+- Safe first action: Confirm the requester is approved and the export is for the correct workspace/company.
+- What not to do: Do not upload CSV exports to public links. Do not export or share tokens, raw webhook payloads, cookies, sessions, database URLs, or provider secrets.
+- Escalation: Business/admin owner approves client-facing sharing; technical owner reviews any suspected data leakage.
+
 ## WhatsApp Media Reply Failure
 
 - Symptoms: Inbox text replies work, but image or PDF replies fail or log `WHATSAPP / OUTBOUND / FAILED`.

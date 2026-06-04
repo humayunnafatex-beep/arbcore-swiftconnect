@@ -188,6 +188,7 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 - `/auto-reply`
 - `/campaigns`
 - `/billing`
+- `/exports`
 - `/settings`
 - `/license`
 - `/auth/status`
@@ -195,3 +196,12 @@ Campaigns are currently draft and audience-preview only. Bulk sending is not act
 - `/auth/tenant-access`
 - `/admin/workspaces`
 - `/admin/provider-diagnostics`
+
+## Data Export Runtime APIs
+
+- `/api/exports/contacts`: company-scoped Contacts CSV.
+- `/api/exports/message-logs`: company-scoped Message Logs CSV with safe previews and filters.
+- `/api/exports/billing`: company-scoped manual Billing Records CSV.
+- `/api/exports/auto-reply-analytics`: company-scoped Auto Reply Analytics CSV with safe previews and filters.
+
+CSV export APIs must not return tokens, raw webhook payloads, cookies, sessions, database URLs, or provider secrets.

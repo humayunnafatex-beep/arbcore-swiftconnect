@@ -15,6 +15,7 @@ Current production readiness signals include:
 - `MessageLog` statuses for `SENT`, `FAILED`, `RECEIVED`, and attempted/queued workflows.
 - `WebhookEvent` summaries for inbound provider activity.
 - Auto Reply Analytics for matched rule attempts, sent replies, failed replies, and safe failure previews.
+- Company-scoped CSV exports for approved support review when screenshots are not enough.
 - `npm.cmd run verify:production` route and environment readiness checks.
 - Channel Center diagnostics at `/channels`.
 - Provider diagnostics at `/admin/provider-diagnostics`.
@@ -60,6 +61,7 @@ Current production readiness signals include:
 - Supabase Logs for database and platform-level errors.
 - ARBCore Message Logs for channel send/receive status.
 - Auto Reply Analytics for rule-level trigger/send performance.
+- Data Exports at `/exports` for approved CSV exports of Contacts, Message Logs, Billing Records, and Auto Reply Analytics.
 - Channel Center for provider setup readiness.
 - Provider Diagnostics for duplicate or missing provider IDs.
 - Optional Sentry later for grouped application exceptions.
@@ -119,6 +121,8 @@ For WhatsApp media replies, Message Logs should show a safe body summary such as
 For Messenger live setup, monitor Message Logs for `MESSENGER / INBOUND / RECEIVED`, `MESSENGER / OUTBOUND / SENT`, and `FAILED` patterns. Evidence should include Page ID presence, PSID used, safe provider error text, and webhook event time only. Never collect Page Access Tokens or Authorization headers.
 
 For Auto Reply Analytics, evidence should include rule name, channel, status, safe preview, timestamp, and safe error summary only. Never collect full webhook payloads, provider Authorization headers, or access tokens.
+
+CSV exports are operational evidence and may contain customer or business data. Keep them company-scoped, share only with approved reviewers, and never upload exported files to public links.
 
 ## Future Monitoring Integrations
 

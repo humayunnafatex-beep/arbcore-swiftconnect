@@ -100,6 +100,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Incident response owner has reviewed `INCIDENT_RESPONSE_RUNBOOK.md`.
 - [ ] `/exports` loads and CSV export access is limited to approved operators.
 - [ ] Exported CSV files are not shared through public links.
+- [ ] Contacts, Message Logs, Billing Records, and Auto Reply Analytics CSV downloads are available from `/exports`.
+- [ ] CSV exports are company-scoped and do not include tokens, raw webhook payloads, cookies, sessions, database URLs, or provider secrets.
 
 ## 2A. Beta Client Onboarding Docs
 
@@ -185,6 +187,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] No card data or payment credentials are stored.
 - [ ] Admin confirms payment manually before marking it `CONFIRMED`.
 - [ ] Billing CSV export downloads manual payment records only and does not include card data or gateway secrets.
+- [ ] Auto Reply Analytics CSV export downloads safe previews only and does not include provider secrets or raw payloads.
 
 ## 4A. Auth Mapping QA
 
