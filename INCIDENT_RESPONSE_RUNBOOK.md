@@ -49,10 +49,10 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 ## Auto Reply Not Firing
 
 - Symptoms: Inbound message is received, but no outbound auto reply appears.
-- Where to check: Auto Reply rules, Message Logs, channel configuration, Vercel logs.
+- Where to check: Auto Reply rules, Auto Reply Analytics, Message Logs, channel configuration, Vercel logs.
 - Safe first action: Confirm the rule is active and keyword/match mode matches the inbound text.
 - What not to do: Do not manually create a fake `SENT` message.
-- Escalation: Technical owner checks duplicate provider message handling and provider send result.
+- Escalation: Technical owner checks duplicate provider message handling, Auto Reply Analytics `ATTEMPTED`/`SENT`/`FAILED` status, and provider send result.
 
 ## Wrong Workspace Routing
 

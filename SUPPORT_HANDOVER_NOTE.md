@@ -131,6 +131,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Confirm the correct channel is configured.
 - Check whether a duplicate provider message was ignored.
 - Check Message Logs for inbound `RECEIVED` and outbound `SENT` or `FAILED`.
+- Check Auto Reply Analytics for the matched rule attempt, `SENT`/`FAILED` status, success rate, and safe error preview.
 
 ### Campaign Sending Confusion
 
@@ -233,6 +234,12 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Templates pre-fill the rule form but do not save automatically. Users must review and click Save.
 - Template rules use the same existing keyword, match mode, priority, and active/inactive behavior as manual rules.
 - Media auto-replies and AI-generated dynamic replies are not included in Template Library Phase 1.
+
+### Auto Reply Analytics
+
+- Auto Reply Analytics shows rule attempts, provider-accepted sends, failed sends, success rate, rule performance, and recent safe event previews.
+- Failed auto replies should be reviewed in Auto Reply Analytics first, then cross-checked in Message Logs for channel/provider status.
+- Analytics stores previews only. Do not request access tokens, Authorization headers, raw webhook payloads, or full customer message exports for routine support.
 
 ## Safety Rules
 

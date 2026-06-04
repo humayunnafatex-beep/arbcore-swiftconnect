@@ -46,6 +46,10 @@ type DashboardStatistics = {
   hotLeads: number;
   activeContacts: number;
   activeAutoReplyRules: number;
+  autoReplyAttempted30d: number;
+  autoReplySent30d: number;
+  autoReplyFailed30d: number;
+  autoReplySuccessRate30d: number;
   teamMembers: number;
   aiCreditsUsed: number;
   whatsappConfigured: boolean;
@@ -207,6 +211,10 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     campaignsWithAudienceCriteria: 0,
     readyCampaignsWithAudience: 0,
     totalCampaigns: 0,
+    autoReplyAttempted30d: 0,
+    autoReplySent30d: 0,
+    autoReplyFailed30d: 0,
+    autoReplySuccessRate30d: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
     billing: {
@@ -271,6 +279,17 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Inbound", value: data.inboundMessages, href: "/message-logs?direction=INBOUND", icon: Inbox, tone: "blue" },
           { label: "Outbound", value: data.outboundMessages, href: "/message-logs?direction=OUTBOUND", icon: Send, tone: "purple" },
           { label: "Channel Center", value: data.whatsappConfigured || data.messengerConfigured ? 1 : 0, href: "/channels", icon: LinkIcon, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Auto Reply Performance"
+        helper={data.autoReplyFailed30d ? "Failed auto replies should be reviewed from Auto Reply Analytics and Message Logs." : "Auto reply failures are clear."}
+        items={[
+          { label: "Attempted 30d", value: data.autoReplyAttempted30d, href: "/auto-reply", icon: Bot, tone: "blue" },
+          { label: "Sent 30d", value: data.autoReplySent30d, href: "/auto-reply", icon: CheckCircle2, tone: "green" },
+          { label: "Failed 30d", value: data.autoReplyFailed30d, href: "/auto-reply", icon: AlertTriangle, tone: data.autoReplyFailed30d ? "red" : "gray" },
+          { label: "Success rate", value: data.autoReplySuccessRate30d, href: "/auto-reply", icon: TrendingUp, tone: "purple", displayValue: `${data.autoReplySuccessRate30d}%` }
         ]}
         loading={loading}
       />

@@ -126,7 +126,28 @@ export async function POST(request: Request) {
         continue;
       }
 
+      const autoReplyEvent = await prisma.autoReplyEvent.create({
+        data: {
+          companyId: company.id,
+          ruleId: matchedRule.id,
+          ruleName: ruleName(matchedRule.keyword),
+          channel: "MESSENGER",
+          customerKey: message.senderPsid,
+          inboundTextPreview: previewText(message.text),
+          replyPreview: previewText(matchedRule.response),
+          status: "ATTEMPTED"
+        }
+      });
+
       if (!company.messengerPageAccessToken) {
+        await prisma.autoReplyEvent.update({
+          where: { id: autoReplyEvent.id },
+          data: {
+            status: "FAILED",
+            errorMessage: "Messenger Page API is required to send real messages."
+          }
+        });
+
         await prisma.messageLog.create({
           data: {
             companyId: company.id,
@@ -146,6 +167,20 @@ export async function POST(request: Request) {
         recipientId: message.senderPsid,
         body: matchedRule.response
       });
+      const safeErrorMessage = autoReplyResult.success
+        ? ""
+        : autoReplyResult.providerError
+          ? getSafeMessengerProviderErrorSummary(autoReplyResult.providerError)
+          : autoReplyResult.error;
+
+      await prisma.autoReplyEvent.update({
+        where: { id: autoReplyEvent.id },
+        data: {
+          status: autoReplyResult.success ? "SENT" : "FAILED",
+          providerMessageId: autoReplyResult.success ? autoReplyResult.providerMessageId ?? "" : "",
+          errorMessage: autoReplyResult.success ? "" : previewText(safeErrorMessage ?? "Messenger provider rejected the auto reply.", 280)
+        }
+      });
 
       await prisma.messageLog.create({
         data: {
@@ -156,11 +191,7 @@ export async function POST(request: Request) {
           direction: "OUTBOUND",
           status: autoReplyResult.success ? "SENT" : "FAILED",
           providerMessageId: autoReplyResult.success ? autoReplyResult.providerMessageId : undefined,
-          errorMessage: autoReplyResult.success
-            ? undefined
-            : autoReplyResult.providerError
-              ? getSafeMessengerProviderErrorSummary(autoReplyResult.providerError)
-              : autoReplyResult.error,
+          errorMessage: autoReplyResult.success ? undefined : safeErrorMessage,
           sentAt: autoReplyResult.success ? new Date() : undefined
         }
       });
@@ -205,6 +236,20 @@ async function findMatchedAutoReplyRule(companyId: string, inboundText: string) 
 
 function normalizeText(value: string) {
   return value.trim().toLowerCase();
+}
+
+function previewText(value: string, maxLength = 180) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
+
+function ruleName(keyword: string) {
+  return keyword ? `${keyword.charAt(0).toUpperCase()}${keyword.slice(1)} Reply` : "Auto Reply Rule";
 }
 
 async function findOrCreateWebhookContact({

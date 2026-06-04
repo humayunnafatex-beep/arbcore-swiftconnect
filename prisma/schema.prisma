@@ -114,6 +114,7 @@ model Company {
   conversations   Conversation[]
   messageLogs     MessageLog[]
   autoReplyRules  AutoReplyRule[]
+  autoReplyEvents AutoReplyEvent[]
   crmDeals        CrmDeal[]
   aiGenerations   AiGeneration[]
   aiUsages        AIUsage[]
@@ -331,6 +332,27 @@ model AutoReplyRule {
 
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model AutoReplyEvent {
+  id                 String   @id @default(cuid())
+  companyId          String
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ruleId             String?
+  ruleName           String   @default("")
+  channel            String   @default("WHATSAPP")
+  customerKey        String   @default("")
+  inboundTextPreview String   @default("")
+  replyPreview       String   @default("")
+  status             String   @default("ATTEMPTED")
+  providerMessageId  String   @default("")
+  errorMessage       String   @default("")
+  createdAt          DateTime @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([companyId, channel, createdAt])
+  @@index([ruleId])
+  @@index([status])
 }
 
 model CrmDeal {

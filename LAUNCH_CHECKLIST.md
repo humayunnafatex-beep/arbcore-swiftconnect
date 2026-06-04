@@ -118,6 +118,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] `SUPPORT_HANDOVER_NOTE.md` is available to the support/admin team.
 - [ ] Tester is reminded not to share or screenshot access tokens.
 - [ ] Tester understands WhatsApp and Messenger success must be verified from Message Logs.
+- [ ] Tester understands Auto Reply performance and failed rule sends can be reviewed from Auto Reply Analytics.
 
 ## 3. Supabase Migration
 
@@ -244,6 +245,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Matching inbound message logs `INBOUND - RECEIVED`.
 - [ ] Auto reply logs `OUTBOUND - SENT` only when Meta accepts the send.
 - [ ] Auto reply logs `OUTBOUND - FAILED` when Meta rejects the send.
+- [ ] Auto Reply Analytics shows attempted, sent, failed, success rate, rule performance, and recent events.
+- [ ] Auto Reply Analytics uses safe previews only and does not show tokens, raw webhook payloads, or provider secrets.
+- [ ] Failed auto replies can be cross-checked in Message Logs.
 - [ ] Replayed duplicate inbound provider message does not send a second auto reply.
 
 ## 6A. Campaign Draft QA
@@ -279,6 +283,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Dashboard shows Follow-up Overview metrics.
 - [ ] Dashboard shows Message Health metrics.
 - [ ] Dashboard shows Channel Activity metrics.
+- [ ] Dashboard shows Auto Reply Performance metrics for the last 30 days.
 - [ ] Dashboard quick links open filtered Inbox and Message Logs views.
 - [ ] Due follow-up link opens `/inbox?followUp=DUE`.
 - [ ] Failed messages link opens `/message-logs?status=FAILED`.

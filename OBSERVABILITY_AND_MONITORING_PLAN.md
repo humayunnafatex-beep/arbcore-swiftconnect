@@ -14,6 +14,7 @@ Current production readiness signals include:
 - Supabase database and API logs.
 - `MessageLog` statuses for `SENT`, `FAILED`, `RECEIVED`, and attempted/queued workflows.
 - `WebhookEvent` summaries for inbound provider activity.
+- Auto Reply Analytics for matched rule attempts, sent replies, failed replies, and safe failure previews.
 - `npm.cmd run verify:production` route and environment readiness checks.
 - Channel Center diagnostics at `/channels`.
 - Provider diagnostics at `/admin/provider-diagnostics`.
@@ -26,6 +27,7 @@ Current production readiness signals include:
 
 - Failed WhatsApp sends.
 - Failed Messenger sends.
+- Failed auto replies or declining auto-reply success rate.
 - Webhook verification failures.
 - Webhooks that stop creating inbound `RECEIVED` logs.
 - Unmatched provider webhooks.
@@ -57,6 +59,7 @@ Current production readiness signals include:
 - Vercel Logs for deployment, runtime, and route errors.
 - Supabase Logs for database and platform-level errors.
 - ARBCore Message Logs for channel send/receive status.
+- Auto Reply Analytics for rule-level trigger/send performance.
 - Channel Center for provider setup readiness.
 - Provider Diagnostics for duplicate or missing provider IDs.
 - Optional Sentry later for grouped application exceptions.
@@ -103,16 +106,19 @@ Do not install or enable paid monitoring packages until the integration scope is
 2. Check Vercel deployment and runtime logs.
 3. Check Supabase database/log health.
 4. Check Message Logs for `FAILED`, `RECEIVED`, and `SENT` status patterns.
-5. Check Channel Center diagnostics.
-6. Check Provider Diagnostics for duplicate provider IDs or routing issues.
-7. Check Auth, Permission, and Tenant status pages if access is involved.
-8. Roll back Vercel deployment if production behavior is broken and rollback is safer than forward fix.
-9. Keep the production database intact unless a deliberate backup/restore decision is approved.
-10. Document the incident, safe evidence, root cause, action taken, and follow-up.
+5. Check Auto Reply Analytics when a matched rule did not send or provider failures increase.
+6. Check Channel Center diagnostics.
+7. Check Provider Diagnostics for duplicate provider IDs or routing issues.
+8. Check Auth, Permission, and Tenant status pages if access is involved.
+9. Roll back Vercel deployment if production behavior is broken and rollback is safer than forward fix.
+10. Keep the production database intact unless a deliberate backup/restore decision is approved.
+11. Document the incident, safe evidence, root cause, action taken, and follow-up.
 
 For WhatsApp media replies, Message Logs should show a safe body summary such as `[image]` or `[document]` and a safe provider error on failure. Do not collect file binary, access tokens, Authorization headers, or raw Meta request payloads for monitoring evidence.
 
 For Messenger live setup, monitor Message Logs for `MESSENGER / INBOUND / RECEIVED`, `MESSENGER / OUTBOUND / SENT`, and `FAILED` patterns. Evidence should include Page ID presence, PSID used, safe provider error text, and webhook event time only. Never collect Page Access Tokens or Authorization headers.
+
+For Auto Reply Analytics, evidence should include rule name, channel, status, safe preview, timestamp, and safe error summary only. Never collect full webhook payloads, provider Authorization headers, or access tokens.
 
 ## Future Monitoring Integrations
 

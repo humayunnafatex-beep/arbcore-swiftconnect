@@ -10,6 +10,7 @@ export async function GET() {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const { context } = await requirePermission("dashboard.view");
     const { company } = context;
     const companyId = company.id;
@@ -43,7 +44,10 @@ export async function GET() {
       subscription,
       paymentGroups,
       lastPayment,
-      monthlyMessagesForPlan
+      monthlyMessagesForPlan,
+      autoReplyAttempted30d,
+      autoReplySent30d,
+      autoReplyFailed30d
     ] = await Promise.all([
       prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } }),
       prisma.messageLog.count({
@@ -131,7 +135,10 @@ export async function GET() {
       }),
       prisma.messageLog.count({
         where: { companyId, createdAt: { gte: new Date(today.getFullYear(), today.getMonth(), 1) } }
-      })
+      }),
+      prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo } } }),
+      prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "SENT" } }),
+      prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "FAILED" } })
     ]);
     const stateByConversation = new Map(conversationStates.map((state) => [`${state.channel}:${state.contactKey}`, state]));
     const conversationKeys = new Set<string>();
@@ -188,6 +195,10 @@ export async function GET() {
       hotLeads,
       activeContacts,
       activeAutoReplyRules,
+      autoReplyAttempted30d,
+      autoReplySent30d,
+      autoReplyFailed30d,
+      autoReplySuccessRate30d: autoReplyAttempted30d ? Math.round((autoReplySent30d / autoReplyAttempted30d) * 100) : 0,
       teamMembers,
       aiCreditsUsed,
       whatsappConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),

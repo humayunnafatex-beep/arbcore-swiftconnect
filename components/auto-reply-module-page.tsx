@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Bot, Edit3, Lightbulb, Pause, Play, Plus, RefreshCw, Search, Trash2, Wand2, Zap } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Edit3, Lightbulb, Pause, Play, Plus, RefreshCw, Search, Trash2, Wand2, Zap } from "lucide-react";
 import { apiRequest, getApiErrorMessage, type ListResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { AppShell } from "./app-shell";
@@ -56,6 +56,40 @@ type AutoReplyTemplatesResponse = {
   templates: AutoReplyTemplate[];
 };
 
+type AutoReplyAnalytics = {
+  filters: {
+    channel: "ALL" | "WHATSAPP" | "MESSENGER";
+    days: 7 | 30 | 90;
+  };
+  summary: {
+    attempted: number;
+    sent: number;
+    failed: number;
+    successRate: number;
+  };
+  byRule: Array<{
+    ruleId: string | null;
+    ruleName: string;
+    channel: string;
+    attempted: number;
+    sent: number;
+    failed: number;
+    successRate: number;
+    lastTriggeredAt: string | null;
+  }>;
+  recentEvents: Array<{
+    id: string;
+    ruleName: string;
+    channel: string;
+    customerKey: string;
+    inboundTextPreview: string;
+    replyPreview: string;
+    status: string;
+    errorMessage: string;
+    createdAt: string;
+  }>;
+};
+
 const categories = ["Price", "Order", "Delivery", "Payment", "Support", "STOP/Unsubscribe"];
 const starterResponses: Record<string, string> = {
   Price: "Thanks for your interest. I can share the latest price list and current offers right away.",
@@ -79,6 +113,8 @@ export function AutoReplyModulePage() {
   const templates = useApiData<AutoReplyTemplatesResponse>("/api/auto-reply/templates");
   const { toast, showToast } = useToast();
   const [query, setQuery] = useState("");
+  const [analyticsChannel, setAnalyticsChannel] = useState<AutoReplyAnalytics["filters"]["channel"]>("ALL");
+  const [analyticsDays, setAnalyticsDays] = useState<AutoReplyAnalytics["filters"]["days"]>(30);
   const [templateCategory, setTemplateCategory] = useState("all");
   const [templateSearch, setTemplateSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -87,6 +123,8 @@ export function AutoReplyModulePage() {
   const [aiPrompt, setAiPrompt] = useState("Write a polite WhatsApp reply for a customer asking about price.");
   const [aiSuggestion, setAiSuggestion] = useState("");
   const [busy, setBusy] = useState(false);
+  const analyticsPath = `/api/auto-reply/analytics?channel=${analyticsChannel}&days=${analyticsDays}`;
+  const analytics = useApiData<AutoReplyAnalytics>(analyticsPath);
 
   const items = rules.data?.items ?? [];
   const filteredRules = useMemo(() => {
@@ -249,7 +287,7 @@ export function AutoReplyModulePage() {
       <section className="grid gap-4 md:grid-cols-4">
         <Metric label="Active rules" value={items.filter((rule) => rule.isActive).length.toLocaleString()} helper="Currently responding" />
         <Metric label="Inactive rules" value={items.filter((rule) => !rule.isActive).length.toLocaleString()} helper="Paused automation" />
-        <Metric label="Trigger count" value={items.reduce((sum, rule) => sum + syntheticTriggers(rule), 0).toLocaleString()} helper="Mock local metric" />
+        <Metric label="Triggers 30d" value={(analytics.data?.summary.attempted ?? 0).toLocaleString()} helper="Real matched rule events" />
         <Metric label="Categories" value={categories.length.toLocaleString()} helper="Starter rule groups" />
       </section>
 
@@ -316,6 +354,112 @@ export function AutoReplyModulePage() {
             </DataState>
           </section>
 
+          <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase text-royal">Auto Reply Analytics</p>
+                <h2 className="mt-1 text-lg font-black text-ink">Rule Performance</h2>
+                <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                  Tracks matched auto-reply attempts and provider outcomes using safe message previews only.
+                </p>
+              </div>
+              <button className={secondaryButtonClassName} onClick={analytics.reload}>
+                <RefreshCw className="h-4 w-4" />
+                Refresh Analytics
+              </button>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <select className={inputClassName} value={analyticsChannel} onChange={(event) => setAnalyticsChannel(event.target.value as AutoReplyAnalytics["filters"]["channel"])}>
+                <option value="ALL">All channels</option>
+                <option value="WHATSAPP">WhatsApp</option>
+                <option value="MESSENGER">Messenger</option>
+              </select>
+              <select className={inputClassName} value={analyticsDays} onChange={(event) => setAnalyticsDays(Number(event.target.value) as AutoReplyAnalytics["filters"]["days"])}>
+                <option value={7}>Last 7 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
+            </div>
+
+            <DataState loading={analytics.loading} error={analytics.error} empty={!analytics.data} emptyText="Auto reply analytics are not available yet.">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <AnalyticsMetric label="Attempted" value={analytics.data?.summary.attempted ?? 0} helper="Matched rule sends" />
+                <AnalyticsMetric label="Sent" value={analytics.data?.summary.sent ?? 0} helper="Provider accepted" tone="green" />
+                <AnalyticsMetric label="Failed" value={analytics.data?.summary.failed ?? 0} helper="Needs review" tone="red" />
+                <AnalyticsMetric label="Success Rate" value={`${analytics.data?.summary.successRate ?? 0}%`} helper="Sent / attempted" tone="blue" />
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-[18px] border border-blue-100">
+                <div className="bg-blue-50/70 px-4 py-3">
+                  <h3 className="text-sm font-black text-ink">Rule performance</h3>
+                </div>
+                {(analytics.data?.byRule.length ?? 0) ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[760px] w-full text-left">
+                      <thead className="text-xs font-black uppercase text-slate-500">
+                        <tr>
+                          {["Rule", "Channel", "Attempted", "Sent", "Failed", "Success", "Last Triggered"].map((heading) => (
+                            <th key={heading} className="px-4 py-3">{heading}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-blue-50">
+                        {(analytics.data?.byRule ?? []).map((rule) => (
+                          <tr key={`${rule.ruleId ?? rule.ruleName}-${rule.channel}`} className="text-sm font-semibold text-slate-600">
+                            <td className="px-4 py-3 font-black text-ink">{rule.ruleName}</td>
+                            <td className="px-4 py-3">{rule.channel}</td>
+                            <td className="px-4 py-3">{rule.attempted}</td>
+                            <td className="px-4 py-3 text-emerald-700">{rule.sent}</td>
+                            <td className="px-4 py-3 text-rose-700">{rule.failed}</td>
+                            <td className="px-4 py-3">{rule.successRate}%</td>
+                            <td className="px-4 py-3">{formatDate(rule.lastTriggeredAt ?? undefined)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="px-4 py-5 text-sm font-semibold text-slate-500">No matched auto replies in this filter yet.</p>
+                )}
+              </div>
+
+              <div className="mt-5">
+                <h3 className="text-sm font-black text-ink">Recent events</h3>
+                {(analytics.data?.recentEvents.length ?? 0) ? (
+                  <div className="mt-3 grid gap-3">
+                    {(analytics.data?.recentEvents ?? []).map((event) => (
+                      <article key={event.id} className="rounded-[18px] border border-blue-100 bg-blue-50/55 p-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black text-royal ring-1 ring-blue-100">{event.channel}</span>
+                              <StatusPill status={event.status} />
+                            </div>
+                            <h4 className="mt-2 text-sm font-black text-ink">{event.ruleName}</h4>
+                            <p className="mt-1 break-words text-xs font-semibold text-slate-500">Customer: {event.customerKey || "Unknown"}</p>
+                          </div>
+                          <p className="text-xs font-bold text-slate-500">{formatDate(event.createdAt)}</p>
+                        </div>
+                        <div className="mt-3 grid gap-2 text-sm font-semibold leading-6 text-slate-600 lg:grid-cols-2">
+                          <p className="break-words rounded-[14px] bg-white p-3 ring-1 ring-blue-100">Inbound: {event.inboundTextPreview || "-"}</p>
+                          <p className="break-words rounded-[14px] bg-white p-3 ring-1 ring-blue-100">Reply: {event.replyPreview || "-"}</p>
+                        </div>
+                        {event.errorMessage ? (
+                          <p className="mt-3 flex gap-2 break-words rounded-[14px] bg-rose-50 p-3 text-sm font-semibold leading-6 text-rose-700">
+                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                            {event.errorMessage}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-[18px] border border-blue-100 bg-blue-50/55 p-4 text-sm font-semibold text-slate-500">No recent auto reply events in this filter.</p>
+                )}
+              </div>
+            </DataState>
+          </section>
+
           <div className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
             <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
               <label className="relative">
@@ -342,7 +486,7 @@ export function AutoReplyModulePage() {
                 <table className="min-w-[980px] w-full text-left">
                   <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
                     <tr>
-                      {["Rule Name", "Keywords", "Reply Message", "Status", "Trigger Count", "Last Triggered", "Actions"].map((heading) => (
+                      {["Rule Name", "Keywords", "Reply Message", "Status", "Priority", "Updated", "Actions"].map((heading) => (
                         <th key={heading} className="px-4 py-3">{heading}</th>
                       ))}
                     </tr>
@@ -361,7 +505,7 @@ export function AutoReplyModulePage() {
                             {rule.isActive ? "Active" : "Inactive"}
                           </button>
                         </td>
-                        <td className="px-4 py-4">{syntheticTriggers(rule)}</td>
+                        <td className="px-4 py-4">{rule.priority}</td>
                         <td className="px-4 py-4">{formatDate(rule.updatedAt ?? rule.createdAt)}</td>
                         <td className="px-4 py-4">
                           <div className="flex gap-2">
@@ -446,6 +590,39 @@ function Metric({ label, value, helper }: { label: string; value: string; helper
   );
 }
 
+function AnalyticsMetric({ label, value, helper, tone = "gray" }: { label: string; value: string | number; helper: string; tone?: "blue" | "green" | "gray" | "red" }) {
+  return (
+    <article className={cn(
+      "rounded-[18px] border p-4",
+      tone === "green" && "border-emerald-100 bg-emerald-50",
+      tone === "red" && "border-rose-100 bg-rose-50",
+      tone === "blue" && "border-blue-100 bg-blue-50",
+      tone === "gray" && "border-slate-100 bg-slate-50"
+    )}>
+      <p className="text-xs font-black uppercase text-slate-500">{label}</p>
+      <p className="mt-2 text-2xl font-black text-ink">{typeof value === "number" ? value.toLocaleString() : value}</p>
+      <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p>
+    </article>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const isSent = status === "SENT";
+  const isFailed = status === "FAILED";
+
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-black ring-1",
+      isSent && "bg-emerald-50 text-emerald-700 ring-emerald-100",
+      isFailed && "bg-rose-50 text-rose-700 ring-rose-100",
+      !isSent && !isFailed && "bg-slate-50 text-slate-600 ring-slate-100"
+    )}>
+      {isSent ? <CheckCircle2 className="h-3.5 w-3.5" /> : isFailed ? <AlertTriangle className="h-3.5 w-3.5" /> : null}
+      {status}
+    </span>
+  );
+}
+
 function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-slate-950/30 p-4 backdrop-blur-sm">
@@ -462,8 +639,4 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
 
 function ruleName(keyword: string) {
   return `${keyword.charAt(0).toUpperCase()}${keyword.slice(1)} Reply`;
-}
-
-function syntheticTriggers(rule: AutoReplyRule) {
-  return Math.max(1, (rule.priority * 7 + rule.keyword.length * 11) % 180);
 }

@@ -14,6 +14,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Campaign draft planning and Contact-based audience preview for WhatsApp and Messenger, without bulk sending.
 - Contacts create, edit, delete, import, search, filters, and duplicate-phone handling.
 - Auto Reply rule create, edit, activate, deactivate, delete, and live matching.
+- Auto Reply Analytics for rule attempts, sent replies, failed replies, success rate, and safe recent event previews.
 - Message Logs for WhatsApp and Messenger filtering and provider status checks.
 - Settings persistence for Business Profile, WhatsApp/API, Messenger/Page API, team, and preferences.
 - License page for beta plan visibility.
@@ -41,6 +42,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Open Message Logs and test channel/status/direction/search filters.
 - Open Contacts and confirm duplicate phone messages remain friendly.
 - Open Auto Reply and confirm active rule workflow.
+- Open Auto Reply Analytics and confirm rule performance loads without exposing tokens or raw webhook payloads.
 - Open Campaigns and confirm draft create/edit/archive works without any send button.
 - Preview Campaign audience and confirm the list is Contacts-only and sends nothing.
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
@@ -53,6 +55,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Recommend `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` for mobile daily use. Keep Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup desktop-preferred.
 - Auto Reply now includes a text-only Template Library. Users can select a template, review the pre-filled rule, then save it as active.
 - Recommended first template rules are `price`, `size`, `order`, `delivery`, `cod`, and `support`.
+- Failed auto replies should be reviewed from Auto Reply Analytics and cross-checked in Message Logs.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.

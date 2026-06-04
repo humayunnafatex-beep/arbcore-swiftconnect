@@ -44,7 +44,7 @@ The Dashboard is the main business overview. It shows live workspace activity su
 
 Use it at the start of the day to check whether the workspace is healthy, whether message activity is happening, and where follow-up is needed.
 
-Dashboard CRM/support metrics show Inbox status counts, due follow-ups, message health, and channel activity. Use the quick links to jump directly to filtered Inbox views, Message Logs, and Channel Center. Failed messages should be reviewed in Message Logs, and due follow-ups should be handled from Inbox.
+Dashboard CRM/support metrics show Inbox status counts, due follow-ups, message health, channel activity, and the 30-day Auto Reply performance snapshot. Use the quick links to jump directly to filtered Inbox views, Message Logs, Channel Center, and Auto Reply. Failed messages should be reviewed in Message Logs, failed auto replies should be checked in Auto Reply Analytics, and due follow-ups should be handled from Inbox.
 
 ## 2. Contacts
 
@@ -105,6 +105,8 @@ The Auto Reply Template Library provides ready-made text templates for common bu
 
 Template Library Phase 1 is text-only. Media auto-replies, AI-generated dynamic replies, and campaign sending are not included in this phase.
 
+Auto Reply Analytics shows matched rule attempts, provider-accepted sends, failed sends, success rate, rule performance, and recent safe event previews. It does not show tokens, raw webhook payloads, full provider responses, or full customer payloads. Use it to see which rules are firing and which rules need provider/configuration review.
+
 Basic Auto Reply workflow:
 
 1. Open Auto Reply.
@@ -124,6 +126,7 @@ Live Auto Reply test workflow:
 3. Open WhatsApp Logs at `/whatsapp-logs`.
 4. Confirm the inbound customer message is logged as `INBOUND - RECEIVED`.
 5. Confirm the auto reply is logged as `OUTBOUND - SENT` if Meta accepts it, or `OUTBOUND - FAILED` if Meta rejects it.
+6. Open Auto Reply Analytics to confirm the matching rule records `SENT` or `FAILED` with a safe preview.
 
 The app does not fake auto-reply success. It logs `SENT` only after Meta returns success.
 

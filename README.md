@@ -12,6 +12,7 @@ Major active modules:
 - Channel Center for WhatsApp and Messenger setup status.
 - WhatsApp and Messenger provider workflows when Meta credentials are configured.
 - Unified Inbox CRM, Contacts, Auto Reply, Message Logs, Campaign Drafts, Billing, License, Settings, and workspace readiness tools.
+- Auto Reply Analytics for rule trigger attempts, sent replies, failed replies, and safe failure previews.
 
 Safe production-beta defaults remain:
 
@@ -353,3 +354,4 @@ Invoke-WebRequest -Uri "http://localhost:3000/api/health" -UseBasicParsing
 - Full development status and next steps are in `DEVELOPMENT_STATUS.md`.
 - Mobile browser support is intended for daily operator pages such as `/inbox`, `/message-logs`, `/contacts`, and `/send-messages`. Desktop remains recommended for Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
 - Auto Reply includes a text-only Template Library for quick rule creation. Templates are reviewed and saved by the user; they do not auto-save or send media.
+- Auto Reply Analytics shows rule performance using safe previews only. Failed auto replies should be checked in Auto Reply Analytics and verified against Message Logs.
