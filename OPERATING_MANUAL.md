@@ -303,6 +303,19 @@ Real Messenger sending requires a Meta App, Facebook Page, Messenger product, Pa
 
 Before production Messenger testing, follow `MESSENGER_SETUP_GUIDE.md`.
 
+Live Messenger activation flow:
+
+1. Select the Facebook Page in Meta.
+2. Copy the Facebook Page ID.
+3. Generate the Page Access Token.
+4. Save Page ID, Page Access Token, Messenger Verify Token, and Messenger Webhook URL in ARBCore Settings.
+5. Use callback URL `https://arbcore-swiftconnect.vercel.app/api/messenger/webhook`.
+6. Use a verify token such as `arbcore_messenger_verify_2026` and make sure Meta and ARBCore match exactly.
+7. Subscribe to Messenger `messages` or messaging events.
+8. Send a message to the Page from a personal Facebook account.
+9. Check Message Logs and Inbox, then reply from Inbox.
+10. Test an active Auto Reply rule.
+
 Messenger foundation test flow:
 
 1. Save Messenger / Page API Settings in ARBCore.

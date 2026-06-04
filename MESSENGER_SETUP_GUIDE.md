@@ -27,6 +27,12 @@ Open ARBCore Settings and use the Messenger / Page API Settings section:
 - Verify Token -> Messenger Verify Token
 - Webhook URL -> Messenger Webhook URL
 
+Recommended verify token example:
+
+```text
+arbcore_messenger_verify_2026
+```
+
 Use Channel Center at `/channels` to confirm whether the Page ID, Page Access Token, Verify Token, and webhook URL are present. The Page Access Token is never displayed.
 
 Channel Center also shows Messenger outbound readiness, webhook readiness, missing setup items, and a copy button for the webhook URL.
@@ -48,30 +54,35 @@ https://YOUR_DOMAIN/api/messenger/webhook
 1. Open Meta Developer Dashboard.
 2. Open the app connected to the Facebook Page.
 3. Add or open the Messenger product.
-4. Configure the webhook callback URL:
+4. Select the Facebook Page that will receive customer messages.
+5. Copy the Facebook Page ID.
+6. Generate or copy the Page Access Token for that Page.
+7. Save Page ID, Page Access Token, Messenger Verify Token, and Messenger Webhook URL in ARBCore Settings.
+8. Configure the webhook callback URL:
 
 ```text
 https://arbcore-swiftconnect.vercel.app/api/messenger/webhook
 ```
 
-5. Enter the same Verify Token saved in ARBCore Settings.
-6. Subscribe to Messenger webhook events:
+9. Enter the same Verify Token saved in ARBCore Settings, for example `arbcore_messenger_verify_2026`.
+10. Subscribe to Messenger webhook events:
    - `messages`
    - `messaging_postbacks` if planned for a future phase
-7. Save and verify the webhook.
+11. Save and verify the webhook.
 
 ## 4. First Inbound Test
 
 1. Save Messenger / Page API Settings in ARBCore.
-2. Send a message to the connected Facebook Page.
-3. Open `/whatsapp-logs`.
-4. Refresh logs.
+2. Send a message to the connected Facebook Page from a personal Facebook account.
+3. Open `/message-logs`.
+4. Refresh logs and filter channel `MESSENGER` if needed.
 5. Expected message log:
    - Channel: `MESSENGER`
    - Direction: `INBOUND`
    - Status: `RECEIVED`
 6. Recent webhook events should show a Messenger event summary.
 7. Channel Center links to Logs for this verification step.
+8. Open `/inbox` and confirm the Messenger conversation appears.
 
 The logs page supports filtering by channel `MESSENGER`, direction, status, and search. Messenger entries use Facebook PSID, not phone number. Use `/whatsapp-logs` or `/message-logs` for verification.
 

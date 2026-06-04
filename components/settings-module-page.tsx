@@ -348,10 +348,13 @@ async function createTeamMember() {
 
         <Panel icon={<Facebook className="h-5 w-5" />} title="Messenger / Page API Settings" action={<button className={secondaryButtonClassName} onClick={() => save("Messenger")} disabled={savingSection !== null}><KeyRound className="h-4 w-4" />{savingSection === "Messenger" ? "Saving..." : "Save"}</button>}>
           <div className="mb-4 rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
-            <p className="font-black text-royal">Messenger foundation</p>
-            <p className="mt-1">Messenger support is foundation-ready. Real Messenger receive/reply requires Meta Page webhook setup and Page Access Token.</p>
+            <p className="font-black text-royal">Messenger live setup</p>
+            <p className="mt-1">Messenger uses Facebook Page ID and customer PSID, not phone number.</p>
+            <p className="mt-1">Real Messenger receive/reply requires Meta Page webhook setup and a valid Page Access Token.</p>
             <p className="mt-1">ARBCore does not claim Messenger sending is active until Meta setup is configured and tested.</p>
             <p className="mt-1">Each workspace must use a unique Messenger Page ID. Settings blocks duplicate provider IDs.</p>
+            <p className="mt-2 font-black text-royal">Webhook URL: https://arbcore-swiftconnect.vercel.app/api/messenger/webhook</p>
+            <p className="mt-1 font-black text-royal">Recommended verify token example: arbcore_messenger_verify_2026</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Facebook Page ID" value={messenger.pageId} onChange={(value) => setMessenger({ ...messenger, pageId: value })} />

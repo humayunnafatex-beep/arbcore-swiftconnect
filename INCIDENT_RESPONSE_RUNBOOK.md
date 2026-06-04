@@ -110,6 +110,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not collect or paste access tokens, Authorization headers, raw request payloads, or file binary into tickets. Do not claim success unless Message Logs show `SENT`.
 - Escalation: Technical owner checks whether the failure happened during Meta media upload or final media message send.
 
+## Messenger Live Page Failure
+
+- Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.
+- Where to check: Meta webhook configuration, `/channels`, `/message-logs`, `/inbox`, `MESSENGER_SETUP_GUIDE.md`, and Vercel runtime logs.
+- Safe first action: Confirm Page ID, Page Access Token presence, Messenger Verify Token, webhook URL, and `messages` subscription. Confirm the recipient value is a PSID, not a phone number.
+- What not to do: Do not collect Page Access Tokens, Authorization headers, raw Meta payloads, or customer private messages beyond the minimum safe summary.
+- Escalation: Technical owner checks webhook GET verification, Page ID routing, provider error code, and whether Meta app permissions/app review are required.
+
 ## Rollback Procedure
 
 - Revert Vercel to the previous Ready deployment if runtime behavior is broken.

@@ -209,6 +209,17 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not upload sensitive customer documents unless the business has approved that workflow.
 - Video, audio, sticker, and campaign media sends are not supported yet.
 
+### Messenger Live Setup Issue
+
+- Messenger uses Facebook Page ID and customer PSID, not phone number.
+- Confirm Settings has Page ID, Page Access Token presence, Messenger Verify Token, and Messenger Webhook URL.
+- The production callback URL is `https://arbcore-swiftconnect.vercel.app/api/messenger/webhook`.
+- The verify token in Meta must exactly match ARBCore, for example `arbcore_messenger_verify_2026`.
+- Subscribe the Meta Messenger webhook to `messages` or messaging events.
+- Send a message to the Page from a personal Facebook account, then check `/message-logs` and `/inbox`.
+- Messenger test-send and Inbox reply require PSID. Do not use phone numbers.
+- Failed Messenger sends should log `FAILED` with safe provider error details only.
+
 ## Safety Rules
 
 - Do not share access tokens.

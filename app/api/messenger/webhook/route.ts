@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentCompany } from "@/lib/current-company";
-import { sendMessengerTextMessage } from "@/lib/messenger-service";
+import { getSafeMessengerProviderErrorSummary, sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
 import { getCompanyForProviderWebhook, type ProviderRoutingResult } from "@/lib/provider-routing";
 
@@ -156,7 +156,11 @@ export async function POST(request: Request) {
           direction: "OUTBOUND",
           status: autoReplyResult.success ? "SENT" : "FAILED",
           providerMessageId: autoReplyResult.success ? autoReplyResult.providerMessageId : undefined,
-          errorMessage: autoReplyResult.success ? undefined : autoReplyResult.error,
+          errorMessage: autoReplyResult.success
+            ? undefined
+            : autoReplyResult.providerError
+              ? getSafeMessengerProviderErrorSummary(autoReplyResult.providerError)
+              : autoReplyResult.error,
           sentAt: autoReplyResult.success ? new Date() : undefined
         }
       });

@@ -355,7 +355,11 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] `MESSENGER_SETUP_GUIDE.md` has been reviewed.
 - [ ] Messenger / Page API Settings save and persist after refresh.
 - [ ] Saved Page Access Token is not returned or displayed after refresh.
+- [ ] Facebook Page ID is copied from the selected live Page.
+- [ ] Page Access Token is generated for the selected live Page.
 - [ ] Meta callback URL is `https://YOUR_DOMAIN/api/messenger/webhook`.
+- [ ] Production callback URL is `https://arbcore-swiftconnect.vercel.app/api/messenger/webhook` unless a custom domain is used.
+- [ ] Verify Token matches ARBCore exactly, for example `arbcore_messenger_verify_2026`.
 - [ ] Messenger webhook GET verification succeeds with the correct verify token.
 - [ ] Messenger webhook GET verification fails with the wrong verify token.
 - [ ] Messenger webhook POST with a sample Page message returns 200.
@@ -371,6 +375,8 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Send Messenger message containing `price` to the connected Facebook Page.
 - [ ] Confirm `/whatsapp-logs` shows `MESSENGER / INBOUND / RECEIVED`.
 - [ ] Confirm `/whatsapp-logs` shows `MESSENGER / OUTBOUND / SENT` or `FAILED`.
+- [ ] Inbox shows the Messenger conversation and reply composer explains PSID, not phone number.
+- [ ] Inbox Messenger text reply logs `MESSENGER / OUTBOUND / SENT` only after Meta accepts.
 - [ ] Replayed duplicate Messenger provider message ID does not send a second auto reply.
 
 ## 9B. WhatsApp Media Reply QA

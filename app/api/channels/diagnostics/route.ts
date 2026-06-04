@@ -43,6 +43,10 @@ export async function GET() {
         webhookUrl: company.whatsappWebhookUrl || null
       },
       messenger: {
+        pageIdPresent: Boolean(company.messengerPageId),
+        pageAccessTokenPresent: Boolean(company.messengerPageAccessToken),
+        verifyTokenPresent: Boolean(company.messengerVerifyToken),
+        webhookUrlPresent: Boolean(company.messengerWebhookUrl),
         readyForOutbound: Boolean(company.messengerPageId && company.messengerPageAccessToken),
         readyForWebhook: Boolean(company.messengerVerifyToken && (company.messengerWebhookUrl || MESSENGER_WEBHOOK_PATH)),
         missing: messengerMissing,

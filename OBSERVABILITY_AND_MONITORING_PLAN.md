@@ -85,6 +85,7 @@ Do not install or enable paid monitoring packages until the integration scope is
 
 - Some messages fail with provider errors.
 - WhatsApp media upload or media send fails for an individual Inbox reply.
+- Messenger live Page receive/reply fails after Page setup.
 - Duplicate provider IDs are detected.
 - Billing records are unclear or disputed.
 - Campaign audience preview errors affect planning.
@@ -110,6 +111,8 @@ Do not install or enable paid monitoring packages until the integration scope is
 10. Document the incident, safe evidence, root cause, action taken, and follow-up.
 
 For WhatsApp media replies, Message Logs should show a safe body summary such as `[image]` or `[document]` and a safe provider error on failure. Do not collect file binary, access tokens, Authorization headers, or raw Meta request payloads for monitoring evidence.
+
+For Messenger live setup, monitor Message Logs for `MESSENGER / INBOUND / RECEIVED`, `MESSENGER / OUTBOUND / SENT`, and `FAILED` patterns. Evidence should include Page ID presence, PSID used, safe provider error text, and webhook event time only. Never collect Page Access Tokens or Authorization headers.
 
 ## Future Monitoring Integrations
 

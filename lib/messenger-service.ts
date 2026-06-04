@@ -1,3 +1,15 @@
+export type SafeMessengerProviderError = {
+  message?: string;
+  type?: string;
+  code?: number | string;
+  subcode?: number | string;
+  fbtraceId?: string;
+};
+
+export type MessengerSendResult =
+  | { success: true; providerMessageId?: string }
+  | { success: false; error: string; providerStatus?: number; providerError?: SafeMessengerProviderError };
+
 export async function sendMessengerTextMessage({
   pageAccessToken,
   recipientId,
@@ -8,7 +20,7 @@ export async function sendMessengerTextMessage({
   recipientId: string;
   body: string;
   apiVersion?: string;
-}): Promise<{ success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number }> {
+}): Promise<MessengerSendResult> {
   const normalizedRecipientId = recipientId.trim();
   const normalizedBody = body.trim();
 
@@ -39,7 +51,8 @@ export async function sendMessengerTextMessage({
       return {
         success: false,
         error: "Messenger provider rejected the message.",
-        providerStatus: response.status
+        providerStatus: response.status,
+        providerError: getSafeMetaError(responseBody)
       };
     }
 
@@ -50,6 +63,22 @@ export async function sendMessengerTextMessage({
   } catch {
     return { success: false, error: "Messenger provider rejected the message." };
   }
+}
+
+export function getSafeMessengerProviderErrorSummary(providerError?: SafeMessengerProviderError) {
+  if (!providerError) {
+    return "Messenger provider rejected the message.";
+  }
+
+  const parts = [
+    providerError.message,
+    providerError.type ? `type ${providerError.type}` : null,
+    providerError.code !== undefined ? `code ${providerError.code}` : null,
+    providerError.subcode !== undefined ? `subcode ${providerError.subcode}` : null,
+    providerError.fbtraceId ? `fbtrace ${providerError.fbtraceId}` : null
+  ].filter(Boolean);
+
+  return parts.length ? `Messenger provider rejected the message: ${parts.join("; ")}.` : "Messenger provider rejected the message.";
 }
 
 function getProviderMessageId(payload: unknown) {
@@ -66,6 +95,29 @@ function getProviderMessageId(payload: unknown) {
   }
 
   return undefined;
+}
+
+function getSafeMetaError(payload: unknown): SafeMessengerProviderError | undefined {
+  if (!isRecord(payload) || !isRecord(payload.error)) {
+    return undefined;
+  }
+
+  const error = payload.error;
+  return {
+    message: getString(error.message),
+    type: getString(error.type),
+    code: getStringOrNumber(error.code),
+    subcode: getStringOrNumber(error.error_subcode),
+    fbtraceId: getString(error.fbtrace_id)
+  };
+}
+
+function getString(value: unknown) {
+  return typeof value === "string" ? value : undefined;
+}
+
+function getStringOrNumber(value: unknown) {
+  return typeof value === "string" || typeof value === "number" ? value : undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
-import { sendMessengerTextMessage } from "@/lib/messenger-service";
+import { getSafeMessengerProviderErrorSummary, sendMessengerTextMessage, type SafeMessengerProviderError } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
 import {
   getSafeWhatsAppProviderErrorSummary,
@@ -294,13 +294,15 @@ async function handleProviderResult({
   contactId?: string;
   channel: "WHATSAPP" | "MESSENGER";
   body: string;
-  providerResult: { success: true; providerMessageId?: string } | { success: false; error: string; providerStatus?: number; providerError?: SafeWhatsAppProviderError };
+  providerResult:
+    | { success: true; providerMessageId?: string }
+    | { success: false; error: string; providerStatus?: number; providerError?: SafeWhatsAppProviderError | SafeMessengerProviderError };
 }) {
   if (!providerResult.success) {
-    const safeErrorMessage = channel === "WHATSAPP"
-      ? providerResult.providerError
+    const safeErrorMessage = providerResult.providerError
+      ? channel === "WHATSAPP"
         ? getSafeWhatsAppProviderErrorSummary(providerResult.providerError)
-        : providerResult.error
+        : getSafeMessengerProviderErrorSummary(providerResult.providerError)
       : providerResult.error;
 
     await createSafeMessageLog({
@@ -317,7 +319,7 @@ async function handleProviderResult({
         success: false,
         status: "provider_error",
         error: providerResult.error,
-        providerError: channel === "WHATSAPP" ? providerResult.providerError : undefined,
+        providerError: providerResult.providerError,
         data: { providerStatus: providerResult.providerStatus }
       },
       { status: 502 }

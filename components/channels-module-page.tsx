@@ -43,6 +43,10 @@ type ChannelDiagnostics = {
     webhookUrl: string | null;
   };
   messenger: {
+    pageIdPresent: boolean;
+    pageAccessTokenPresent: boolean;
+    verifyTokenPresent: boolean;
+    webhookUrlPresent: boolean;
     readyForOutbound: boolean;
     readyForWebhook: boolean;
     missing: string[];
@@ -64,7 +68,18 @@ type MessengerTestResponse = {
 
 type MessengerTestEnvelope =
   | { success: true; status: "sent_successfully"; data?: { providerMessageId?: string } }
-  | { success: false; status: "not_configured" | "validation_failed" | "provider_error"; error: string };
+  | {
+      success: false;
+      status: "not_configured" | "validation_failed" | "provider_error";
+      error: string;
+      providerError?: {
+        message?: string;
+        type?: string;
+        code?: number | string;
+        subcode?: number | string;
+        fbtraceId?: string;
+      };
+    };
 
 const productionBaseUrl = "https://arbcore-swiftconnect.vercel.app";
 
@@ -75,6 +90,7 @@ export function ChannelsModulePage() {
   const [messengerRecipientPsid, setMessengerRecipientPsid] = useState("");
   const [messengerBody, setMessengerBody] = useState("");
   const [messengerStatus, setMessengerStatus] = useState<string | null>(null);
+  const [messengerProviderError, setMessengerProviderError] = useState<string | null>(null);
   const [sendingMessenger, setSendingMessenger] = useState(false);
 
   function refreshAll() {
@@ -94,6 +110,7 @@ export function ChannelsModulePage() {
   async function sendMessengerTest() {
     setSendingMessenger(true);
     setMessengerStatus(null);
+    setMessengerProviderError(null);
     let handledStatus: string | null = null;
 
     try {
@@ -107,13 +124,21 @@ export function ChannelsModulePage() {
       });
       const result = (await response.json()) as MessengerTestEnvelope;
 
-      if (!response.ok || !result.success) {
+      if (result.success === false) {
         setMessengerStatus(result.status);
+        setMessengerProviderError(formatProviderError(result.providerError));
         handledStatus = result.status;
-        throw new Error(result.success ? "Messenger test failed." : result.error);
+        throw new Error(result.error);
+      }
+
+      if (!response.ok) {
+        setMessengerStatus("provider_error");
+        handledStatus = "provider_error";
+        throw new Error("Messenger test failed.");
       }
 
       setMessengerStatus(result.status);
+      setMessengerProviderError(null);
       handledStatus = result.status;
       showToast("Messenger test sent.");
     } catch (error) {
@@ -125,6 +150,7 @@ export function ChannelsModulePage() {
             ? "not_configured"
             : "provider_error";
         setMessengerStatus(status);
+        setMessengerProviderError(null);
       }
       showToast(getApiErrorMessage(error), "error");
     } finally {
@@ -184,7 +210,8 @@ export function ChannelsModulePage() {
                 rows={[
                   ["Page ID present", data.messenger.pageIdPresent],
                   ["Page Access Token present", data.messenger.pageAccessTokenPresent],
-                  ["Verify token present", data.messenger.verifyTokenPresent]
+                  ["Verify token present", data.messenger.verifyTokenPresent],
+                  ["Webhook URL present", Boolean(data.messenger.webhookUrl)]
                 ]}
                 webhookUrl={data.messenger.webhookUrl}
                 webhookPath={data.messenger.webhookPath}
@@ -211,6 +238,12 @@ export function ChannelsModulePage() {
                       title="Messenger Diagnostics"
                       outboundReady={diagnostics.data.messenger.readyForOutbound}
                       webhookReady={diagnostics.data.messenger.readyForWebhook}
+                      rows={[
+                        ["Page ID present", diagnostics.data.messenger.pageIdPresent],
+                        ["Page Access Token present", diagnostics.data.messenger.pageAccessTokenPresent],
+                        ["Verify Token present", diagnostics.data.messenger.verifyTokenPresent],
+                        ["Webhook URL present", diagnostics.data.messenger.webhookUrlPresent]
+                      ]}
                       missing={diagnostics.data.messenger.missing}
                     />
                   </section>
@@ -237,7 +270,7 @@ export function ChannelsModulePage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-black text-ink">Messenger Test Send</h2>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">Messenger requires a valid Facebook Page PSID. Do not use phone numbers here.</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">Messenger test-send requires Facebook PSID, not phone number.</p>
                   </div>
                   <Link href="/message-logs" className={secondaryButtonClassName}>
                     <ClipboardList className="h-4 w-4" />
@@ -259,8 +292,11 @@ export function ChannelsModulePage() {
                       {sendingMessenger ? "Sending..." : "Send Messenger Test"}
                     </button>
                     {messengerStatus ? (
-                      <span className="rounded-full bg-blue-50 px-3 py-2 text-xs font-black uppercase text-royal ring-1 ring-blue-100">
-                        {messengerStatus}
+                      <span className="rounded-[14px] bg-blue-50 px-3 py-2 text-xs font-black uppercase text-royal ring-1 ring-blue-100">
+                        <span>{messengerStatus}</span>
+                        {messengerProviderError ? (
+                          <span className="mt-1 block normal-case text-slate-600">{messengerProviderError}</span>
+                        ) : null}
                       </span>
                     ) : null}
                   </div>
@@ -395,13 +431,28 @@ function ChannelCard({
   );
 }
 
-function DiagnosticsCard({ title, outboundReady, webhookReady, missing }: { title: string; outboundReady: boolean; webhookReady: boolean; missing: string[] }) {
+function DiagnosticsCard({
+  title,
+  outboundReady,
+  webhookReady,
+  missing,
+  rows = []
+}: {
+  title: string;
+  outboundReady: boolean;
+  webhookReady: boolean;
+  missing: string[];
+  rows?: Array<[string, boolean]>;
+}) {
   return (
     <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
       <h2 className="text-lg font-black text-ink">{title}</h2>
       <div className="mt-4 space-y-3">
         <StatusRow label="Outbound ready" present={outboundReady} />
         <StatusRow label="Webhook ready" present={webhookReady} />
+        {rows.map(([label, present]) => (
+          <StatusRow key={label} label={label} present={present} />
+        ))}
       </div>
       <div className="mt-5 rounded-[18px] bg-blue-50 p-4">
         <p className="text-xs font-black uppercase text-slate-500">Missing setup items</p>
@@ -431,4 +482,18 @@ function StatusRow({ label, present }: { label: string; present: boolean }) {
       </span>
     </div>
   );
+}
+
+function formatProviderError(providerError: Extract<MessengerTestEnvelope, { success: false }>["providerError"]) {
+  if (!providerError) return null;
+
+  const parts = [
+    providerError.message,
+    providerError.type ? `type ${providerError.type}` : null,
+    providerError.code !== undefined ? `code ${providerError.code}` : null,
+    providerError.subcode !== undefined ? `subcode ${providerError.subcode}` : null,
+    providerError.fbtraceId ? `fbtrace ${providerError.fbtraceId}` : null
+  ].filter(Boolean);
+
+  return parts.length ? parts.join("; ") : null;
 }

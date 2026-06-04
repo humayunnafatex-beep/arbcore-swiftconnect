@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { getCurrentCompany } from "@/lib/current-company";
-import { sendMessengerTextMessage } from "@/lib/messenger-service";
+import { getSafeMessengerProviderErrorSummary, sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -104,16 +104,26 @@ export async function POST(request: Request) {
     });
 
     if (!providerResult.success) {
+      const safeErrorMessage = providerResult.providerError
+        ? getSafeMessengerProviderErrorSummary(providerResult.providerError)
+        : providerResult.error;
+
       await createSafeMessengerLog({
         companyId: company.id,
         contactId: contact.id,
         body: messageBody,
         status: "FAILED",
-        errorMessage: providerResult.error
+        errorMessage: safeErrorMessage
       });
 
       return NextResponse.json(
-        { success: false, status: "provider_error", error: "Messenger provider rejected the message." },
+        {
+          success: false,
+          status: "provider_error",
+          error: "Messenger provider rejected the message.",
+          providerError: providerResult.providerError,
+          data: { providerStatus: providerResult.providerStatus }
+        },
         { status: 502 }
       );
     }
