@@ -278,6 +278,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `INCIDENT_RESPONSE_RUNBOOK.md`: incident steps for WhatsApp, Messenger, webhook, workspace routing, migration, deployment, auth, and billing issues.
 - `PRODUCTION_MONITORING_CHECKLIST.md`: daily, weekly, post-deployment, Meta-change, migration, and paid-client monitoring checklist.
 - `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, and Billing records.
+- `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md`: mobile browser QA checklist for Inbox, Message Logs, Contacts, Settings, Auto Reply, and Send Messages.
 - `/exports`: CSV export page for approved workspace data exports.
 
 Read-only production verification script:
@@ -350,3 +351,4 @@ Invoke-WebRequest -Uri "http://localhost:3000/api/health" -UseBasicParsing
 - WhatsApp integration uses official Meta Cloud API only when sandbox env vars are configured; otherwise it stays mock/local.
 - AI Studio can use OpenAI when `OPENAI_API_KEY` is configured, otherwise it stays mock/local.
 - Full development status and next steps are in `DEVELOPMENT_STATUS.md`.
+- Mobile browser support is intended for daily operator pages such as `/inbox`, `/message-logs`, `/contacts`, and `/send-messages`. Desktop remains recommended for Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.

@@ -73,7 +73,7 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-blue-100/80 bg-white/84 backdrop-blur-xl">
-      <div className="flex min-h-[100px] items-center gap-4 px-4 py-4 sm:px-6 xl:px-8">
+      <div className="flex min-h-[76px] items-center gap-3 px-3 py-3 sm:min-h-[100px] sm:gap-4 sm:px-6 sm:py-4 xl:px-8">
         <div className="flex items-center gap-3 lg:hidden">
           <RobotAvatar size="sm" />
           <div className="min-w-0">
@@ -106,7 +106,7 @@ export function Topbar() {
           </span>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
           <RobotAvatar size="md" className="hidden sm:grid" />
           <IconButton count={8}>
             <Bell className="h-5 w-5" />
@@ -157,7 +157,7 @@ export function Topbar() {
           </div>
         </div>
       </div>
-      <div className="px-4 pb-4 xl:hidden">
+      <div className="hidden px-3 pb-3 sm:block sm:px-6 sm:pb-4 xl:hidden">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
           <input

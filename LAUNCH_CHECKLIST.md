@@ -390,6 +390,16 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Message Logs show media summaries such as `[image]` or `[document]` and never show file binary or tokens.
 - [ ] Video, audio, sticker, and bulk campaign media sending remain out of scope for this phase.
 
+## 9C. Mobile Browser QA
+
+- [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.
+- [ ] Mobile width 390px: `/inbox` is usable with no full-page horizontal overflow.
+- [ ] Mobile width 390px: `/message-logs` filters and log cards are readable.
+- [ ] Mobile width 390px: `/contacts` search/filter controls and contact cards are readable.
+- [ ] Mobile width 390px: `/settings` cards stack and token fields remain hidden after refresh.
+- [ ] Mobile daily pages `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` are recommended for operators.
+- [ ] Desktop is still recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
+
 ## 10. Known Limitations
 
 - Billing/license enforcement is not active in beta.

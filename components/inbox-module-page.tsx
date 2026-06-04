@@ -564,7 +564,7 @@ export function InboxModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
-        <div className="grid gap-3 lg:grid-cols-[160px_160px_170px_200px_1fr_auto_auto]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[160px_160px_170px_200px_1fr_auto_auto]">
           <select className={`${inputClassName} w-full`} value={channel} onChange={(event) => setChannel(event.target.value as ChannelFilter)}>
             <option value="ALL">All channels</option>
             <option value="WHATSAPP">WhatsApp</option>
@@ -599,11 +599,11 @@ export function InboxModulePage() {
               placeholder="Search phone, PSID, provider ID, or message preview"
             />
           </label>
-          <button className={primaryButtonClassName} onClick={() => void loadConversations()}>
+          <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => void loadConversations()}>
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
-          <button className={secondaryButtonClassName} onClick={clearFilters}>
+          <button className={`${secondaryButtonClassName} w-full sm:w-auto`} onClick={clearFilters}>
             Clear
           </button>
         </div>
@@ -612,7 +612,7 @@ export function InboxModulePage() {
         </p>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(330px,430px)_1fr]">
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
         <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
@@ -625,7 +625,7 @@ export function InboxModulePage() {
           </div>
 
           <DataState loading={loading} error={error} empty={!conversations.length} emptyText="No inbox conversations match the current filters.">
-            <div className="max-h-[720px] space-y-2 overflow-y-auto pr-1">
+            <div className="max-h-[440px] space-y-2 overflow-y-auto pr-1 xl:max-h-[720px]">
               {conversations.map((conversation) => (
                 <button
                   key={conversation.id}
@@ -672,7 +672,7 @@ export function InboxModulePage() {
         <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
           <DataState loading={detailLoading} error={detailError} empty={!selectedId || !detail} emptyText="Select a conversation to view recent messages.">
             {detail ? (
-              <div className="flex min-h-[680px] flex-col">
+              <div className="flex min-h-0 flex-col xl:min-h-[680px]">
                 <div className="mb-4 flex flex-col gap-3 rounded-[18px] bg-blue-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-xs font-black uppercase text-royal">{detail.conversation.channel}</p>
@@ -724,7 +724,7 @@ export function InboxModulePage() {
                         ))}
                       </select>
                       <input className={`${inputClassName} w-full`} value={contactForm.tags} onChange={(event) => setContactForm((current) => ({ ...current, tags: event.target.value }))} placeholder="Tags, comma separated" />
-                      <button className={`${primaryButtonClassName} whitespace-nowrap`} onClick={() => void saveContactFromConversation()} disabled={contactSaving}>
+                      <button className={`${primaryButtonClassName} w-full whitespace-nowrap lg:w-auto`} onClick={() => void saveContactFromConversation()} disabled={contactSaving}>
                         {contactSaving ? "Saving..." : detail.conversation.contact ? "Save Contact" : "Create Contact"}
                       </button>
                     </div>
@@ -806,7 +806,7 @@ export function InboxModulePage() {
                       />
                       Done
                     </label>
-                    <div className="flex gap-2 self-end">
+                    <div className="flex flex-col gap-2 self-end sm:flex-row">
                       {internalDraft.followUpAt ? (
                         <button className={secondaryButtonClassName} type="button" onClick={() => void saveConversationState({ clearFollowUp: true })} disabled={stateSaving}>
                           Clear Follow-up
@@ -822,13 +822,13 @@ export function InboxModulePage() {
                   </p>
                 </div>
 
-                <div className="soft-scrollbar flex-1 space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-4">
+                <div className="soft-scrollbar flex-1 space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 sm:p-4">
                   {detail.messages.length ? (
                     detail.messages.map((message) => (
                       <div key={message.id} className={cn("flex", message.direction === "OUTBOUND" ? "justify-end" : "justify-start")}>
                         <div
                           className={cn(
-                            "max-w-[82%] rounded-[18px] px-4 py-3 text-sm font-semibold shadow-sm",
+                            "max-w-[94%] break-words rounded-[18px] px-3 py-3 text-sm font-semibold shadow-sm sm:max-w-[82%] sm:px-4",
                             message.direction === "OUTBOUND" ? "bg-royal text-white" : "bg-white text-slate-700"
                           )}
                         >
@@ -839,7 +839,7 @@ export function InboxModulePage() {
                             <span>{formatDate(message.createdAt)}</span>
                           </div>
                           {message.providerMessageId ? (
-                            <p className={cn("mt-1 truncate text-[11px]", message.direction === "OUTBOUND" ? "text-blue-100" : "text-slate-400")}>
+                            <p className={cn("mt-1 break-all text-[11px]", message.direction === "OUTBOUND" ? "text-blue-100" : "text-slate-400")}>
                               Provider ID: {message.providerMessageId}
                             </p>
                           ) : null}
@@ -893,7 +893,7 @@ export function InboxModulePage() {
                     </div>
                     {replyAttachment ? (
                       <div className="mt-3 flex flex-col gap-2 rounded-[12px] bg-white px-3 py-2 text-sm font-semibold text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-                        <span className="min-w-0 truncate">{replyAttachment.name} ({formatBytes(replyAttachment.size)})</span>
+                        <span className="min-w-0 break-all">{replyAttachment.name} ({formatBytes(replyAttachment.size)})</span>
                         <button className="inline-flex items-center gap-1 text-xs font-black text-rose-600" type="button" onClick={clearReplyAttachment} disabled={replySending}>
                           <XCircle className="h-4 w-4" />
                           Remove
@@ -920,7 +920,7 @@ export function InboxModulePage() {
                     <p className="text-xs font-semibold text-slate-500">
                       Success is logged only after Meta accepts the message. Failed provider attempts are logged as FAILED.
                     </p>
-                    <button className={primaryButtonClassName} onClick={() => void sendReply()} disabled={replySending || (!replyBody.trim() && !replyAttachment)}>
+                    <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => void sendReply()} disabled={replySending || (!replyBody.trim() && !replyAttachment)}>
                       <Send className="h-4 w-4" />
                       {replySending ? "Sending..." : "Send Reply"}
                     </button>

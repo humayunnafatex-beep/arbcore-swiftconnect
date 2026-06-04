@@ -220,6 +220,13 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Messenger test-send and Inbox reply require PSID. Do not use phone numbers.
 - Failed Messenger sends should log `FAILED` with safe provider error details only.
 
+### Mobile Browser Support
+
+- Daily operator pages are supported on mobile browser: `/inbox`, `/message-logs`, `/contacts`, and `/send-messages`.
+- Use `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` for Android Chrome, iPhone Safari, and tablet checks.
+- Ask users to report device, browser, page, and whether horizontal scrolling appears.
+- Desktop remains recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
+
 ## Safety Rules
 
 - Do not share access tokens.

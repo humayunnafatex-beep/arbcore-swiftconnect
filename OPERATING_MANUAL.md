@@ -352,6 +352,8 @@ Video, audio, stickers, and bulk campaign media sending are not supported in thi
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.
 
+Mobile browser support is intended for daily operations such as `/inbox`, `/message-logs`, `/contacts`, and `/send-messages`. Use `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` to test Android Chrome, iPhone Safari, and tablet widths. Desktop remains recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
+
 For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPORT.md`, `SECURITY_QA_REPORT.md`, and `MIGRATION_AUDIT.md`.
 
 For auth readiness, open `/auth/status` after Supabase login and confirm the mode is `supabase_mapped`. The backing `/api/auth/me` endpoint returns safe status fields only and must not expose tokens, cookies, or raw Supabase sessions.

@@ -298,11 +298,11 @@ export function ContactsModulePage() {
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button className={secondaryButtonClassName} onClick={exportCsv} disabled={!filteredContacts.length}>
+            <button className={`${secondaryButtonClassName} w-full sm:w-auto`} onClick={exportCsv} disabled={!filteredContacts.length}>
               <Download className="h-4 w-4" />
               Export CSV
             </button>
-            <button className={primaryButtonClassName} onClick={openCreateModal}>
+            <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={openCreateModal}>
               <Plus className="h-4 w-4" />
               New Contact
             </button>
@@ -318,7 +318,7 @@ export function ContactsModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr_auto]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.8fr_0.8fr_auto]">
           <label className="relative">
             <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
             <input className={`${inputClassName} w-full pl-9`} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name, phone, or email" />
@@ -347,7 +347,7 @@ export function ContactsModulePage() {
               </option>
             ))}
           </select>
-          <button className={secondaryButtonClassName} onClick={contacts.reload}>
+          <button className={`${secondaryButtonClassName} w-full sm:w-auto`} onClick={contacts.reload}>
             <RefreshCw className="h-4 w-4" />
             Refresh
           </button>
@@ -360,15 +360,15 @@ export function ContactsModulePage() {
             <h2 className="text-base font-black text-ink">CSV / Excel Import</h2>
             <p className="mt-1 text-xs font-semibold text-slate-500">Accepted headers: name, phone, email, tags, segment, stage, opted in.</p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <input
               ref={fileInputRef}
-              className="max-w-full rounded-[14px] border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-600"
+              className="w-full max-w-full rounded-[14px] border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-slate-600 sm:w-auto"
               type="file"
               accept=".csv,.xlsx,.xls"
               onChange={(event) => void analyzeImportFile(event.target.files?.[0] ?? null)}
             />
-            <button className={primaryButtonClassName} onClick={() => void handleImport()} disabled={importing || !importFile}>
+            <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => void handleImport()} disabled={importing || !importFile}>
               <Upload className="h-4 w-4" />
               {importing ? "Importing..." : "Import"}
             </button>
@@ -383,7 +383,42 @@ export function ContactsModulePage() {
 
       <section className="overflow-hidden rounded-[24px] border border-blue-100 bg-white/95 shadow-panel">
         <DataState loading={contacts.loading} error={contacts.error} empty={!filteredContacts.length} emptyText="No contacts match this view.">
-          <div className="overflow-x-auto">
+          <div className="grid gap-3 p-4 lg:hidden">
+            {filteredContacts.map((contact) => (
+              <article key={contact.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-base font-black text-ink">{contact.name}</h3>
+                    <p className="mt-1 break-all text-sm font-semibold text-slate-600">{contact.phone}</p>
+                    <p className="mt-1 break-all text-xs font-semibold text-slate-500">{contact.email ?? "No email"}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">{stageLabels[contact.stage]}</span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {splitTags(contact.tags).length ? (
+                    splitTags(contact.tags).map((tag) => <span key={tag} className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black text-royal">{tag}</span>)
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-400">No tags</span>
+                  )}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-semibold text-slate-500">
+                  <span>Source: {contact.segment ?? "Direct"}</span>
+                  <span>Updated: {formatDate(contact.updatedAt)}</span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <button className={`${secondaryButtonClassName} justify-center`} onClick={() => openEditModal(contact)}>
+                    <Edit3 className="h-4 w-4" />
+                    Edit
+                  </button>
+                  <button className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] border border-rose-100 px-4 text-sm font-bold text-rose-600 hover:bg-rose-50" onClick={() => setDeletingContact(contact)}>
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
             <table className="min-w-[1120px] w-full text-left">
               <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
                 <tr>
@@ -464,11 +499,11 @@ export function ContactsModulePage() {
           <p className="text-sm leading-6 text-slate-600">
             Delete <strong>{deletingContact.name}</strong>? This removes the contact from this workspace and related local records may also be removed.
           </p>
-          <div className="mt-5 flex gap-2">
-            <button className={secondaryButtonClassName} onClick={() => setDeletingContact(null)}>
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+            <button className={`${secondaryButtonClassName} w-full sm:w-auto`} onClick={() => setDeletingContact(null)}>
               Cancel
             </button>
-            <button className="inline-flex h-11 items-center justify-center rounded-[14px] bg-rose-600 px-4 text-sm font-bold text-white" onClick={() => void deleteContact()} disabled={submitting}>
+            <button className="inline-flex h-11 w-full items-center justify-center rounded-[14px] bg-rose-600 px-4 text-sm font-bold text-white sm:w-auto" onClick={() => void deleteContact()} disabled={submitting}>
               Delete
             </button>
           </div>
@@ -493,7 +528,7 @@ function Metric({ label, value, helper }: { label: string; value: string; helper
 function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-slate-950/30 p-4 backdrop-blur-sm">
-      <section className="w-full max-w-xl rounded-[24px] border border-blue-100 bg-white p-5 shadow-glow">
+      <section className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[24px] border border-blue-100 bg-white p-5 shadow-glow">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-lg font-black text-ink">{title}</h2>
           <button className="rounded-[12px] border border-blue-100 px-3 py-2 text-sm font-black text-royal" onClick={onClose}>

@@ -404,20 +404,21 @@ async function createTeamMember() {
                 ))}
               </select>
             </label>
-            <button className={`${primaryButtonClassName} self-end`} onClick={createTeamMember} disabled={creatingMember}>
+            <button className={`${primaryButtonClassName} w-full self-end lg:w-auto`} onClick={createTeamMember} disabled={creatingMember}>
               <Plus className="h-4 w-4" />
               {creatingMember ? "Creating..." : "Create"}
             </button>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-[18px] border border-blue-100">
-            <div className="grid grid-cols-[1.3fr_1.4fr_150px_110px_120px] bg-slate-50 px-4 py-3 text-xs font-black uppercase text-slate-500">
-              <span>Name</span>
-              <span>Email</span>
-              <span>Role</span>
-              <span>Status</span>
-              <span className="text-right">Actions</span>
-            </div>
+          <div className="mt-4 overflow-x-auto rounded-[18px] border border-blue-100">
+            <div className="min-w-[720px]">
+              <div className="grid grid-cols-[1.3fr_1.4fr_150px_110px_120px] bg-slate-50 px-4 py-3 text-xs font-black uppercase text-slate-500">
+                <span>Name</span>
+                <span>Email</span>
+                <span>Role</span>
+                <span>Status</span>
+                <span className="text-right">Actions</span>
+              </div>
             {teamLoading ? (
               <div className="px-4 py-8 text-center text-sm font-bold text-slate-500">Loading team members...</div>
             ) : teamError ? (
@@ -443,6 +444,7 @@ async function createTeamMember() {
                 </div>
               ))
             )}
+            </div>
           </div>
         </Panel>
       </section>
@@ -453,8 +455,8 @@ async function createTeamMember() {
 
 function Panel({ icon, title, action, children }: { icon: React.ReactNode; title: string; action: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="min-w-0 rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-[14px] bg-blue-50 text-royal ring-1 ring-blue-100">{icon}</span>
           <h2 className="text-lg font-black text-ink">{title}</h2>
@@ -498,9 +500,9 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="mb-3 flex items-center justify-between gap-3 rounded-[16px] bg-blue-50 px-4 py-3">
+    <div className="mb-3 flex flex-col gap-1 rounded-[16px] bg-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       <span className="text-sm font-bold text-slate-500">{label}</span>
-      <span className="text-sm font-black text-ink">{value}</span>
+      <span className="break-words text-sm font-black text-ink">{value}</span>
     </div>
   );
 }

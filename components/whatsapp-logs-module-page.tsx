@@ -143,7 +143,7 @@ export function WhatsAppLogsModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-5 shadow-panel">
-        <div className="grid gap-3 xl:grid-cols-[160px_160px_160px_1fr_120px_auto_auto]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[160px_160px_160px_1fr_120px_auto_auto]">
           <FilterSelect label="Channel" value={filters.channel} options={["ALL", "WHATSAPP", "MESSENGER"]} onChange={(value) => setFilters({ ...filters, channel: value })} />
           <FilterSelect label="Direction" value={filters.direction} options={["ALL", "INBOUND", "OUTBOUND"]} onChange={(value) => setFilters({ ...filters, direction: value })} />
           <FilterSelect label="Status" value={filters.status} options={["ALL", "SENT", "FAILED", "RECEIVED", "ATTEMPTED"]} onChange={(value) => setFilters({ ...filters, status: value })} />
@@ -160,11 +160,11 @@ export function WhatsAppLogsModulePage() {
             </span>
           </label>
           <FilterSelect label="Limit" value={filters.limit} options={["25", "50", "100"]} onChange={(value) => setFilters({ ...filters, limit: value })} />
-          <button className={`${primaryButtonClassName} self-end`} onClick={() => void loadLogs()} disabled={loading}>
+          <button className={`${primaryButtonClassName} w-full self-end sm:w-auto`} onClick={() => void loadLogs()} disabled={loading}>
             <RefreshCw className="h-4 w-4" />
             Apply
           </button>
-          <button className={`${secondaryButtonClassName} self-end`} onClick={clearFilters} disabled={loading}>
+          <button className={`${secondaryButtonClassName} w-full self-end sm:w-auto`} onClick={clearFilters} disabled={loading}>
             <XCircle className="h-4 w-4" />
             Clear
           </button>
@@ -197,12 +197,12 @@ export function WhatsAppLogsModulePage() {
                     </div>
                     <div className="min-w-0 rounded-[16px] bg-blue-50 p-3 text-xs font-semibold text-slate-600 lg:w-72">
                       <p><span className="font-black text-royal">Channel:</span> {message.channel}</p>
-                      <p className="mt-1 truncate"><span className="font-black text-royal">Provider ID:</span> {message.providerMessageId || "-"}</p>
+                      <p className="mt-1 break-all"><span className="font-black text-royal">Provider ID:</span> {message.providerMessageId || "-"}</p>
                       <p className="mt-1"><span className="font-black text-royal">Provider Status:</span> {message.providerStatus || "-"}</p>
                       {message.errorMessage ? (
                         <p className="mt-2 flex gap-2 rounded-[12px] bg-rose-50 p-2 text-rose-700">
                           <AlertCircle className="h-4 w-4 shrink-0" />
-                          <span>{message.errorMessage}</span>
+                          <span className="min-w-0 break-words">{message.errorMessage}</span>
                         </p>
                       ) : null}
                     </div>

@@ -49,6 +49,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Confirm unsupported media types and oversized files are rejected safely before provider calls.
 - Configure Messenger live setup with Facebook Page ID, Page Access Token, callback URL, verify token, and `messages` subscription before live Page testing.
 - Confirm Messenger Page messages appear in Message Logs and Inbox, and that Inbox replies log `MESSENGER / OUTBOUND / SENT` only after Meta accepts.
+- Use `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` to verify daily operator pages on mobile browser.
+- Recommend `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` for mobile daily use. Keep Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup desktop-preferred.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.
