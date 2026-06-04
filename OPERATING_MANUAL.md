@@ -101,6 +101,10 @@ Auto Reply manages keyword-based replies. A rule contains a trigger keyword, rep
 
 Use Auto Reply for common questions such as price, delivery, payment, order status, support, or unsubscribe requests. Active rules can send live replies when WhatsApp Cloud API is configured and an inbound webhook text message matches the rule.
 
+The Auto Reply Template Library provides ready-made text templates for common business replies such as `price`, `size`, `order`, `delivery`, `cod`, and `support`. Select a template, review the keyword and reply text, then save it as an active rule. Templates are starting points and are not saved automatically.
+
+Template Library Phase 1 is text-only. Media auto-replies, AI-generated dynamic replies, and campaign sending are not included in this phase.
+
 Basic Auto Reply workflow:
 
 1. Open Auto Reply.

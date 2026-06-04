@@ -51,6 +51,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Confirm Messenger Page messages appear in Message Logs and Inbox, and that Inbox replies log `MESSENGER / OUTBOUND / SENT` only after Meta accepts.
 - Use `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` to verify daily operator pages on mobile browser.
 - Recommend `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` for mobile daily use. Keep Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup desktop-preferred.
+- Auto Reply now includes a text-only Template Library. Users can select a template, review the pre-filled rule, then save it as active.
+- Recommended first template rules are `price`, `size`, `order`, `delivery`, `cod`, and `support`.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.

@@ -352,3 +352,4 @@ Invoke-WebRequest -Uri "http://localhost:3000/api/health" -UseBasicParsing
 - AI Studio can use OpenAI when `OPENAI_API_KEY` is configured, otherwise it stays mock/local.
 - Full development status and next steps are in `DEVELOPMENT_STATUS.md`.
 - Mobile browser support is intended for daily operator pages such as `/inbox`, `/message-logs`, `/contacts`, and `/send-messages`. Desktop remains recommended for Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
+- Auto Reply includes a text-only Template Library for quick rule creation. Templates are reviewed and saved by the user; they do not auto-save or send media.

@@ -40,6 +40,22 @@ type AiGeneration = {
   output: string;
 };
 
+type AutoReplyTemplate = {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  suggestedKeyword: string;
+  suggestedMatchType: "CONTAINS" | "EXACT" | "STARTS_WITH";
+  channelSuggestion: "WHATSAPP" | "MESSENGER" | "BOTH";
+  replyText: string;
+};
+
+type AutoReplyTemplatesResponse = {
+  categories: string[];
+  templates: AutoReplyTemplate[];
+};
+
 const categories = ["Price", "Order", "Delivery", "Payment", "Support", "STOP/Unsubscribe"];
 const starterResponses: Record<string, string> = {
   Price: "Thanks for your interest. I can share the latest price list and current offers right away.",
@@ -60,8 +76,11 @@ const defaultForm: RuleForm = {
 
 export function AutoReplyModulePage() {
   const rules = useApiData<ListResponse<AutoReplyRule>>("/api/auto-reply/rules?pageSize=100");
+  const templates = useApiData<AutoReplyTemplatesResponse>("/api/auto-reply/templates");
   const { toast, showToast } = useToast();
   const [query, setQuery] = useState("");
+  const [templateCategory, setTemplateCategory] = useState("all");
+  const [templateSearch, setTemplateSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutoReplyRule | null>(null);
   const [form, setForm] = useState<RuleForm>(defaultForm);
@@ -75,6 +94,20 @@ export function AutoReplyModulePage() {
     if (!normalized) return items;
     return items.filter((rule) => `${rule.keyword} ${rule.response} ${rule.matchMode}`.toLowerCase().includes(normalized));
   }, [items, query]);
+
+  const filteredTemplates = useMemo(() => {
+    const normalized = templateSearch.trim().toLowerCase();
+    return (templates.data?.templates ?? []).filter((template) => {
+      const matchesCategory = templateCategory === "all" || template.category === templateCategory;
+      const matchesSearch =
+        !normalized ||
+        `${template.title} ${template.category} ${template.description} ${template.suggestedKeyword} ${template.replyText}`
+          .toLowerCase()
+          .includes(normalized);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [templateCategory, templateSearch, templates.data?.templates]);
 
   function openCreate(category?: string) {
     const response = category ? starterResponses[category] : defaultForm.response;
@@ -99,6 +132,19 @@ export function AutoReplyModulePage() {
       isActive: rule.isActive
     });
     setModalOpen(true);
+  }
+
+  function useTemplate(template: AutoReplyTemplate) {
+    setEditingRule(null);
+    setForm({
+      keyword: template.suggestedKeyword,
+      response: template.replyText,
+      priority: "10",
+      matchMode: template.suggestedMatchType,
+      isActive: true
+    });
+    setModalOpen(true);
+    showToast(`${template.title} loaded. Review before saving.`);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -209,6 +255,67 @@ export function AutoReplyModulePage() {
 
       <section className="grid gap-4 xl:grid-cols-[1fr_360px]">
         <div className="space-y-4">
+          <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase text-royal">Template Library</p>
+                <h2 className="mt-1 text-lg font-black text-ink">Ready-Made Auto Replies</h2>
+                <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                  Templates are starting points. Review before saving. Text templates only; media auto-replies are not included in Phase 1.
+                </p>
+              </div>
+              <button className={secondaryButtonClassName} onClick={templates.reload}>
+                <RefreshCw className="h-4 w-4" />
+                Refresh Templates
+              </button>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-[220px_1fr]">
+              <select className={inputClassName} value={templateCategory} onChange={(event) => setTemplateCategory(event.target.value)}>
+                <option value="all">All categories</option>
+                {(templates.data?.categories ?? []).map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <label className="relative">
+                <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+                <input
+                  className={`${inputClassName} w-full pl-9`}
+                  value={templateSearch}
+                  onChange={(event) => setTemplateSearch(event.target.value)}
+                  placeholder="Search templates by keyword, category, or reply text"
+                />
+              </label>
+            </div>
+            <DataState loading={templates.loading} error={templates.error} empty={!filteredTemplates.length} emptyText="No templates match this view.">
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                {filteredTemplates.map((template) => (
+                  <article key={template.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black uppercase text-royal ring-1 ring-blue-100">{template.category}</span>
+                          <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-black uppercase text-slate-600 ring-1 ring-slate-100">{template.channelSuggestion}</span>
+                        </div>
+                        <h3 className="mt-3 text-base font-black text-ink">{template.title}</h3>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">{template.description}</p>
+                      </div>
+                      <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => useTemplate(template)}>
+                        Use Template
+                      </button>
+                    </div>
+                    <div className="mt-4 grid gap-2 text-xs font-bold text-slate-500 sm:grid-cols-2">
+                      <p><span className="text-royal">Keyword:</span> {template.suggestedKeyword}</p>
+                      <p><span className="text-royal">Match:</span> {template.suggestedMatchType}</p>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap break-words rounded-[14px] bg-blue-50 p-3 text-sm font-semibold leading-6 text-slate-700">
+                      {template.replyText}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </DataState>
+          </section>
+
           <div className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
             <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
               <label className="relative">

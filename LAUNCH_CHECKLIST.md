@@ -400,6 +400,16 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Mobile daily pages `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` are recommended for operators.
 - [ ] Desktop is still recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
 
+## 9D. Auto Reply Template Library QA
+
+- [ ] `/auto-reply` loads and existing rules still display.
+- [ ] Template Library appears with category filter and search.
+- [ ] Use Template pre-fills keyword, match mode, reply message, priority, and active status.
+- [ ] Template is not saved until the user reviews and clicks Save.
+- [ ] Recommended first template rules are checked: `price`, `size`, `order`, `delivery`, `cod`, and `support`.
+- [ ] Template Library Phase 1 remains text-only; media auto-replies are not shown as supported.
+- [ ] Saving a template-based rule still triggers live WhatsApp/Messenger auto replies through existing webhook matching.
+
 ## 10. Known Limitations
 
 - Billing/license enforcement is not active in beta.

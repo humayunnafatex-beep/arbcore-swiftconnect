@@ -227,6 +227,13 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Ask users to report device, browser, page, and whether horizontal scrolling appears.
 - Desktop remains recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
 
+### Auto Reply Template Library
+
+- Auto Reply includes a text-only Template Library for common replies such as `price`, `size`, `order`, `delivery`, `cod`, and `support`.
+- Templates pre-fill the rule form but do not save automatically. Users must review and click Save.
+- Template rules use the same existing keyword, match mode, priority, and active/inactive behavior as manual rules.
+- Media auto-replies and AI-generated dynamic replies are not included in Template Library Phase 1.
+
 ## Safety Rules
 
 - Do not share access tokens.
