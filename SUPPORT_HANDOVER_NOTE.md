@@ -100,6 +100,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Verify webhook callback URL and verify token match Meta settings.
 - Confirm saved access tokens remain hidden after refresh.
 - Use Inbox assignment and follow-up reminders to confirm who owns a conversation.
+- Use Contacts or the Inbox contact card to update lead status and tags during customer follow-up.
+- Recommended tags: `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, `repeat-customer`.
 
 ## Common Issues And Fixes
 
@@ -257,6 +259,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not paste database URLs, cookies, raw sessions, authorization headers, or provider tokens into logs, screenshots, tickets, or chats.
 - Do not upload CSV exports to public links or share them with unapproved users.
 - Treat Auto Reply Analytics CSV as customer/business data because it can include customer keys and safe message previews.
+- Treat Contacts CSV as customer/business data because it includes lead status and tags.
 
 ## Escalation Checklist
 

@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ApiError, handleApiError, ok } from "@/lib/api";
 import { getCurrentAuthContext } from "@/lib/auth";
+import { normalizeContactStatus } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
 import { contactCreateSchema, normalizeTags } from "@/lib/validators";
 
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
               email: row.email ?? null,
               tags: normalizeTags(row.tags),
               segment: row.segment ?? null,
-              stage: row.stage ?? "NEW_LEAD",
+              stage: normalizeContactStatus(row.stage),
               optedIn: keepUnsubscribed ? false : row.optedIn ?? true,
               metadata: row.metadata as Prisma.InputJsonValue | undefined
             }
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
               email: row.email ?? undefined,
               tags: normalizeTags(row.tags),
               segment: row.segment ?? undefined,
-              stage: row.stage ?? "NEW_LEAD",
+              stage: normalizeContactStatus(row.stage),
               optedIn: row.optedIn ?? true,
               metadata: row.metadata as Prisma.InputJsonValue | undefined
             }

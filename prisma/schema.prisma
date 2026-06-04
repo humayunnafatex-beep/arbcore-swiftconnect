@@ -18,6 +18,8 @@ enum WhatsAppStatus {
 enum ContactStage {
   NEW_LEAD
   INTERESTED
+  ORDERED
+  DELIVERED
   FOLLOW_UP
   WON
   LOST

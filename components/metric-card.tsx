@@ -45,6 +45,10 @@ type DashboardStatistics = {
   totalContacts: number;
   hotLeads: number;
   activeContacts: number;
+  newLeads: number;
+  interestedLeads: number;
+  orderedContacts: number;
+  followUpContacts: number;
   activeAutoReplyRules: number;
   autoReplyAttempted30d: number;
   autoReplySent30d: number;
@@ -211,6 +215,10 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     campaignsWithAudienceCriteria: 0,
     readyCampaignsWithAudience: 0,
     totalCampaigns: 0,
+    newLeads: 0,
+    interestedLeads: 0,
+    orderedContacts: 0,
+    followUpContacts: 0,
     autoReplyAttempted30d: 0,
     autoReplySent30d: 0,
     autoReplyFailed30d: 0,
@@ -279,6 +287,17 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Inbound", value: data.inboundMessages, href: "/message-logs?direction=INBOUND", icon: Inbox, tone: "blue" },
           { label: "Outbound", value: data.outboundMessages, href: "/message-logs?direction=OUTBOUND", icon: Send, tone: "purple" },
           { label: "Channel Center", value: data.whatsappConfigured || data.messengerConfigured ? 1 : 0, href: "/channels", icon: LinkIcon, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Lead Status Snapshot"
+        helper={data.followUpContacts ? "Follow-up contacts need sales attention." : "No follow-up contacts waiting."}
+        items={[
+          { label: "New", value: data.newLeads, href: "/contacts?status=NEW_LEAD", icon: Users, tone: "blue" },
+          { label: "Interested", value: data.interestedLeads, href: "/contacts?status=INTERESTED", icon: TrendingUp, tone: "green" },
+          { label: "Ordered", value: data.orderedContacts, href: "/contacts?status=ORDERED", icon: CheckCircle2, tone: "purple" },
+          { label: "Follow-up", value: data.followUpContacts, href: "/contacts?status=FOLLOW_UP", icon: Clock, tone: "red" }
         ]}
         loading={loading}
       />

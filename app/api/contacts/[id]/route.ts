@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { normalizeContactStatus } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
 import { contactUpdateSchema, normalizeTags } from "@/lib/validators";
 
@@ -49,7 +50,7 @@ export async function PUT(request: Request, { params }: Context) {
         ...("email" in input ? { email: input.email?.trim() || null } : {}),
         ...("tags" in input ? { tags: normalizeTags(input.tags) ?? null } : {}),
         ...("segment" in input ? { segment: input.segment?.trim() || null } : {}),
-        ...("stage" in input ? { stage: input.stage } : {}),
+        ...("stage" in input ? { stage: normalizeContactStatus(input.stage) } : {}),
         ...("optedIn" in input ? { optedIn: input.optedIn } : {}),
         ...("metadata" in input ? { metadata: input.metadata as Prisma.InputJsonValue | undefined } : {})
       }

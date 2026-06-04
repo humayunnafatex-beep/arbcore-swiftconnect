@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { normalizeContactStatus } from "@/lib/contact-status";
+import { tagsMatchSearch } from "@/lib/contact-tags";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -23,6 +25,8 @@ export async function GET(request: Request) {
     const status = parseOption(searchParams.get("status"), statuses, "ALL");
     const followUp = parseOption(searchParams.get("followUp"), followUps, "ALL");
     const assignedTo = searchParams.get("assignedTo")?.trim() || "ALL";
+    const contactStatus = searchParams.get("contactStatus")?.trim();
+    const contactTag = searchParams.get("contactTag")?.trim();
     const search = searchParams.get("search")?.trim();
     const limit = parseLimit(searchParams.get("limit"));
     const where = buildMessageWhere({ companyId: company.id, channel, direction, search });
@@ -134,6 +138,14 @@ export async function GET(request: Request) {
         if (assignedTo === "ALL") return true;
         if (assignedTo === "UNASSIGNED") return !conversation.assignedTo;
         return conversation.assignedTo?.id === assignedTo;
+      })
+      .filter((conversation) => {
+        if (!contactStatus || contactStatus.toUpperCase() === "ALL") return true;
+        return normalizeContactStatus(conversation.contact?.status) === normalizeContactStatus(contactStatus);
+      })
+      .filter((conversation) => {
+        if (!contactTag || contactTag.toUpperCase() === "ALL") return true;
+        return tagsMatchSearch(conversation.contact?.tags, contactTag);
       });
 
     return NextResponse.json({

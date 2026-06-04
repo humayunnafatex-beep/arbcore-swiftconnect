@@ -155,6 +155,8 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Inbox-created contact appears in the Contacts module.
 - [ ] Duplicate WhatsApp contact phone from Inbox shows a friendly error.
 - [ ] Linked contact quick edit saves name, email, status, and tags.
+- [ ] Linked contact card shows lead status and tag badges.
+- [ ] Inbox contact status and tag filters work when linked WhatsApp contacts exist.
 - [ ] Messenger conversation explains PSID contact-linking limitation without pretending it is linked.
 - [ ] Inbox internal note saves and reloads.
 - [ ] Internal note does not create a customer MessageLog entry.
@@ -233,6 +235,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 - [ ] Contact create works.
 - [ ] Contact edit works.
+- [ ] Contact status dropdown includes New, Interested, Ordered, Delivered, Follow-up, and Lost.
+- [ ] Contact tags save as comma-separated normalized tags.
+- [ ] Contact filters work for status, tag, and search.
 - [ ] Contact delete asks for confirmation and works.
 - [ ] Duplicate phone returns a friendly error.
 - [ ] Search and filters still work.
@@ -287,6 +292,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Dashboard shows Message Health metrics.
 - [ ] Dashboard shows Channel Activity metrics.
 - [ ] Dashboard shows Auto Reply Performance metrics for the last 30 days.
+- [ ] Dashboard shows Lead Status Snapshot metrics.
 - [ ] Dashboard quick links open filtered Inbox and Message Logs views.
 - [ ] Due follow-up link opens `/inbox?followUp=DUE`.
 - [ ] Failed messages link opens `/message-logs?status=FAILED`.

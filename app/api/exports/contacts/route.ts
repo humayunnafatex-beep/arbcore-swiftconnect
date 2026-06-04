@@ -1,6 +1,7 @@
 import { createCsvResponse, datedExportFilename, rowsToCsv } from "@/lib/csv-export";
 import { handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { getContactStatusLabel } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -31,7 +32,7 @@ export async function GET() {
       name: contact.name,
       phone: contact.phone,
       email: contact.email ?? "",
-      status: contact.stage,
+      status: getContactStatusLabel(contact.stage),
       tags: contact.tags ?? "",
       createdAt: contact.createdAt,
       updatedAt: contact.updatedAt

@@ -1,9 +1,14 @@
 import { z } from "zod";
+import { normalizeContactStatus } from "@/lib/contact-status";
+import { stringifyTags } from "@/lib/contact-tags";
 
 const phone = z.string().trim().min(8).max(24);
 const optionalText = z.string().trim().optional().nullable();
 
-export const contactStageSchema = z.enum(["NEW_LEAD", "INTERESTED", "FOLLOW_UP", "WON", "LOST"]);
+export const contactStageSchema = z.preprocess(
+  (value) => typeof value === "string" ? normalizeContactStatus(value) : value,
+  z.enum(["NEW_LEAD", "INTERESTED", "ORDERED", "DELIVERED", "FOLLOW_UP", "WON", "LOST"])
+);
 export const userRoleSchema = z.enum(["OWNER", "ADMIN", "MANAGER", "AGENT"]);
 
 export const contactCreateSchema = z.object({
@@ -143,19 +148,7 @@ export const teamMemberUpdateSchema = z.object({
 });
 
 export function normalizeTags(tags: string | string[] | null | undefined) {
-  if (!tags) {
-    return undefined;
-  }
-
-  if (Array.isArray(tags)) {
-    return tags.map((tag) => tag.trim()).filter(Boolean).join(",");
-  }
-
-  return tags
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean)
-    .join(",");
+  return stringifyTags(tags);
 }
 
 export function normalizeVariables(variables: string | string[] | null | undefined) {

@@ -12,7 +12,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Messenger inbound webhook, provider-backed test send, and live auto-reply foundation.
 - Unified Inbox with conversation grouping, replies, status, assignment, contact linking, internal notes, and follow-up reminders.
 - Campaign draft planning and Contact-based audience preview for WhatsApp and Messenger, without bulk sending.
-- Contacts create, edit, delete, import, search, filters, and duplicate-phone handling.
+- Contacts create, edit, delete, import, search, status/tag filters, and duplicate-phone handling.
+- Customer lead statuses and tags for sales tracking from Contacts and the Inbox contact card.
 - Auto Reply rule create, edit, activate, deactivate, delete, and live matching.
 - Auto Reply Analytics for rule attempts, sent replies, failed replies, success rate, and safe recent event previews.
 - Message Logs for WhatsApp and Messenger filtering and provider status checks.
@@ -42,6 +43,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Open Inbox and verify conversation list, detail, reply composer, status, assignment, contact card, internal notes, and follow-up reminders.
 - Open Message Logs and test channel/status/direction/search filters.
 - Open Contacts and confirm duplicate phone messages remain friendly.
+- Create or edit a contact with status and tags, then filter by status/tag.
+- From Inbox, update a linked contact status/tags and confirm the contact card refreshes.
 - Open Auto Reply and confirm active rule workflow.
 - Open Auto Reply Analytics and confirm rule performance loads without exposing tokens or raw webhook payloads.
 - Open Data Exports and confirm CSV options are available without exposing tokens or raw webhook payloads.

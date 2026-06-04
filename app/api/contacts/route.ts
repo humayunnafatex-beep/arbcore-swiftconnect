@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { normalizeContactStatus } from "@/lib/contact-status";
+import { tagsMatchSearch } from "@/lib/contact-tags";
 import { prisma } from "@/lib/prisma";
 import { contactCreateSchema, normalizeTags } from "@/lib/validators";
 
@@ -11,33 +13,37 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const { page, pageSize, skip, take } = getPagination(searchParams);
-    const q = searchParams.get("q")?.trim();
+    const q = searchParams.get("search")?.trim() || searchParams.get("q")?.trim();
     const segment = searchParams.get("segment")?.trim();
-    const stage = searchParams.get("stage")?.trim();
+    const stage = searchParams.get("status")?.trim() || searchParams.get("stage")?.trim();
+    const tag = searchParams.get("tag")?.trim();
     const { context } = await requirePermission("contacts.view");
     const { company } = context;
 
-    const where = {
+    const where: Prisma.ContactWhereInput = {
       companyId: company.id,
       ...(segment ? { segment } : {}),
-      ...(stage ? { stage: stage as "NEW_LEAD" | "INTERESTED" | "FOLLOW_UP" | "WON" | "LOST" } : {}),
+      ...(stage && stage.toUpperCase() !== "ALL" ? { stage: normalizeContactStatus(stage) } : {}),
       ...(q
         ? {
             OR: [
-              { name: { contains: q } },
-              { phone: { contains: q } },
-              { email: { contains: q } }
+              { name: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { phone: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { email: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { tags: { contains: q, mode: Prisma.QueryMode.insensitive } }
             ]
           }
         : {})
     };
 
     const [items, total] = await Promise.all([
-      prisma.contact.findMany({ where, skip, take, orderBy: { createdAt: "desc" } }),
+      prisma.contact.findMany({ where, skip, take: tag ? Math.max(take, 500) : take, orderBy: { createdAt: "desc" } }),
       prisma.contact.count({ where })
     ]);
 
-    return ok({ items, pagination: { page, pageSize, total } });
+    const filteredItems = tag ? items.filter((contact) => tagsMatchSearch(contact.tags, tag)).slice(0, take) : items;
+
+    return ok({ items: filteredItems, pagination: { page, pageSize, total: tag ? filteredItems.length : total } });
   } catch (error) {
     return handleApiError(error);
   }
@@ -73,9 +79,9 @@ export async function POST(request: Request) {
         name: input.name.trim(),
         phone,
         email: input.email?.trim() || undefined,
-        tags: normalizeTags(input.tags),
+        tags: normalizeTags(input.tags) ?? null,
         segment: input.segment?.trim() || undefined,
-        stage: input.stage ?? "NEW_LEAD",
+        stage: normalizeContactStatus(input.stage),
         optedIn: input.optedIn ?? true,
         metadata: input.metadata as Prisma.InputJsonValue | undefined
       }

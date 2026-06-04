@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Cable, ClipboardList, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
+import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
+import { parseTags, stringifyTags } from "@/lib/contact-tags";
 import { cn } from "@/lib/utils";
 import { AppShell } from "./app-shell";
 import {
@@ -21,7 +23,7 @@ type StatusFilter = "ALL" | ConversationStatus;
 type FollowUpStatus = "NONE" | "DUE" | "UPCOMING" | "DONE";
 type FollowUpFilter = "ALL" | FollowUpStatus;
 type ReplyStatus = "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
-type ContactStage = "NEW_LEAD" | "INTERESTED" | "FOLLOW_UP" | "WON" | "LOST";
+type ContactStage = ContactStatusValue;
 
 type Assignee = {
   id: string;
@@ -154,15 +156,7 @@ const emptyContactForm: ContactForm = {
   tags: ""
 };
 
-const contactStages: ContactStage[] = ["NEW_LEAD", "INTERESTED", "FOLLOW_UP", "WON", "LOST"];
-
-const contactStageLabels: Record<ContactStage, string> = {
-  NEW_LEAD: "New Lead",
-  INTERESTED: "Interested",
-  FOLLOW_UP: "Follow-up",
-  WON: "Won",
-  LOST: "Lost"
-};
+const contactStages = getContactStatusOptions();
 
 const replyStatusText: Record<ReplyStatus, string> = {
   not_configured: "This channel is not configured for real replies.",
@@ -181,6 +175,8 @@ export function InboxModulePage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialFilters.status);
   const [followUpFilter, setFollowUpFilter] = useState<FollowUpFilter>(initialFilters.followUp);
   const [assignedToFilter, setAssignedToFilter] = useState(initialFilters.assignedTo);
+  const [contactStatusFilter, setContactStatusFilter] = useState(initialFilters.contactStatus);
+  const [contactTagFilter, setContactTagFilter] = useState(initialFilters.contactTag);
   const [search, setSearch] = useState("");
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
@@ -222,7 +218,15 @@ export function InboxModulePage() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({ channel, status: statusFilter, followUp: followUpFilter, assignedTo: assignedToFilter, limit: "50" });
+      const params = new URLSearchParams({
+        channel,
+        status: statusFilter,
+        followUp: followUpFilter,
+        assignedTo: assignedToFilter,
+        contactStatus: contactStatusFilter,
+        contactTag: contactTagFilter,
+        limit: "50"
+      });
       if (search.trim()) params.set("search", search.trim());
 
       const response = await fetch(`/api/inbox/conversations?${params.toString()}`);
@@ -247,7 +251,7 @@ export function InboxModulePage() {
     } finally {
       setLoading(false);
     }
-  }, [assignedToFilter, channel, followUpFilter, search, statusFilter]);
+  }, [assignedToFilter, channel, contactStatusFilter, contactTagFilter, followUpFilter, search, statusFilter]);
 
   useEffect(() => {
     void loadConversations();
@@ -328,7 +332,7 @@ export function InboxModulePage() {
       ? {
           name: contact.name,
           email: contact.email ?? "",
-          status: isContactStage(contact.status) ? contact.status : "NEW_LEAD",
+          status: normalizeContactStatus(contact.status),
           tags: contact.tags ?? ""
         }
       : emptyContactForm);
@@ -441,6 +445,8 @@ export function InboxModulePage() {
     setStatusFilter("ALL");
     setFollowUpFilter("ALL");
     setAssignedToFilter("ALL");
+    setContactStatusFilter("ALL");
+    setContactTagFilter("");
     setSearch("");
   }
 
@@ -506,9 +512,9 @@ export function InboxModulePage() {
       const payload = {
         name,
         email: email || null,
-        status: contactForm.status,
-        stage: contactForm.status,
-        tags: contactForm.tags.trim() || null
+        status: normalizeContactStatus(contactForm.status),
+        stage: normalizeContactStatus(contactForm.status),
+        tags: stringifyTags(contactForm.tags) ?? null
       };
       const response = await fetch(
         linkedContact ? `/api/contacts/${linkedContact.id}` : `/api/inbox/conversations/${encodeURIComponent(selectedId)}/contact`,
@@ -564,7 +570,7 @@ export function InboxModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[160px_160px_170px_200px_1fr_auto_auto]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[140px_140px_155px_180px_165px_minmax(220px,1fr)_150px_auto_auto]">
           <select className={`${inputClassName} w-full`} value={channel} onChange={(event) => setChannel(event.target.value as ChannelFilter)}>
             <option value="ALL">All channels</option>
             <option value="WHATSAPP">WhatsApp</option>
@@ -590,6 +596,12 @@ export function InboxModulePage() {
               <option key={user.id} value={user.id}>{user.name}</option>
             ))}
           </select>
+          <select className={`${inputClassName} w-full`} value={contactStatusFilter} onChange={(event) => setContactStatusFilter(event.target.value)}>
+            <option value="ALL">All lead statuses</option>
+            {contactStages.map((stage) => (
+              <option key={stage.value} value={stage.value}>{stage.label}</option>
+            ))}
+          </select>
           <label className="relative min-w-0">
             <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
             <input
@@ -599,6 +611,12 @@ export function InboxModulePage() {
               placeholder="Search phone, PSID, provider ID, or message preview"
             />
           </label>
+          <input
+            className={`${inputClassName} w-full`}
+            value={contactTagFilter}
+            onChange={(event) => setContactTagFilter(event.target.value)}
+            placeholder="Contact tag"
+          />
           <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => void loadConversations()}>
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -714,13 +732,23 @@ export function InboxModulePage() {
                       <ContactField label="Status" value={formatContactStage(detail.conversation.contact.status)} />
                     </div>
                   ) : null}
+                  {detail.conversation.contact ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <StatusPill label={formatContactStage(detail.conversation.contact.status)} tone="green" />
+                      {parseTags(detail.conversation.contact.tags).length ? (
+                        parseTags(detail.conversation.contact.tags).map((tag) => <StatusPill key={tag} label={tag} tone="blue" />)
+                      ) : (
+                        <span className="text-xs font-semibold text-slate-400">No contact tags yet.</span>
+                      )}
+                    </div>
+                  ) : null}
                   {detail.conversation.channel === "WHATSAPP" || detail.conversation.contact ? (
                     <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_180px_1fr_auto]">
                       <input className={`${inputClassName} w-full`} value={contactForm.name} onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder="Contact name" />
                       <input className={`${inputClassName} w-full`} value={contactForm.email} onChange={(event) => setContactForm((current) => ({ ...current, email: event.target.value }))} placeholder="Email optional" />
                       <select className={`${inputClassName} w-full`} value={contactForm.status} onChange={(event) => setContactForm((current) => ({ ...current, status: event.target.value as ContactStage }))}>
                         {contactStages.map((stage) => (
-                          <option key={stage} value={stage}>{contactStageLabels[stage]}</option>
+                          <option key={stage.value} value={stage.value}>{stage.label}</option>
                         ))}
                       </select>
                       <input className={`${inputClassName} w-full`} value={contactForm.tags} onChange={(event) => setContactForm((current) => ({ ...current, tags: event.target.value }))} placeholder="Tags, comma separated" />
@@ -737,6 +765,9 @@ export function InboxModulePage() {
                     <div className={cn("mt-3 rounded-[14px] border p-3 text-sm font-bold", contactMessage.tone === "success" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-rose-100 bg-rose-50 text-rose-700")}>
                       {contactMessage.text}
                     </div>
+                  ) : null}
+                  {(detail.conversation.channel === "WHATSAPP" || detail.conversation.contact) ? (
+                    <p className="mt-2 text-xs font-semibold text-slate-500">Tags example: size-42, solm8, facebook, priority</p>
                   ) : null}
                 </div>
 
@@ -961,12 +992,8 @@ function ContactField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function isContactStage(value: string | null | undefined): value is ContactStage {
-  return value === "NEW_LEAD" || value === "INTERESTED" || value === "FOLLOW_UP" || value === "WON" || value === "LOST";
-}
-
 function formatContactStage(value: string | null | undefined) {
-  return isContactStage(value) ? contactStageLabels[value] : value ?? "-";
+  return getContactStatusLabel(value);
 }
 
 function formatFollowUpStatus(value: FollowUpStatus) {
@@ -1015,7 +1042,9 @@ function getInitialFilters() {
       channel: "ALL" as ChannelFilter,
       status: "ALL" as StatusFilter,
       followUp: "ALL" as FollowUpFilter,
-      assignedTo: "ALL"
+      assignedTo: "ALL",
+      contactStatus: "ALL",
+      contactTag: ""
     };
   }
 
@@ -1025,7 +1054,9 @@ function getInitialFilters() {
     channel: parseChannelFilter(params.get("channel")),
     status: parseStatusFilter(params.get("status")),
     followUp: parseFollowUpFilter(params.get("followUp")),
-    assignedTo: params.get("assignedTo")?.trim() || "ALL"
+    assignedTo: params.get("assignedTo")?.trim() || "ALL",
+    contactStatus: params.get("contactStatus") ? normalizeContactStatus(params.get("contactStatus")) : "ALL",
+    contactTag: params.get("contactTag")?.trim() || ""
   };
 }
 

@@ -3,6 +3,8 @@
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { Download, Edit3, FileSpreadsheet, Plus, RefreshCw, Search, Trash2, Upload, Users } from "lucide-react";
 import { apiRequest, getApiErrorMessage, type ListResponse } from "@/lib/api-client";
+import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
+import { parseTags, stringifyTags, tagsMatchSearch } from "@/lib/contact-tags";
 import { AppShell } from "./app-shell";
 import {
   DataState,
@@ -22,13 +24,13 @@ type Contact = {
   email: string | null;
   tags: string | null;
   segment: string | null;
-  stage: ContactStage;
+  stage: ContactStage | string;
   optedIn: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
-type ContactStage = "NEW_LEAD" | "INTERESTED" | "FOLLOW_UP" | "WON" | "LOST";
+type ContactStage = ContactStatusValue;
 
 type ContactForm = {
   name: string;
@@ -50,23 +52,16 @@ const emptyForm: ContactForm = {
   optedIn: true
 };
 
-const stages: ContactStage[] = ["NEW_LEAD", "INTERESTED", "FOLLOW_UP", "WON", "LOST"];
-
-const stageLabels: Record<ContactStage, string> = {
-  NEW_LEAD: "New Lead",
-  INTERESTED: "Interested",
-  FOLLOW_UP: "Follow-up",
-  WON: "Won",
-  LOST: "Lost"
-};
+const stages = getContactStatusOptions();
 
 export function ContactsModulePage() {
   const contacts = useApiData<ListResponse<Contact>>("/api/contacts?pageSize=500");
   const { toast, showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [tagFilter, setTagFilter] = useState("all");
+  const initialFilters = getInitialContactFilters();
+  const [statusFilter, setStatusFilter] = useState(initialFilters.status);
+  const [tagFilter, setTagFilter] = useState(initialFilters.tag);
   const [sourceFilter, setSourceFilter] = useState("all");
   const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -82,7 +77,7 @@ export function ContactsModulePage() {
 
   const tagOptions = useMemo(() => {
     const tags = new Set<string>();
-    allContacts.forEach((contact) => splitTags(contact.tags).forEach((tag) => tags.add(tag)));
+    allContacts.forEach((contact) => parseTags(contact.tags).forEach((tag) => tags.add(tag)));
     return Array.from(tags).sort();
   }, [allContacts]);
 
@@ -98,9 +93,10 @@ export function ContactsModulePage() {
         !query ||
         contact.name.toLowerCase().includes(query) ||
         contact.phone.toLowerCase().includes(query) ||
-        (contact.email ?? "").toLowerCase().includes(query);
-      const matchesStatus = statusFilter === "all" || contact.stage === statusFilter;
-      const matchesTag = tagFilter === "all" || splitTags(contact.tags).includes(tagFilter);
+        (contact.email ?? "").toLowerCase().includes(query) ||
+        parseTags(contact.tags).some((tag) => tag.includes(query));
+      const matchesStatus = statusFilter === "all" || normalizeContactStatus(contact.stage) === statusFilter;
+      const matchesTag = tagFilter === "all" || tagsMatchSearch(contact.tags, tagFilter);
       const matchesSource = sourceFilter === "all" || contact.segment === sourceFilter;
 
       return matchesSearch && matchesStatus && matchesTag && matchesSource;
@@ -121,7 +117,7 @@ export function ContactsModulePage() {
       email: contact.email ?? "",
       tags: contact.tags ?? "",
       segment: contact.segment ?? "",
-      stage: contact.stage,
+      stage: normalizeContactStatus(contact.stage),
       optedIn: contact.optedIn
     });
     setModalMode("edit");
@@ -163,9 +159,9 @@ export function ContactsModulePage() {
         name,
         phone,
         email: email || null,
-        tags: form.tags.trim() || null,
+        tags: stringifyTags(form.tags) ?? null,
         segment: form.segment.trim() || null,
-        stage: form.stage,
+        stage: normalizeContactStatus(form.stage),
         optedIn: form.optedIn
       };
 
@@ -266,7 +262,7 @@ export function ContactsModulePage() {
         contact.email ?? "",
         contact.segment ?? "",
         contact.tags ?? "",
-        stageLabels[contact.stage],
+        getContactStatusLabel(contact.stage),
         contact.updatedAt,
         contact.createdAt
       ])
@@ -326,8 +322,8 @@ export function ContactsModulePage() {
           <select className={inputClassName} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
             <option value="all">All statuses</option>
             {stages.map((stage) => (
-              <option key={stage} value={stage}>
-                {stageLabels[stage]}
+              <option key={stage.value} value={stage.value}>
+                {stage.label}
               </option>
             ))}
           </select>
@@ -392,11 +388,11 @@ export function ContactsModulePage() {
                     <p className="mt-1 break-all text-sm font-semibold text-slate-600">{contact.phone}</p>
                     <p className="mt-1 break-all text-xs font-semibold text-slate-500">{contact.email ?? "No email"}</p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">{stageLabels[contact.stage]}</span>
+                  <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">{getContactStatusLabel(contact.stage)}</span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1">
-                  {splitTags(contact.tags).length ? (
-                    splitTags(contact.tags).map((tag) => <span key={tag} className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black text-royal">{tag}</span>)
+                  {parseTags(contact.tags).length ? (
+                    parseTags(contact.tags).map((tag) => <span key={tag} className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black text-royal">{tag}</span>)
                   ) : (
                     <span className="text-xs font-semibold text-slate-400">No tags</span>
                   )}
@@ -438,15 +434,15 @@ export function ContactsModulePage() {
                     <td className="px-4 py-4">{contact.segment ?? "Direct"}</td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {splitTags(contact.tags).length ? (
-                          splitTags(contact.tags).map((tag) => <span key={tag} className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black text-royal">{tag}</span>)
+                        {parseTags(contact.tags).length ? (
+                          parseTags(contact.tags).map((tag) => <span key={tag} className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black text-royal">{tag}</span>)
                         ) : (
                           <span>-</span>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{stageLabels[contact.stage]}</span>
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{getContactStatusLabel(contact.stage)}</span>
                     </td>
                     <td className="px-4 py-4">{formatDate(contact.updatedAt)}</td>
                     <td className="px-4 py-4">{formatDate(contact.createdAt)}</td>
@@ -475,11 +471,14 @@ export function ContactsModulePage() {
             <input className={inputClassName} required placeholder="Phone" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
             <input className={inputClassName} type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
             <input className={inputClassName} placeholder="Source or segment" value={form.segment} onChange={(event) => setForm({ ...form, segment: event.target.value })} />
-            <input className={inputClassName} placeholder="Tags, separated by commas" value={form.tags} onChange={(event) => setForm({ ...form, tags: event.target.value })} />
+            <label className="grid gap-1">
+              <input className={inputClassName} placeholder="Tags, separated by commas" value={form.tags} onChange={(event) => setForm({ ...form, tags: event.target.value })} />
+              <span className="text-xs font-semibold text-slate-500">Example: size-42, solm8, facebook, priority</span>
+            </label>
             <select className={inputClassName} value={form.stage} onChange={(event) => setForm({ ...form, stage: event.target.value as ContactStage })}>
               {stages.map((stage) => (
-                <option key={stage} value={stage}>
-                  {stageLabels[stage]}
+                <option key={stage.value} value={stage.value}>
+                  {stage.label}
                 </option>
               ))}
             </select>
@@ -541,15 +540,23 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
   );
 }
 
-function splitTags(tags: string | null) {
-  return (tags ?? "")
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-}
-
 function normalizePhone(phone: string) {
   return phone.replace(/[^\d+]/g, "");
+}
+
+function getInitialContactFilters() {
+  if (typeof window === "undefined") {
+    return { status: "all", tag: "all" };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("status");
+  const tag = params.get("tag");
+
+  return {
+    status: status ? normalizeContactStatus(status) : "all",
+    tag: tag?.trim() || "all"
+  };
 }
 
 function csvCell(value: string) {

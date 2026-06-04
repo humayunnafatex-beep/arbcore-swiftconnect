@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { normalizeContactStatus } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
 import { normalizeTags } from "@/lib/validators";
 
@@ -13,7 +14,7 @@ const validConversationChannels = ["WHATSAPP", "MESSENGER"] as const;
 const contactCreateSchema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().optional().nullable(),
-  status: z.enum(["NEW_LEAD", "INTERESTED", "FOLLOW_UP", "WON", "LOST"]).optional(),
+  status: z.string().trim().optional(),
   tags: z.union([z.string(), z.array(z.string())]).optional().nullable()
 });
 
@@ -66,8 +67,8 @@ export async function POST(
         name: input.name.trim(),
         phone,
         email: input.email?.trim() || undefined,
-        stage: input.status ?? "NEW_LEAD",
-        tags: normalizeTags(input.tags),
+        stage: normalizeContactStatus(input.status),
+        tags: normalizeTags(input.tags) ?? null,
         segment: "Inbox",
         optedIn: true
       },

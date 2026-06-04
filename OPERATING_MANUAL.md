@@ -52,6 +52,10 @@ Contacts is the customer list. Each contact can store a name, WhatsApp phone num
 
 Use Contacts to add new leads, update customer details, search by name or phone, filter by status or tags, import CSV or Excel files, and remove test or unwanted records.
 
+Lead statuses are standardized as New, Interested, Ordered, Delivered, Follow-up, and Lost. Older values are displayed safely when found, but new edits should use the standardized list.
+
+Recommended tags for Welzz Stride and beta operators include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`. Tags are comma-separated and normalized for easier filtering.
+
 Basic Contacts workflow:
 
 1. Open Contacts.
@@ -93,7 +97,7 @@ Use Channel Center to check whether WhatsApp and Messenger are configured before
 
 WhatsApp test sending stays in Send Messages. Messenger test sending is available in Channel Center and requires a Facebook Page PSID, not a phone number.
 
-After messages are received or sent, open Inbox at `/inbox` for a customer conversation view. Selected conversations include a contact card, reply composer, status dropdown, assignee dropdown, internal note, and follow-up reminder. WhatsApp conversations can create or link a contact from the customer phone number. Messenger conversations use PSID, so full Messenger identity linking may require a future Messenger PSID contact field. WhatsApp replies require WhatsApp Cloud API configuration, and Messenger replies require a Page Access Token plus a Facebook PSID conversation. Use Message Logs when you need technical provider IDs, webhook summaries, or debug filtering.
+After messages are received or sent, open Inbox at `/inbox` for a customer conversation view. Selected conversations include a contact card, reply composer, status dropdown, assignee dropdown, internal note, and follow-up reminder. WhatsApp conversations can create or link a contact from the customer phone number. The Inbox contact card can update customer name, email, lead status, and tags directly from the conversation. Messenger conversations use PSID, so full Messenger identity linking may require a future Messenger PSID contact field. WhatsApp replies require WhatsApp Cloud API configuration, and Messenger replies require a Page Access Token plus a Facebook PSID conversation. Use Message Logs when you need technical provider IDs, webhook summaries, or debug filtering.
 
 ## 5. Auto Reply
 
@@ -217,7 +221,7 @@ The logs page supports filters by channel, direction, status, result limit, and 
 
 Data Exports at `/exports` lets approved operators download workspace-scoped CSV files for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
 
-Use `DATA_EXPORT_READINESS_PLAN.md` before sharing export files. Exports may include customer names, phone numbers, emails, message previews, payment references, and internal notes. Share carefully and never upload export files to public links.
+Use `DATA_EXPORT_READINESS_PLAN.md` before sharing export files. Exports may include customer names, phone numbers, emails, lead statuses, tags, message previews, payment references, and internal notes. Share carefully and never upload export files to public links.
 
 Current export routes:
 
