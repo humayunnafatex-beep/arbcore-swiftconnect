@@ -275,6 +275,21 @@ Temporary Meta tokens expire. Use a fresh temporary token for testing or set up 
 
 Outside the 24-hour customer service window, WhatsApp may require an approved message template. Free-form text messages may be rejected until the customer has recently messaged the business.
 
+## 9A. Media Reply Test From Inbox
+
+WhatsApp Media Send Phase 1 supports media replies from the Inbox after the customer conversation exists.
+
+Test flow:
+
+1. Confirm text Inbox reply sends successfully first.
+2. Open `/inbox` and select a WhatsApp conversation.
+3. Attach a JPEG, PNG, or WebP image up to 5 MB, optionally add a caption, and send.
+4. Attach a PDF up to 10 MB, optionally add a caption, and send.
+5. Open `/message-logs` and confirm the media reply logs `WHATSAPP / OUTBOUND / SENT`.
+6. If Meta rejects upload or send, confirm the log shows `FAILED` with safe provider error details only.
+
+ARBCore uploads media to Meta first and then sends a WhatsApp message using the returned media ID. Video, audio, stickers, and campaign media sending are not part of Phase 1. Do not upload sensitive customer documents unless the business has approved that workflow.
+
 ## 10. Safety Notes
 
 1. Never share the WhatsApp access token.

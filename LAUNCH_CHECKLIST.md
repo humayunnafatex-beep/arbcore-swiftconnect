@@ -373,6 +373,17 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Confirm `/whatsapp-logs` shows `MESSENGER / OUTBOUND / SENT` or `FAILED`.
 - [ ] Replayed duplicate Messenger provider message ID does not send a second auto reply.
 
+## 9B. WhatsApp Media Reply QA
+
+- [ ] Text Inbox reply still sends and logs `WHATSAPP / OUTBOUND / SENT`.
+- [ ] Inbox image reply with JPEG, PNG, or WebP up to 5 MB sends and logs `SENT`.
+- [ ] Inbox PDF reply up to 10 MB sends and logs `SENT`.
+- [ ] Unsupported file types are rejected before any provider call.
+- [ ] Oversized images and PDFs are rejected before any provider call.
+- [ ] Failed media upload or send attempts log `FAILED` with safe provider error details only.
+- [ ] Message Logs show media summaries such as `[image]` or `[document]` and never show file binary or tokens.
+- [ ] Video, audio, sticker, and bulk campaign media sending remain out of scope for this phase.
+
 ## 10. Known Limitations
 
 - Billing/license enforcement is not active in beta.

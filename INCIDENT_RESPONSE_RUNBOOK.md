@@ -102,6 +102,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not mark payment `CONFIRMED` without admin approval. Do not store card data.
 - Escalation: Business/admin owner decides correction.
 
+## WhatsApp Media Reply Failure
+
+- Symptoms: Inbox text replies work, but image or PDF replies fail or log `WHATSAPP / OUTBOUND / FAILED`.
+- Where to check: `/inbox`, `/message-logs`, Channel Center diagnostics, Meta WhatsApp app status, and Vercel runtime logs.
+- Safe first action: Confirm the file is JPEG, PNG, WebP, or PDF and within the Phase 1 size limits. Then check the safe provider error in Message Logs.
+- What not to do: Do not collect or paste access tokens, Authorization headers, raw request payloads, or file binary into tickets. Do not claim success unless Message Logs show `SENT`.
+- Escalation: Technical owner checks whether the failure happened during Meta media upload or final media message send.
+
 ## Rollback Procedure
 
 - Revert Vercel to the previous Ready deployment if runtime behavior is broken.

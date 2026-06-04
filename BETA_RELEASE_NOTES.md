@@ -45,6 +45,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Preview Campaign audience and confirm the list is Contacts-only and sends nothing.
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
 - Open Settings and confirm saved access tokens remain hidden after refresh.
+- From Inbox, confirm WhatsApp text replies still send and that Phase 1 image/PDF replies upload to Meta first, then log `SENT` only after Meta accepts the final message.
+- Confirm unsupported media types and oversized files are rejected safely before provider calls.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.

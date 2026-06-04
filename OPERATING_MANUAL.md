@@ -322,6 +322,19 @@ Treat WhatsApp access tokens, Messenger Page Access Tokens, app secrets, databas
 
 The Settings page accepts WhatsApp and Messenger access tokens for launch setup, but tokens are not displayed after refresh. If a token is exposed, rotate it in Meta and update the production environment immediately.
 
+## 12A. WhatsApp Media Replies From Inbox
+
+WhatsApp Media Send Phase 1 supports image and PDF replies from the Inbox reply composer. Text replies continue to work as before.
+
+Supported attachments:
+
+1. Images: JPEG, PNG, and WebP up to 5 MB.
+2. Documents: PDF up to 10 MB.
+
+ARBCore uploads the media to Meta WhatsApp Cloud API first, then sends the customer a WhatsApp message using the returned Meta media ID. Success is logged only after Meta accepts the final message. Failed upload or send attempts are logged as `FAILED` with safe provider error details only.
+
+Video, audio, stickers, and bulk campaign media sending are not supported in this phase. Do not upload sensitive customer documents unless the business has approved that usage.
+
 ## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.

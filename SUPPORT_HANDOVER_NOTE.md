@@ -198,6 +198,17 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not store card data or payment credentials.
 - Gateway automation is not active yet.
 
+### WhatsApp Media Reply Issue
+
+- Inbox media replies support WhatsApp image and PDF only in Phase 1.
+- Supported image types are JPEG, PNG, and WebP up to 5 MB.
+- Supported document type is PDF up to 10 MB.
+- ARBCore uploads media to Meta first, then sends by Meta media ID.
+- If media fails, check `/message-logs` for `WHATSAPP / OUTBOUND / FAILED` and the safe provider error.
+- Do not ask users to share access tokens, Authorization headers, or raw provider payloads.
+- Do not upload sensitive customer documents unless the business has approved that workflow.
+- Video, audio, sticker, and campaign media sends are not supported yet.
+
 ## Safety Rules
 
 - Do not share access tokens.

@@ -46,6 +46,12 @@ export type WhatsAppSendResult =
   | { success: true; providerMessageId?: string }
   | { success: false; error: string; providerStatus?: number; providerError?: SafeWhatsAppProviderError };
 
+export type WhatsAppMediaType = "image" | "document";
+
+export type WhatsAppMediaUploadResult =
+  | { success: true; mediaId: string }
+  | { success: false; error: string; providerStatus?: number; providerError?: SafeWhatsAppProviderError };
+
 export function isWhatsAppConfigured() {
   return Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
 }
@@ -119,6 +125,144 @@ export async function sendWhatsAppTextMessage({
         error: "WhatsApp provider rejected the message.",
         providerStatus: response.status,
         providerError
+      };
+    }
+
+    return {
+      success: true,
+      providerMessageId: getProviderMessageId(responseBody)
+    };
+  } catch {
+    return { success: false, error: "WhatsApp provider rejected the message." };
+  }
+}
+
+export async function uploadWhatsAppMedia({
+  phoneNumberId,
+  accessToken,
+  file,
+  mimeType,
+  apiVersion = "v20.0"
+}: {
+  phoneNumberId: string;
+  accessToken: string;
+  file: Blob;
+  mimeType: string;
+  apiVersion?: string;
+}): Promise<WhatsAppMediaUploadResult> {
+  if (!phoneNumberId || !accessToken) {
+    return { success: false, error: "WhatsApp Cloud API is not configured." };
+  }
+
+  const formData = new FormData();
+  formData.append("messaging_product", "whatsapp");
+  formData.append("type", mimeType);
+  formData.append("file", file);
+
+  try {
+    const response = await fetch(`https://graph.facebook.com/${apiVersion}/${phoneNumberId}/media`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: formData
+    });
+
+    const responseBody = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: "WhatsApp provider rejected the media upload.",
+        providerStatus: response.status,
+        providerError: getSafeMetaError(responseBody)
+      };
+    }
+
+    const mediaId = getMediaId(responseBody);
+    if (!mediaId) {
+      return { success: false, error: "WhatsApp provider did not return a media ID." };
+    }
+
+    return { success: true, mediaId };
+  } catch {
+    return { success: false, error: "WhatsApp provider rejected the media upload." };
+  }
+}
+
+export async function sendWhatsAppMediaMessage({
+  phoneNumberId,
+  accessToken,
+  to,
+  mediaId,
+  mediaType,
+  caption,
+  filename,
+  apiVersion = "v20.0"
+}: {
+  phoneNumberId: string;
+  accessToken: string;
+  to: string;
+  mediaId: string;
+  mediaType: WhatsAppMediaType;
+  caption?: string;
+  filename?: string;
+  apiVersion?: string;
+}): Promise<WhatsAppSendResult> {
+  const normalizedPhone = normalizePhone(to);
+  const trimmedCaption = caption?.trim();
+
+  if (!phoneNumberId || !accessToken) {
+    return { success: false, error: "WhatsApp Cloud API is not configured." };
+  }
+
+  if (!/^\d{8,16}$/.test(normalizedPhone) || !mediaId) {
+    return { success: false, error: "Please check phone number and attachment." };
+  }
+
+  if (mediaType !== "image" && mediaType !== "document") {
+    return { success: false, error: "Phase 1 supports image and PDF attachments only." };
+  }
+
+  const mediaPayload = mediaType === "image"
+    ? {
+        image: {
+          id: mediaId,
+          ...(trimmedCaption ? { caption: trimmedCaption } : {})
+        }
+      }
+    : {
+        document: {
+          id: mediaId,
+          ...(trimmedCaption ? { caption: trimmedCaption } : {}),
+          ...(filename ? { filename } : {})
+        }
+      };
+
+  try {
+    const response = await fetch(`https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: normalizedPhone,
+        type: mediaType,
+        ...mediaPayload
+      })
+    });
+
+    const responseBody = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: "WhatsApp provider rejected the message.",
+        providerStatus: response.status,
+        providerError: getSafeMetaError(responseBody)
       };
     }
 
@@ -266,6 +410,10 @@ function getProviderMessageId(payload: unknown) {
 
   const first = payload.messages[0];
   return isRecord(first) && typeof first.id === "string" ? first.id : undefined;
+}
+
+function getMediaId(payload: unknown) {
+  return isRecord(payload) && typeof payload.id === "string" ? payload.id : undefined;
 }
 
 export function getSafeWhatsAppProviderErrorSummary(providerError?: SafeWhatsAppProviderError) {

@@ -5,7 +5,14 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
-import { getSafeWhatsAppProviderErrorSummary, sendWhatsAppTextMessage, type SafeWhatsAppProviderError } from "@/lib/whatsapp-service";
+import {
+  getSafeWhatsAppProviderErrorSummary,
+  sendWhatsAppMediaMessage,
+  sendWhatsAppTextMessage,
+  uploadWhatsAppMedia,
+  type SafeWhatsAppProviderError,
+  type WhatsAppMediaType
+} from "@/lib/whatsapp-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,11 +20,15 @@ export const dynamic = "force-dynamic";
 const replySchema = z.object({
   channel: z.enum(["WHATSAPP", "MESSENGER"]),
   contactKey: z.string().trim().min(3).max(128),
-  body: z.string().trim().min(1).max(4000)
+  body: z.string().trim().max(4000).default("")
 });
 
 const WHATSAPP_REQUIRED_MESSAGE = "WhatsApp Cloud API is required to send real messages.";
 const MESSENGER_REQUIRED_MESSAGE = "Messenger Page API is required to send real messages.";
+const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const DOCUMENT_MIME_TYPES = new Set(["application/pdf"]);
+const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const PDF_MAX_BYTES = 10 * 1024 * 1024;
 
 export async function POST(request: Request) {
   let companyId: string | undefined;
@@ -25,10 +36,13 @@ export async function POST(request: Request) {
   let channel: "WHATSAPP" | "MESSENGER" | undefined;
   let contactKey = "";
   let messageBody = "";
+  let attachment: File | null = null;
+  let mediaType: WhatsAppMediaType | null = null;
+  let logBody = "";
 
   try {
-    const payload = await request.json().catch(() => null);
-    const parsed = replySchema.safeParse(payload);
+    const parsedPayload = await parseReplyRequest(request);
+    const parsed = replySchema.safeParse(parsedPayload);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -43,10 +57,27 @@ export async function POST(request: Request) {
     channel = parsed.data.channel;
     contactKey = normalizeContactKey(channel, parsed.data.contactKey);
     messageBody = parsed.data.body.trim();
-
-    if (!contactKey || !messageBody) {
+    attachment = parsedPayload.attachment;
+    const attachmentValidation = validateAttachment(attachment);
+    if (!attachmentValidation.success) {
       return NextResponse.json(
-        { success: false, status: "validation_failed", error: "Recipient and message body are required." },
+        { success: false, status: "validation_failed", error: attachmentValidation.error },
+        { status: 400 }
+      );
+    }
+    mediaType = attachmentValidation.mediaType;
+    logBody = buildLogBody(messageBody, attachment, mediaType);
+
+    if (!contactKey || (!messageBody && !attachment)) {
+      return NextResponse.json(
+        { success: false, status: "validation_failed", error: "Recipient and message body or attachment are required." },
+        { status: 400 }
+      );
+    }
+
+    if (attachment && channel !== "WHATSAPP") {
+      return NextResponse.json(
+        { success: false, status: "validation_failed", error: "Phase 1 media replies support WhatsApp only." },
         { status: 400 }
       );
     }
@@ -71,7 +102,7 @@ export async function POST(request: Request) {
           companyId: company.id,
           contactId: contact?.id,
           channel,
-          body: messageBody,
+          body: logBody,
           status: "FAILED",
           errorMessage: WHATSAPP_REQUIRED_MESSAGE
         });
@@ -80,6 +111,43 @@ export async function POST(request: Request) {
           { success: false, status: "not_configured", error: WHATSAPP_REQUIRED_MESSAGE },
           { status: 400 }
         );
+      }
+
+      if (attachment && mediaType) {
+        const uploadResult = await uploadWhatsAppMedia({
+          phoneNumberId: company.whatsappPhoneNumberId,
+          accessToken: company.whatsappAccessToken,
+          file: attachment,
+          mimeType: attachment.type
+        });
+
+        if (!uploadResult.success) {
+          return handleProviderResult({
+            companyId: company.id,
+            contactId: contact?.id,
+            channel,
+            body: logBody,
+            providerResult: uploadResult
+          });
+        }
+
+        const providerResult = await sendWhatsAppMediaMessage({
+          phoneNumberId: company.whatsappPhoneNumberId,
+          accessToken: company.whatsappAccessToken,
+          to: contactKey,
+          mediaId: uploadResult.mediaId,
+          mediaType,
+          caption: messageBody,
+          filename: attachment.name
+        });
+
+        return handleProviderResult({
+          companyId: company.id,
+          contactId: contact?.id,
+          channel,
+          body: logBody,
+          providerResult
+        });
       }
 
       const providerResult = await sendWhatsAppTextMessage({
@@ -93,7 +161,7 @@ export async function POST(request: Request) {
         companyId: company.id,
         contactId: contact?.id,
         channel,
-        body: messageBody,
+        body: logBody,
         providerResult
       });
     }
@@ -103,7 +171,7 @@ export async function POST(request: Request) {
         companyId: company.id,
         contactId: contact?.id,
         channel,
-        body: messageBody,
+        body: logBody,
         status: "FAILED",
         errorMessage: MESSENGER_REQUIRED_MESSAGE
       });
@@ -124,7 +192,7 @@ export async function POST(request: Request) {
       companyId: company.id,
       contactId: contact?.id,
       channel,
-      body: messageBody,
+      body: logBody,
       providerResult
     });
   } catch (error) {
@@ -132,12 +200,12 @@ export async function POST(request: Request) {
       return handleApiError(error);
     }
 
-    if (companyId && channel && contactId && messageBody) {
+    if (companyId && channel && contactId && (messageBody || logBody)) {
       await createSafeMessageLog({
         companyId,
         contactId,
         channel,
-        body: messageBody,
+        body: logBody || messageBody,
         status: "FAILED",
         errorMessage: "Inbox reply failed unexpectedly."
       }).catch(() => undefined);
@@ -150,6 +218,69 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function parseReplyRequest(request: Request): Promise<{
+  channel?: unknown;
+  contactKey?: unknown;
+  body?: unknown;
+  attachment: File | null;
+}> {
+  const contentType = request.headers.get("content-type") ?? "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData();
+    const attachmentValue = formData.get("attachment");
+    return {
+      channel: formData.get("channel"),
+      contactKey: formData.get("contactKey"),
+      body: formData.get("body") ?? "",
+      attachment: attachmentValue instanceof File && attachmentValue.size > 0 ? attachmentValue : null
+    };
+  }
+
+  const payload = await request.json().catch(() => null);
+  return {
+    ...(payload && typeof payload === "object" ? payload : {}),
+    attachment: null
+  };
+}
+
+function validateAttachment(file: File | null):
+  | { success: true; mediaType: WhatsAppMediaType | null }
+  | { success: false; error: string } {
+  if (!file) {
+    return { success: true, mediaType: null };
+  }
+
+  if (IMAGE_MIME_TYPES.has(file.type)) {
+    if (file.size > IMAGE_MAX_BYTES) {
+      return { success: false, error: "Image attachments must be 5 MB or smaller." };
+    }
+
+    return { success: true, mediaType: "image" };
+  }
+
+  if (DOCUMENT_MIME_TYPES.has(file.type)) {
+    if (file.size > PDF_MAX_BYTES) {
+      return { success: false, error: "PDF attachments must be 10 MB or smaller." };
+    }
+
+    return { success: true, mediaType: "document" };
+  }
+
+  return { success: false, error: "Phase 1 supports image and PDF attachments only." };
+}
+
+function buildLogBody(body: string, attachment: File | null, mediaType: WhatsAppMediaType | null) {
+  const caption = body.trim();
+  if (!attachment || !mediaType) return caption;
+
+  if (mediaType === "image") {
+    return `[image]${caption ? ` ${caption}` : ""}`;
+  }
+
+  return `[document] ${attachment.name}${caption ? ` - ${caption}` : ""}`;
 }
 
 async function handleProviderResult({
@@ -167,7 +298,9 @@ async function handleProviderResult({
 }) {
   if (!providerResult.success) {
     const safeErrorMessage = channel === "WHATSAPP"
-      ? getSafeWhatsAppProviderErrorSummary(providerResult.providerError)
+      ? providerResult.providerError
+        ? getSafeWhatsAppProviderErrorSummary(providerResult.providerError)
+        : providerResult.error
       : providerResult.error;
 
     await createSafeMessageLog({

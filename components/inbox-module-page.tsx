@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Cable, ClipboardList, Inbox, MessageCircle, RefreshCw, Search, Send } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Cable, ClipboardList, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { AppShell } from "./app-shell";
@@ -171,6 +171,10 @@ const replyStatusText: Record<ReplyStatus, string> = {
   sent_successfully: "Reply sent successfully through the provider."
 };
 
+const allowedReplyAttachmentTypes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+const imageReplyMaxBytes = 5 * 1024 * 1024;
+const pdfReplyMaxBytes = 10 * 1024 * 1024;
+
 export function InboxModulePage() {
   const initialFilters = getInitialFilters();
   const [channel, setChannel] = useState<ChannelFilter>(initialFilters.channel);
@@ -187,6 +191,7 @@ export function InboxModulePage() {
   const [error, setError] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
+  const [replyAttachment, setReplyAttachment] = useState<File | null>(null);
   const [replyStatus, setReplyStatus] = useState<ReplyStatus | null>(null);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
@@ -205,6 +210,7 @@ export function InboxModulePage() {
   const [contactForm, setContactForm] = useState<ContactForm>(emptyContactForm);
   const [contactSaving, setContactSaving] = useState(false);
   const [contactMessage, setContactMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const replyFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
@@ -346,23 +352,34 @@ export function InboxModulePage() {
     setReplyError(null);
     setReplyProviderError(null);
 
-    if (!body) {
+    if (!body && !replyAttachment) {
       setReplyStatus("validation_failed");
-      setReplyError("Reply message is required.");
+      setReplyError("Reply message or image/PDF attachment is required.");
       return;
     }
 
     setReplySending(true);
 
     try {
+      const requestInit = replyAttachment
+        ? buildAttachmentReplyRequest({
+            channel: detail.conversation.channel,
+            contactKey: detail.conversation.contactKey,
+            body,
+            attachment: replyAttachment
+          })
+        : {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              channel: detail.conversation.channel,
+              contactKey: detail.conversation.contactKey,
+              body
+            })
+          };
+
       const response = await fetch("/api/inbox/reply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channel: detail.conversation.channel,
-          contactKey: detail.conversation.contactKey,
-          body
-        })
+        ...requestInit
       });
       const result = (await response.json()) as ReplyResponse;
       setReplyStatus(result.status);
@@ -378,6 +395,7 @@ export function InboxModulePage() {
       }
 
       setReplyBody("");
+      clearReplyAttachment();
       if (selectedId) {
         await loadConversationDetail(selectedId);
         await loadConversations();
@@ -389,6 +407,33 @@ export function InboxModulePage() {
     } finally {
       setReplySending(false);
     }
+  }
+
+  function selectReplyAttachment(file: File | null) {
+    setReplyStatus(null);
+    setReplyError(null);
+    setReplyProviderError(null);
+
+    if (!file) {
+      setReplyAttachment(null);
+      return;
+    }
+
+    const validation = validateReplyAttachment(file);
+    if (validation) {
+      setReplyAttachment(null);
+      setReplyStatus("validation_failed");
+      setReplyError(validation);
+      if (replyFileInputRef.current) replyFileInputRef.current.value = "";
+      return;
+    }
+
+    setReplyAttachment(file);
+  }
+
+  function clearReplyAttachment() {
+    setReplyAttachment(null);
+    if (replyFileInputRef.current) replyFileInputRef.current.value = "";
   }
 
   function clearFilters() {
@@ -831,6 +876,31 @@ export function InboxModulePage() {
                     onChange={(event) => setReplyBody(event.target.value)}
                     placeholder="Write a reply"
                   />
+                  <div className="mt-3 rounded-[14px] border border-blue-100 bg-blue-50 p-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-black text-royal">
+                        <Paperclip className="h-4 w-4" />
+                        Attach image or PDF
+                        <input
+                          ref={replyFileInputRef}
+                          className="sr-only"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          onChange={(event) => selectReplyAttachment(event.target.files?.[0] ?? null)}
+                        />
+                      </label>
+                      <span className="text-xs font-semibold text-slate-500">Phase 1 supports image and PDF only.</span>
+                    </div>
+                    {replyAttachment ? (
+                      <div className="mt-3 flex flex-col gap-2 rounded-[12px] bg-white px-3 py-2 text-sm font-semibold text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="min-w-0 truncate">{replyAttachment.name} ({formatBytes(replyAttachment.size)})</span>
+                        <button className="inline-flex items-center gap-1 text-xs font-black text-rose-600" type="button" onClick={clearReplyAttachment} disabled={replySending}>
+                          <XCircle className="h-4 w-4" />
+                          Remove
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                   {replyStatus ? (
                     <div
                       className={cn(
@@ -850,7 +920,7 @@ export function InboxModulePage() {
                     <p className="text-xs font-semibold text-slate-500">
                       Success is logged only after Meta accepts the message. Failed provider attempts are logged as FAILED.
                     </p>
-                    <button className={primaryButtonClassName} onClick={() => void sendReply()} disabled={replySending || !replyBody.trim()}>
+                    <button className={primaryButtonClassName} onClick={() => void sendReply()} disabled={replySending || (!replyBody.trim() && !replyAttachment)}>
                       <Send className="h-4 w-4" />
                       {replySending ? "Sending..." : "Send Reply"}
                     </button>
@@ -971,4 +1041,50 @@ function formatProviderError(providerError: ReplyResponse["providerError"]) {
   ].filter(Boolean);
 
   return parts.length ? parts.join("; ") : null;
+}
+
+function buildAttachmentReplyRequest({
+  channel,
+  contactKey,
+  body,
+  attachment
+}: {
+  channel: "WHATSAPP" | "MESSENGER";
+  contactKey: string;
+  body: string;
+  attachment: File;
+}): RequestInit {
+  const formData = new FormData();
+  formData.append("channel", channel);
+  formData.append("contactKey", contactKey);
+  formData.append("body", body);
+  formData.append("attachment", attachment);
+
+  return {
+    method: "POST",
+    body: formData
+  };
+}
+
+function validateReplyAttachment(file: File) {
+  if (!allowedReplyAttachmentTypes.includes(file.type)) {
+    return "Phase 1 supports image and PDF attachments only.";
+  }
+
+  if (file.type === "application/pdf" && file.size > pdfReplyMaxBytes) {
+    return "PDF attachments must be 10 MB or smaller.";
+  }
+
+  if (file.type !== "application/pdf" && file.size > imageReplyMaxBytes) {
+    return "Image attachments must be 5 MB or smaller.";
+  }
+
+  return null;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
 }
