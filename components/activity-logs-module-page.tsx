@@ -24,7 +24,7 @@ type ActivityLogsResponse =
   | { success: true; data: { logs: ActivityLog[] } }
   | { success: false; error: string };
 
-const entityTypes = ["ALL", "CONTACT", "CONVERSATION", "ORDER", "PRODUCT", "SAVED_REPLY", "AUTO_REPLY_RULE"];
+const entityTypes = ["ALL", "TEAM_MEMBER", "CONTACT", "CONVERSATION", "ORDER", "PRODUCT", "SAVED_REPLY", "AUTO_REPLY_RULE"];
 const limits = ["50", "100", "250", "500"];
 
 export function ActivityLogsModulePage() {

@@ -1,6 +1,8 @@
 import { getCurrentAuthContext, assertRole } from "@/lib/auth";
 import { ApiError, handleApiError, ok } from "@/lib/api";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
+import { canChangeOwnerSafely, getTeamRoleLabel } from "@/lib/team-member-input";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +24,20 @@ export async function PATCH(_request: Request, { params }: { params: { id: strin
       throw new ApiError(422, "CANNOT_DEACTIVATE_SELF", "You cannot deactivate your own active session user.");
     }
 
+    const currentOwnersCount = await prisma.user.count({
+      where: { companyId: context.company.id, role: "OWNER", isActive: true }
+    });
+    const ownerCheck = canChangeOwnerSafely({
+      currentOwnersCount,
+      currentRole: existing.role,
+      nextRole: existing.role,
+      nextStatus: "INACTIVE"
+    });
+
+    if (!ownerCheck.safe) {
+      throw new ApiError(422, "LAST_OWNER_PROTECTED", ownerCheck.message);
+    }
+
     const user = await prisma.user.update({
       where: { id: existing.id },
       data: { isActive: false },
@@ -34,6 +50,16 @@ export async function PATCH(_request: Request, { params }: { params: { id: strin
         createdAt: true,
         updatedAt: true
       }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "TEAM_MEMBER_DEACTIVATED",
+      entityType: "TEAM_MEMBER",
+      entityId: user.id,
+      entityLabel: safeActivityLabel(user.name, user.email),
+      summary: "Deactivated team member workspace record.",
+      metadataSummary: `Role: ${getTeamRoleLabel(user.role)}; Status: INACTIVE`
     });
 
     return ok(user);

@@ -130,3 +130,9 @@ Stabilize beta testing with 2-5 controlled users, then proceed to campaign/templ
 - Added internal-only Activity Logs for manual staff actions across contacts, inbox state, orders, products, saved replies, and auto-reply rules.
 - Activity Logs store safe summaries only and do not expose tokens, raw webhook payloads, cookies, sessions, Authorization headers, or provider secrets.
 - Activity Logs CSV export is available from Data Exports for approved internal review.
+
+## Team Member Management
+
+- Improved Settings Team Members management with clear create, Save Role, Deactivate, and Reactivate actions.
+- Added last active owner protection to prevent accidental owner lockout.
+- Team member create, role update, deactivate, and reactivate actions are recorded in Activity Logs.

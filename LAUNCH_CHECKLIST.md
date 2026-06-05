@@ -488,6 +488,14 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Activity Logs CSV export is available from `/exports`.
 - [ ] Logging failure does not block the original business action.
 
+## 9C-6. Team Member Management QA
+
+- [ ] Settings Team Members create form clearly shows name, email, role, and create action.
+- [ ] Role dropdown requires Save Role before changes apply.
+- [ ] Deactivate and Reactivate buttons are labeled and work without hard deleting users.
+- [ ] Last active owner cannot be deactivated or demoted.
+- [ ] Team member create, role update, deactivate, and reactivate actions appear in Activity Logs.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

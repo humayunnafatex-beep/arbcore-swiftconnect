@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserMinus, Users } from "lucide-react";
+import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserCheck, UserMinus, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
 import { ApiClientError, apiRequest, getApiErrorMessage } from "@/lib/api-client";
@@ -83,6 +83,8 @@ export function SettingsModulePage() {
   const [teamLoading, setTeamLoading] = useState(true);
   const [teamError, setTeamError] = useState("");
   const [newMember, setNewMember] = useState({ name: "", email: "", role: "AGENT" as UserRole });
+  const [roleDrafts, setRoleDrafts] = useState<Record<string, UserRole>>({});
+  const [teamActionLoading, setTeamActionLoading] = useState<string | null>(null);
   const [savingSection, setSavingSection] = useState<string | null>(null);
   const [creatingMember, setCreatingMember] = useState(false);
 
@@ -92,7 +94,9 @@ export function SettingsModulePage() {
 
     try {
       const response = await apiRequest<{ items?: Partial<TeamMember>[] }>("/api/team");
-      setTeam((response.items ?? []).map(normalizeTeamMember));
+      const members = (response.items ?? []).map(normalizeTeamMember);
+      setTeam(members);
+      setRoleDrafts(Object.fromEntries(members.map((member) => [member.id, member.role])));
     } catch (error) {
       setTeamError(getApiErrorMessage(error));
     } finally {
@@ -262,28 +266,42 @@ async function createTeamMember() {
   }
 }                         
 
-  async function changeRole(member: TeamMember, role: UserRole) {
+  async function saveTeamMemberRole(member: TeamMember) {
+    const role = roleDrafts[member.id] ?? member.role;
+
+    if (role === member.role) {
+      showToast("No role change to save.");
+      return;
+    }
+
     try {
+      setTeamActionLoading(`role:${member.id}`);
       await apiRequest<TeamMember>(`/api/team/${member.id}`, {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify({ role })
       });
       showToast(`${member.name || "Unnamed user"}'s role updated.`);
       await loadTeam();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setTeamActionLoading(null);
     }
   }
 
-  async function deactivateMember(member: TeamMember) {
+  async function setMemberActive(member: TeamMember, isActive: boolean) {
     try {
-      await apiRequest<TeamMember>(`/api/team/${member.id}/deactivate`, {
-        method: "PATCH"
+      setTeamActionLoading(`status:${member.id}`);
+      await apiRequest<TeamMember>(`/api/team/${member.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isActive })
       });
-      showToast(`${member.name || "Unnamed user"} deactivated.`);
+      showToast(`${member.name || "Unnamed user"} ${isActive ? "reactivated" : "deactivated"}.`);
       await loadTeam();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setTeamActionLoading(null);
     }
   }
 
@@ -393,6 +411,9 @@ async function createTeamMember() {
         </Panel>
 
         <Panel icon={<Users className="h-5 w-5" />} title="Team Members" action={<button className={secondaryButtonClassName} onClick={loadTeam}><RefreshCw className="h-4 w-4" />Refresh</button>}>
+          <p className="mb-3 rounded-[16px] bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
+            Creating a team member creates a workspace record. Auth invite/login setup may require admin follow-up. At least one active owner must remain in the workspace.
+          </p>
           <div className="grid gap-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4 lg:grid-cols-[1fr_1fr_160px_auto]">
             <Field label="Name" value={newMember.name} onChange={(value) => setNewMember({ ...newMember, name: value })} />
             <Field label="Email" value={newMember.email} onChange={(value) => setNewMember({ ...newMember, email: value })} />
@@ -412,12 +433,12 @@ async function createTeamMember() {
 
           <div className="mt-4 overflow-x-auto rounded-[18px] border border-blue-100">
             <div className="min-w-[720px]">
-              <div className="grid grid-cols-[1.3fr_1.4fr_150px_110px_120px] bg-slate-50 px-4 py-3 text-xs font-black uppercase text-slate-500">
+              <div className="grid grid-cols-[1.2fr_1.4fr_150px_110px_240px] bg-slate-50 px-4 py-3 text-xs font-black uppercase text-slate-500">
                 <span>Name</span>
                 <span>Email</span>
                 <span>Role</span>
                 <span>Status</span>
-                <span className="text-right">Actions</span>
+                <span>Actions</span>
               </div>
             {teamLoading ? (
               <div className="px-4 py-8 text-center text-sm font-bold text-slate-500">Loading team members...</div>
@@ -426,23 +447,66 @@ async function createTeamMember() {
             ) : team.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm font-bold text-slate-500">No team members yet.</div>
             ) : (
-              team.map((member) => (
-                <div key={member.id} className="grid grid-cols-[1.3fr_1.4fr_150px_110px_120px] items-center gap-3 border-t border-blue-100 px-4 py-3 text-sm">
-                  <span className="font-black text-ink">{member.name || "Unnamed user"}</span>
-                  <span className="truncate font-semibold text-slate-500">{member.email}</span>
-                  <select className={`${inputClassName} h-10`} value={member.role} onChange={(event) => changeRole(member, event.target.value as UserRole)} disabled={!member.isActive}>
-                    {["OWNER", "ADMIN", "MANAGER", "AGENT"].map((role) => (
-                      <option key={role}>{role}</option>
-                    ))}
-                  </select>
-                  <span className={`w-fit rounded-full px-3 py-1 text-xs font-black ${member.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                    {member.isActive ? "Active" : "Inactive"}
-                  </span>
-                  <button className={`${secondaryButtonClassName} justify-center`} onClick={() => deactivateMember(member)} disabled={!member.isActive}>
-                    <UserMinus className="h-4 w-4" />
-                  </button>
-                </div>
-              ))
+              team.map((member) => {
+                const activeOwners = team.filter((item) => item.role === "OWNER" && item.isActive).length;
+                const isLastActiveOwner = member.role === "OWNER" && member.isActive && activeOwners <= 1;
+                const draftRole = roleDrafts[member.id] ?? member.role;
+                const roleChanged = draftRole !== member.role;
+                const roleActionLoading = teamActionLoading === `role:${member.id}`;
+                const statusActionLoading = teamActionLoading === `status:${member.id}`;
+
+                return (
+                  <div key={member.id} className="grid grid-cols-[1.2fr_1.4fr_150px_110px_240px] items-center gap-3 border-t border-blue-100 px-4 py-3 text-sm">
+                    <div className="min-w-0">
+                      <p className="truncate font-black text-ink">{member.name || "Unnamed user"}</p>
+                      {isLastActiveOwner ? <p className="mt-1 text-xs font-bold text-amber-700">Last active owner protected</p> : null}
+                    </div>
+                    <span className="truncate font-semibold text-slate-500">{member.email}</span>
+                    <select
+                      className={`${inputClassName} h-10`}
+                      value={draftRole}
+                      onChange={(event) => setRoleDrafts((current) => ({ ...current, [member.id]: event.target.value as UserRole }))}
+                      disabled={!member.isActive || roleActionLoading}
+                    >
+                      {["OWNER", "ADMIN", "MANAGER", "AGENT"].map((role) => (
+                        <option key={role}>{role}</option>
+                      ))}
+                    </select>
+                    <span className={`w-fit rounded-full px-3 py-1 text-xs font-black ${member.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                      {member.isActive ? "Active" : "Inactive"}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        className={`${secondaryButtonClassName} h-10 px-3`}
+                        onClick={() => saveTeamMemberRole(member)}
+                        disabled={!member.isActive || !roleChanged || roleActionLoading || (isLastActiveOwner && draftRole !== "OWNER")}
+                      >
+                        <Save className="h-4 w-4" />
+                        {roleActionLoading ? "Saving..." : "Save Role"}
+                      </button>
+                      {member.isActive ? (
+                        <button
+                          className={`${secondaryButtonClassName} h-10 px-3`}
+                          onClick={() => setMemberActive(member, false)}
+                          disabled={statusActionLoading || isLastActiveOwner}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                          {statusActionLoading ? "Saving..." : "Deactivate"}
+                        </button>
+                      ) : (
+                        <button
+                          className={`${secondaryButtonClassName} h-10 px-3`}
+                          onClick={() => setMemberActive(member, true)}
+                          disabled={statusActionLoading}
+                        >
+                          <UserCheck className="h-4 w-4" />
+                          {statusActionLoading ? "Saving..." : "Reactivate"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
             )}
             </div>
           </div>

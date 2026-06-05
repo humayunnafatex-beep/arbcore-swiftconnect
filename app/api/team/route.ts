@@ -1,8 +1,10 @@
 import { getCurrentAuthContext, assertRole } from "@/lib/auth";
 import { created, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getTeamRoleLabel } from "@/lib/team-member-input";
 import { teamMemberCreateSchema } from "@/lib/validators";
 
 export const runtime = "nodejs";
@@ -77,6 +79,16 @@ export async function POST(request: Request) {
         createdAt: true,
         updatedAt: true
       }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "TEAM_MEMBER_CREATED",
+      entityType: "TEAM_MEMBER",
+      entityId: user.id,
+      entityLabel: safeActivityLabel(user.name, user.email),
+      summary: "Created team member workspace record.",
+      metadataSummary: `Role: ${getTeamRoleLabel(user.role)}; Status: ACTIVE`
     });
 
     return created(user);

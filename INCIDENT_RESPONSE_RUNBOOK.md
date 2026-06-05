@@ -223,3 +223,9 @@ STRICT_PROVIDER_WEBHOOK_ROUTING=false
 If `/activity-logs` is unavailable or missing expected entries, first confirm the production migration for `ActivityLog` has been applied. Do not reset the production database.
 
 Activity Logs contain safe summaries only. They should never contain access tokens, cookies, sessions, raw webhook payloads, Authorization headers, database URLs, or provider secrets. If sensitive data is found in an activity record, restrict access, rotate any exposed credential, and open a security incident.
+
+## Team Member Access Issues
+
+If a user is accidentally deactivated, an owner/admin should reactivate the workspace record from Settings. Do not hard delete users during beta support unless a separate approved cleanup plan exists.
+
+If the last owner cannot be deactivated or demoted, this is expected protection. Create or promote another active owner first. Do not bypass owner protection in production.

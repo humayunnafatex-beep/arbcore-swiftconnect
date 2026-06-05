@@ -345,3 +345,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 ## Staff Activity Logs Support
 
 Activity Logs are available at `/activity-logs` for internal review of manual operator actions. They show safe summaries only, such as who created or updated contacts, orders, products, saved replies, auto-reply rules, and inbox state. They do not expose tokens, raw webhook payloads, cookies, sessions, or Authorization headers. If a business action succeeds but the activity log is missing, treat it as a logging/observability issue rather than a customer workflow failure.
+
+## Team Member Management Support
+
+Team members are managed from Settings by owners/admins. New members are workspace records only unless the auth invite/login process is configured separately. Prefer deactivation/reactivation over hard deletion. If a role or deactivate action fails with last-owner protection, add or promote another active owner first, then retry the change.

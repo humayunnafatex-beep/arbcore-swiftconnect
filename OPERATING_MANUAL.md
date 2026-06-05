@@ -436,6 +436,14 @@ Activity Logs at `/activity-logs` are internal only. Admins and approved reviewe
 
 Activity Logs are not customer-visible and are not a replacement for provider logs. They do not store access tokens, cookies, database URLs, raw webhook payloads, or Authorization headers. If activity logging fails, the main business action should still complete.
 
+## 12H. Team Member Management
+
+Team Members are managed from Settings. Owners and admins can create workspace member records with name, email, and role. This does not send an auth invite yet; full login/invite setup may require admin follow-up.
+
+Use Save Role to apply role changes. Use Deactivate to remove access without hard deleting the user record, and Reactivate to restore an inactive member. ARBCore protects the last active owner, so the final owner cannot be demoted or deactivated.
+
+Team member create, role update, deactivate, and reactivate actions are recorded in Activity Logs as safe internal summaries.
+
 Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
 
 ## 13. Support And Maintenance
