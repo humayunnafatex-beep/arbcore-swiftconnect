@@ -7,7 +7,21 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const headers = ["id", "channel", "direction", "status", "phoneOrPsid", "bodyPreview", "providerMessageId", "errorMessage", "createdAt"];
+const headers = [
+  "id",
+  "channel",
+  "direction",
+  "status",
+  "phoneOrPsid",
+  "bodyPreview",
+  "providerMessageId",
+  "referralSourceType",
+  "referralSourceId",
+  "referralHeadline",
+  "referralCtwaClid",
+  "errorMessage",
+  "createdAt"
+];
 const channels = new Set(["WHATSAPP", "MESSENGER"]);
 const directions = new Set<string>(["INBOUND", "OUTBOUND"]);
 const statuses = new Set<string>(["QUEUED", "SENT", "DELIVERED", "READ", "FAILED", "RECEIVED", "ATTEMPTED"]);
@@ -32,6 +46,10 @@ export async function GET(request: Request) {
         ? {
             OR: [
               { providerMessageId: { contains: search } },
+              { referralSourceType: { contains: search } },
+              { referralSourceId: { contains: search } },
+              { referralHeadline: { contains: search } },
+              { referralCtwaClid: { contains: search } },
               { body: { contains: search } },
               { contact: { is: { phone: { contains: search } } } },
               { contact: { is: { name: { contains: search } } } }
@@ -55,6 +73,10 @@ export async function GET(request: Request) {
       phoneOrPsid: log.contact?.phone ?? "",
       bodyPreview: truncate(log.body, 500),
       providerMessageId: log.providerMessageId ?? "",
+      referralSourceType: log.referralSourceType,
+      referralSourceId: log.referralSourceId,
+      referralHeadline: log.referralHeadline,
+      referralCtwaClid: log.referralCtwaClid,
       errorMessage: truncate(log.errorMessage ?? "", 500),
       createdAt: log.createdAt
     }));

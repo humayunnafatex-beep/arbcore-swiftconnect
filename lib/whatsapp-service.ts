@@ -12,6 +12,9 @@ export type ParsedWhatsAppEvent = {
     timestamp?: string;
     type: string;
     text?: string;
+    profileName?: string;
+    waId?: string;
+    referral?: WhatsAppReferralContext;
     hasContext?: boolean;
     errors?: Array<{
       code?: string | number;
@@ -34,6 +37,19 @@ export type ParsedWhatsAppEvent = {
     errorMessage?: string;
   }>;
   phoneNumberId?: string;
+};
+
+export type WhatsAppReferralContext = {
+  sourceType?: string;
+  sourceId?: string;
+  sourceUrl?: string;
+  headline?: string;
+  body?: string;
+  mediaType?: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  ctwaClid?: string;
 };
 
 export class WhatsAppServiceError extends Error {
@@ -335,16 +351,21 @@ export function parseWebhookEvent(payload: unknown): ParsedWhatsAppEvent {
       if (typeof metadata.phone_number_id === "string") event.phoneNumberId = metadata.phone_number_id;
 
       if (Array.isArray(value.messages)) {
+        const profileByWaId = getContactProfilesByWaId(value.contacts);
         for (const message of value.messages) {
           if (!isRecord(message) || typeof message.from !== "string" || typeof message.id !== "string") continue;
           const text = isRecord(message.text) && typeof message.text.body === "string" ? message.text.body : undefined;
           const messageType = typeof message.type === "string" ? message.type : "unknown";
+          const profile = profileByWaId.get(message.from);
           event.messages.push({
             from: message.from,
             id: message.id,
             timestamp: typeof message.timestamp === "string" ? message.timestamp : undefined,
             type: messageType,
             text,
+            profileName: profile?.profileName,
+            waId: profile?.waId,
+            referral: getReferralContext(message.referral),
             hasContext: isRecord(message.context),
             errors: getInboundMessageErrors(message),
             media: getInboundMediaMetadata(message, messageType)
@@ -448,6 +469,49 @@ function getInboundMediaMetadata(message: Record<string, unknown>, type: string)
     sha256: getString(media.sha256),
     filename: getString(media.filename)
   };
+}
+
+function getContactProfilesByWaId(value: unknown) {
+  const profiles = new Map<string, { waId: string; profileName?: string }>();
+
+  if (!Array.isArray(value)) {
+    return profiles;
+  }
+
+  for (const contact of value) {
+    if (!isRecord(contact) || typeof contact.wa_id !== "string") {
+      continue;
+    }
+
+    const profile = isRecord(contact.profile) ? contact.profile : {};
+    profiles.set(contact.wa_id, {
+      waId: contact.wa_id,
+      profileName: limitText(getString(profile.name), 120)
+    });
+  }
+
+  return profiles;
+}
+
+function getReferralContext(value: unknown): WhatsAppReferralContext | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const referral = {
+    sourceType: limitText(getString(value.source_type), 80),
+    sourceId: limitText(getString(value.source_id), 120),
+    sourceUrl: limitText(getString(value.source_url), 500),
+    headline: limitText(getString(value.headline), 180),
+    body: limitText(getString(value.body), 280),
+    mediaType: limitText(getString(value.media_type), 80),
+    imageUrl: limitText(getString(value.image_url) ?? getString(value.thumbnail_url), 500),
+    videoUrl: limitText(getString(value.video_url), 500),
+    thumbnailUrl: limitText(getString(value.thumbnail_url), 500),
+    ctwaClid: limitText(getString(value.ctwa_clid), 160)
+  };
+
+  return Object.values(referral).some(Boolean) ? referral : undefined;
 }
 
 function getInboundMessageErrors(message: Record<string, unknown>) {

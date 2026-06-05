@@ -72,9 +72,11 @@ export async function POST(request: Request) {
       const contact = await findOrCreateWebhookContact({
         companyId: company.id,
         phone: message.from,
-        name: `WhatsApp ${message.from}`,
+        profileName: message.profileName,
+        referral: message.referral,
         segment: "WhatsApp Inbox"
       });
+      const referralData = getReferralLogData(message.referral);
 
       const existingInboundLog = await prisma.messageLog.findFirst({
         where: {
@@ -100,6 +102,7 @@ export async function POST(request: Request) {
           providerMessageId: message.id,
           providerMessageType: message.type,
           providerMetadataSummary: getProviderMetadataSummary(message),
+          ...referralData,
           mediaId: message.media?.id ?? "",
           mediaType: message.media?.type ?? "",
           mediaMimeType: message.media?.mimeType ?? "",
@@ -270,12 +273,24 @@ function getProviderMetadataSummary(message: {
 async function findOrCreateWebhookContact({
   companyId,
   phone,
-  name,
+  profileName,
+  referral,
   segment
 }: {
   companyId: string;
   phone: string;
-  name: string;
+  profileName?: string;
+  referral?: {
+    sourceType?: string;
+    sourceId?: string;
+    sourceUrl?: string;
+    headline?: string;
+    body?: string;
+    mediaType?: string;
+    imageUrl?: string;
+    videoUrl?: string;
+    ctwaClid?: string;
+  };
   segment: string;
 }) {
   const existing = await prisma.contact.findFirst({
@@ -283,16 +298,21 @@ async function findOrCreateWebhookContact({
   });
 
   if (existing) {
-    return existing;
+    return updateWebhookContactContext(existing, profileName, referral);
   }
 
   try {
+    const safeProfileName = previewText(profileName ?? "", 120);
+    const referralData = getReferralContactData(referral);
     return await prisma.contact.create({
       data: {
         companyId,
-        name,
+        name: safeProfileName || `WhatsApp ${phone}`,
         phone,
         segment,
+        whatsappProfileName: safeProfileName,
+        profileSource: safeProfileName ? "WHATSAPP_PROFILE" : "UNKNOWN",
+        ...referralData,
         optedIn: true
       }
     });
@@ -305,6 +325,112 @@ async function findOrCreateWebhookContact({
 
     throw error;
   }
+}
+
+async function updateWebhookContactContext(
+  contact: {
+    id: string;
+    name: string;
+    phone: string;
+    whatsappProfileName: string;
+    profileSource: string;
+  },
+  profileName?: string,
+  referral?: {
+    sourceType?: string;
+    sourceId?: string;
+    sourceUrl?: string;
+    headline?: string;
+    body?: string;
+    mediaType?: string;
+    imageUrl?: string;
+    videoUrl?: string;
+    ctwaClid?: string;
+  }
+) {
+  const safeProfileName = previewText(profileName ?? "", 120);
+  const data: Prisma.ContactUpdateInput = {
+    ...getReferralContactData(referral)
+  };
+
+  if (safeProfileName) {
+    data.whatsappProfileName = safeProfileName;
+    if (!contact.profileSource || contact.profileSource === "UNKNOWN") {
+      data.profileSource = "WHATSAPP_PROFILE";
+    }
+
+    if (isPlaceholderWhatsAppName(contact.name, contact.phone)) {
+      data.name = safeProfileName;
+      data.profileSource = "WHATSAPP_PROFILE";
+    }
+  }
+
+  if (!Object.keys(data).length) {
+    return contact;
+  }
+
+  return prisma.contact.update({
+    where: { id: contact.id },
+    data
+  });
+}
+
+function isPlaceholderWhatsAppName(name: string, phone: string) {
+  const normalizedName = name.trim();
+  return !normalizedName || normalizedName === `WhatsApp ${phone}` || normalizedName === phone;
+}
+
+function getReferralLogData(referral?: {
+  sourceType?: string;
+  sourceId?: string;
+  sourceUrl?: string;
+  headline?: string;
+  body?: string;
+  mediaType?: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  ctwaClid?: string;
+}) {
+  return {
+    referralSourceType: previewText(referral?.sourceType ?? "", 80),
+    referralSourceId: previewText(referral?.sourceId ?? "", 120),
+    referralSourceUrl: previewText(referral?.sourceUrl ?? "", 500),
+    referralHeadline: previewText(referral?.headline ?? "", 180),
+    referralBody: previewText(referral?.body ?? "", 280),
+    referralMediaType: previewText(referral?.mediaType ?? "", 80),
+    referralImageUrl: previewText(referral?.imageUrl ?? "", 500),
+    referralVideoUrl: previewText(referral?.videoUrl ?? "", 500),
+    referralCtwaClid: previewText(referral?.ctwaClid ?? "", 160)
+  };
+}
+
+function getReferralContactData(referral?: {
+  sourceType?: string;
+  sourceId?: string;
+  sourceUrl?: string;
+  headline?: string;
+  body?: string;
+  mediaType?: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  ctwaClid?: string;
+}) {
+  if (!referral) {
+    return {};
+  }
+
+  return {
+    lastReferralSourceType: previewText(referral.sourceType ?? "", 80),
+    lastReferralSourceId: previewText(referral.sourceId ?? "", 120),
+    lastReferralSourceUrl: previewText(referral.sourceUrl ?? "", 500),
+    lastReferralHeadline: previewText(referral.headline ?? "", 180),
+    lastReferralBody: previewText(referral.body ?? "", 280),
+    lastReferralMediaType: previewText(referral.mediaType ?? "", 80),
+    lastReferralImageUrl: previewText(referral.imageUrl ?? "", 500),
+    lastReferralVideoUrl: previewText(referral.videoUrl ?? "", 500),
+    lastReferralCtwaClid: previewText(referral.ctwaClid ?? "", 160),
+    lastReferralAt: new Date()
+  };
 }
 
 function withWhatsAppRoutingMetadata(payload: Prisma.InputJsonValue, routing: ProviderRoutingResult): Prisma.InputJsonValue {

@@ -31,6 +31,15 @@ type WhatsAppLogMessage = {
   mediaType: string;
   mediaMimeType: string;
   mediaFilename: string;
+  referralSourceType: string;
+  referralSourceId: string;
+  referralSourceUrl: string;
+  referralHeadline: string;
+  referralBody: string;
+  referralMediaType: string;
+  referralImageUrl: string;
+  referralVideoUrl: string;
+  referralCtwaClid: string;
   createdAt: string;
 };
 
@@ -206,6 +215,11 @@ export function WhatsAppLogsModulePage() {
                             Unsupported
                           </span>
                         ) : null}
+                        {hasReferral(message) ? (
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black uppercase text-emerald-700 ring-1 ring-emerald-100">
+                            Ad referral
+                          </span>
+                        ) : null}
                         <span className="text-xs font-bold text-slate-400">{formatDate(message.createdAt)}</span>
                       </div>
                       <p className="mt-3 text-sm font-black text-ink">{message.phone || "No phone recorded"}</p>
@@ -220,6 +234,13 @@ export function WhatsAppLogsModulePage() {
                       <p className="mt-1"><span className="font-black text-royal">Provider Status:</span> {message.providerStatus || "-"}</p>
                       {message.mediaType ? (
                         <p className="mt-1"><span className="font-black text-royal">Media:</span> {message.mediaType}{message.mediaMimeType ? ` (${message.mediaMimeType})` : ""}</p>
+                      ) : null}
+                      {hasReferral(message) ? (
+                        <div className="mt-2 rounded-[12px] bg-emerald-50 p-2 text-emerald-800">
+                          <p><span className="font-black">Ad referral:</span> {message.referralSourceType || "source captured"}</p>
+                          {message.referralHeadline ? <p className="mt-1 break-words">Headline: {message.referralHeadline}</p> : null}
+                          {message.referralSourceId ? <p className="mt-1 break-all">Source ID: {message.referralSourceId}</p> : null}
+                        </div>
                       ) : null}
                       {message.providerMetadataSummary ? (
                         <p className="mt-2 rounded-[12px] bg-amber-50 p-2 text-amber-800">
@@ -273,6 +294,10 @@ export function WhatsAppLogsModulePage() {
 
 function isUnsupportedMessage(message: WhatsAppLogMessage) {
   return message.channel === "WHATSAPP" && message.bodyPreview.startsWith("[unsupported:");
+}
+
+function hasReferral(message: WhatsAppLogMessage) {
+  return Boolean(message.referralSourceType || message.referralSourceId || message.referralHeadline || message.referralCtwaClid);
 }
 
 function FilterSelect({

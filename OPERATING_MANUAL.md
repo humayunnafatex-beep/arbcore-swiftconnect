@@ -408,6 +408,14 @@ Some Meta system, security, verification, interactive, button, reaction, contact
 
 These diagnostics are for support visibility only. ARBCore does not expose raw webhook payloads, Authorization headers, access tokens, or provider secrets. Meta verification/security codes may not be readable through WhatsApp Cloud API; request codes through SMS, phone call, email, or an authenticator when available.
 
+## 12D. WhatsApp Customer Profile And Ad Referral Context
+
+When Meta includes WhatsApp contact profile data, ARBCore stores the safe customer profile name and uses it as a display fallback after any manually edited contact name. Operators can still edit the contact name, status, and tags manually.
+
+When Meta includes Click-to-WhatsApp referral data, ARBCore stores safe source context such as source type, source ID, headline, body preview, source URL, media type, and CTWA click ID. This appears in Inbox, Contacts, Message Logs, and approved CSV exports. Referral data may not appear for every message or ad click.
+
+WhatsApp Cloud API generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and does not fake profile pictures.
+
 ## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.

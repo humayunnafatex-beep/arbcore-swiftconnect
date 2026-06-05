@@ -449,6 +449,15 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Support confirms Meta verification/security codes should be requested by SMS, phone call, email, or authenticator if WhatsApp Cloud API does not expose readable text.
 - [ ] No raw webhook payload, access token, Authorization header, or provider secret is displayed.
 
+## 9C-2. WhatsApp Profile And Ad Referral Context QA
+
+- [ ] Inbound WhatsApp contact profile name is stored when Meta includes `contacts.profile.name`.
+- [ ] Manual contact name is not overwritten by later WhatsApp profile name updates.
+- [ ] Inbox and Contacts show WhatsApp profile name as a fallback/hint.
+- [ ] Inbox explains that WhatsApp Cloud API does not provide customer profile photo and uses initials/avatar fallback.
+- [ ] Click-to-WhatsApp referral context appears in Inbox, Contacts, Message Logs, and CSV exports when Meta includes referral data.
+- [ ] No raw webhook payload, access token, Authorization header, or provider secret is displayed or exported.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

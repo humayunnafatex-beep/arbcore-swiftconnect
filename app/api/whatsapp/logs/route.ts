@@ -69,6 +69,15 @@ export async function GET(request: Request) {
           mediaType: message.mediaType,
           mediaMimeType: message.mediaMimeType,
           mediaFilename: message.mediaFilename,
+          referralSourceType: message.referralSourceType,
+          referralSourceId: message.referralSourceId,
+          referralSourceUrl: message.referralSourceUrl,
+          referralHeadline: message.referralHeadline,
+          referralBody: message.referralBody,
+          referralMediaType: message.referralMediaType,
+          referralImageUrl: message.referralImageUrl,
+          referralVideoUrl: message.referralVideoUrl,
+          referralCtwaClid: message.referralCtwaClid,
           createdAt: message.createdAt
         })),
         webhookEvents: webhookEvents.map((event) => ({
@@ -123,6 +132,11 @@ function buildMessageWhere({
             { providerMessageId: { contains: search, mode: "insensitive" } },
             { providerMessageType: { contains: search, mode: "insensitive" } },
             { providerMetadataSummary: { contains: search, mode: "insensitive" } },
+            { referralSourceType: { contains: search, mode: "insensitive" } },
+            { referralSourceId: { contains: search, mode: "insensitive" } },
+            { referralHeadline: { contains: search, mode: "insensitive" } },
+            { referralBody: { contains: search, mode: "insensitive" } },
+            { referralCtwaClid: { contains: search, mode: "insensitive" } },
             { contact: { phone: { contains: search, mode: "insensitive" } } },
             { whatsappAccount: { phoneNumber: { contains: search, mode: "insensitive" } } }
           ]

@@ -281,6 +281,14 @@ Meta may deliver system, security, verification, interactive, button, reaction, 
 
 Do not rely on WhatsApp Cloud API to read every Meta verification/security code. If a code is not visible as a normal text message, request it through SMS, phone call, email, or an authenticator option. Never share or screenshot access tokens, Authorization headers, raw webhook payloads, or provider secrets.
 
+### Customer Profile Name And Ad Referral Context
+
+WhatsApp Cloud API webhook contact data may include the customer's profile name. ARBCore stores this safe name as a display fallback, but it does not overwrite an operator-edited contact name.
+
+WhatsApp Cloud API generally does not provide customer profile photos. ARBCore shows initials/avatar fallback only.
+
+Click-to-WhatsApp referral context may be included when a customer starts a chat from an ad or related source. ARBCore stores safe fields such as source type, source ID, headline, source URL, media type, and CTWA click ID when present. Referral data is not guaranteed for every message.
+
 ## 9A. Media Reply Test From Inbox
 
 WhatsApp Media Send Phase 1 supports media replies from the Inbox after the customer conversation exists.

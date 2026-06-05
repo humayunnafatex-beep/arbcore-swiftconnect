@@ -108,7 +108,13 @@ export async function GET(request: Request) {
         phone: true,
         email: true,
         stage: true,
-        tags: true
+        tags: true,
+        whatsappProfileName: true,
+        profileSource: true,
+        lastReferralSourceType: true,
+        lastReferralSourceId: true,
+        lastReferralHeadline: true,
+        lastReferralAt: true
       }
     });
     const contactMap = buildContactMatchMap(contacts);
@@ -122,7 +128,7 @@ export async function GET(request: Request) {
 
         return {
           ...conversation,
-          displayName: contact?.name ?? conversation.displayName,
+          displayName: getBestContactDisplayName(contact, conversation.displayName),
           status: normalizeConversationStatus(state?.status),
           assignedTo: state?.assignedTo ?? null,
           contact,
@@ -208,6 +214,12 @@ type ContactSummary = {
   email: string | null;
   status: string | null;
   tags: string | null;
+  whatsappProfileName: string;
+  profileSource: string;
+  lastReferralSourceType: string;
+  lastReferralSourceId: string;
+  lastReferralHeadline: string;
+  lastReferralAt: string | null;
 };
 
 function buildMessageWhere({
@@ -231,6 +243,7 @@ function buildMessageWhere({
             { body: { contains: search, mode: "insensitive" } },
             { providerMessageId: { contains: search, mode: "insensitive" } },
             { contact: { name: { contains: search, mode: "insensitive" } } },
+            { contact: { whatsappProfileName: { contains: search, mode: "insensitive" } } },
             { contact: { phone: { contains: search, mode: "insensitive" } } },
             { whatsappAccount: { businessName: { contains: search, mode: "insensitive" } } },
             { whatsappAccount: { phoneNumber: { contains: search, mode: "insensitive" } } }
@@ -273,7 +286,20 @@ function getDisplayName(message: MessageWithRelations) {
   return message.contact?.name ?? message.whatsappAccount?.businessName ?? null;
 }
 
-function buildContactMatchMap(contacts: Array<{ id: string; name: string; phone: string; email: string | null; stage: string; tags: string | null }>) {
+function buildContactMatchMap(contacts: Array<{
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  stage: string;
+  tags: string | null;
+  whatsappProfileName: string;
+  profileSource: string;
+  lastReferralSourceType: string;
+  lastReferralSourceId: string;
+  lastReferralHeadline: string;
+  lastReferralAt: Date | null;
+}>) {
   const map = new Map<string, ContactSummary>();
 
   for (const contact of contacts) {
@@ -283,7 +309,13 @@ function buildContactMatchMap(contacts: Array<{ id: string; name: string; phone:
       phone: contact.phone,
       email: contact.email,
       status: contact.stage,
-      tags: contact.tags
+      tags: contact.tags,
+      whatsappProfileName: contact.whatsappProfileName,
+      profileSource: contact.profileSource,
+      lastReferralSourceType: contact.lastReferralSourceType,
+      lastReferralSourceId: contact.lastReferralSourceId,
+      lastReferralHeadline: contact.lastReferralHeadline,
+      lastReferralAt: contact.lastReferralAt?.toISOString() ?? null
     };
 
     for (const candidate of phoneMatchCandidates(contact.phone)) {
@@ -294,6 +326,10 @@ function buildContactMatchMap(contacts: Array<{ id: string; name: string; phone:
   }
 
   return map;
+}
+
+function getBestContactDisplayName(contact: ContactSummary | null, fallback: string | null) {
+  return contact?.name || contact?.whatsappProfileName || fallback;
 }
 
 function phoneMatchCandidates(phone: string) {

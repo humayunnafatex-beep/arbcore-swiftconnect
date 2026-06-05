@@ -77,6 +77,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Failed auto replies should be reviewed from Auto Reply Analytics and cross-checked in Message Logs.
 - Unsupported WhatsApp system/security/verification/interactive message types are logged with safe diagnostics such as `[unsupported: system]`, provider message type, and short metadata summary only.
 - Meta verification codes may not be readable through WhatsApp Cloud API. Request codes by SMS, phone call, email, or authenticator when available.
+- WhatsApp profile names are captured when Meta includes them, while customer profile photos are not provided by WhatsApp Cloud API. ARBCore uses initials/avatar fallback and supports manual contact name override.
+- Click-to-WhatsApp referral context is captured when Meta includes safe fields, but referral data may not appear for every message or ad click.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.

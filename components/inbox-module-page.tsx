@@ -41,6 +41,31 @@ type LinkedContact = {
   email: string | null;
   status: ContactStage | string | null;
   tags: string | null;
+  whatsappProfileName: string;
+  profileSource: string;
+  lastReferralSourceType: string;
+  lastReferralSourceId: string;
+  lastReferralSourceUrl?: string;
+  lastReferralHeadline: string;
+  lastReferralBody?: string;
+  lastReferralMediaType?: string;
+  lastReferralImageUrl?: string;
+  lastReferralVideoUrl?: string;
+  lastReferralCtwaClid?: string;
+  lastReferralAt: string | null;
+};
+
+type ReferralContext = {
+  sourceType: string;
+  sourceId: string;
+  sourceUrl: string;
+  headline: string;
+  body: string;
+  mediaType: string;
+  imageUrl: string;
+  videoUrl: string;
+  ctwaClid: string;
+  referredAt: string | null;
 };
 
 type ConversationSummary = {
@@ -74,6 +99,15 @@ type InboxMessage = {
   providerMessageId: string | null;
   providerMessageType: string;
   providerMetadataSummary: string;
+  referralSourceType: string;
+  referralSourceId: string;
+  referralSourceUrl: string;
+  referralHeadline: string;
+  referralBody: string;
+  referralMediaType: string;
+  referralImageUrl: string;
+  referralVideoUrl: string;
+  referralCtwaClid: string;
   errorMessage: string | null;
   mediaId: string;
   mediaType: string;
@@ -98,6 +132,7 @@ type ConversationDetailResponse = {
       contactKey: string;
       displayName: string | null;
       contact: LinkedContact | null;
+      referralContext: ReferralContext | null;
       internalNote: string;
       followUpAt: string | null;
       followUpDone: boolean;
@@ -887,7 +922,7 @@ export function InboxModulePage() {
                 >
                   <div className="flex items-start gap-3">
                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-royal to-electric text-white">
-                      <MessageCircle className="h-5 w-5" />
+                      <span className="text-xs font-black">{avatarInitials(conversation.displayName ?? conversation.contact?.whatsappProfileName ?? conversation.contactKey)}</span>
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
@@ -895,6 +930,9 @@ export function InboxModulePage() {
                         <span className="shrink-0 text-[11px] font-bold text-slate-400">{formatDate(conversation.lastMessageAt)}</span>
                       </div>
                       <p className="mt-1 truncate text-xs font-semibold text-slate-500">{conversation.contactKey}</p>
+                      {conversation.contact?.whatsappProfileName ? (
+                        <p className="mt-1 truncate text-[11px] font-bold text-emerald-700">WhatsApp profile: {conversation.contact.whatsappProfileName}</p>
+                      ) : null}
                       <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-slate-600">{conversation.lastMessagePreview || "No message preview"}</p>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <StatusPill label={conversation.channel} tone={conversation.channel === "WHATSAPP" ? "blue" : "purple"} />
@@ -903,6 +941,7 @@ export function InboxModulePage() {
                         <StatusPill label={conversation.lastStatus} tone={conversation.lastStatus === "FAILED" ? "red" : "gray"} />
                         {conversation.followUpStatus !== "NONE" ? <StatusPill label={formatFollowUpStatus(conversation.followUpStatus)} tone={followUpTone(conversation.followUpStatus)} /> : null}
                         {conversation.internalNotePreview ? <StatusPill label="Note" tone="purple" /> : null}
+                        {conversation.contact?.lastReferralHeadline || conversation.contact?.lastReferralSourceType ? <StatusPill label="Ad source" tone="green" /> : null}
                         {conversation.failedCount ? <StatusPill label={`${conversation.failedCount} failed`} tone="red" /> : null}
                       </div>
                       {conversation.internalNotePreview ? (
@@ -942,15 +981,23 @@ export function InboxModulePage() {
 
                 <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h3 className="text-sm font-black text-ink">Contact Profile</h3>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">
-                        {detail.conversation.contact
-                          ? "This conversation is linked to a contact record."
-                          : detail.conversation.channel === "WHATSAPP"
-                            ? "No contact linked yet. Create one from this WhatsApp phone number."
-                            : "Messenger conversations use PSID. Full contact linking may require a future Messenger PSID field."}
-                      </p>
+                    <div className="flex gap-3">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-royal to-electric text-sm font-black text-white">
+                        {avatarInitials(detail.conversation.displayName ?? detail.conversation.contact?.whatsappProfileName ?? detail.conversation.contactKey)}
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-black text-ink">Contact Profile</h3>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">
+                          {detail.conversation.contact
+                            ? "This conversation is linked to a contact record."
+                            : detail.conversation.channel === "WHATSAPP"
+                              ? "No contact linked yet. Create one from this WhatsApp phone number."
+                              : "Messenger conversations use PSID. Full contact linking may require a future Messenger PSID field."}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">
+                          WhatsApp Cloud API does not provide customer profile photo. You can edit customer name manually.
+                        </p>
+                      </div>
                     </div>
                     <Link className="text-xs font-black text-royal hover:underline" href="/contacts">
                       Open Contacts
@@ -959,6 +1006,7 @@ export function InboxModulePage() {
                   {detail.conversation.contact ? (
                     <div className="mt-4 grid gap-3 lg:grid-cols-4">
                       <ContactField label="Name" value={detail.conversation.contact.name} />
+                      <ContactField label="WhatsApp profile" value={detail.conversation.contact.whatsappProfileName || "-"} />
                       <ContactField label="Phone" value={detail.conversation.contact.phone ?? "-"} />
                       <ContactField label="Email" value={detail.conversation.contact.email ?? "-"} />
                       <ContactField label="Status" value={formatContactStage(detail.conversation.contact.status)} />
@@ -1001,6 +1049,43 @@ export function InboxModulePage() {
                   {(detail.conversation.channel === "WHATSAPP" || detail.conversation.contact) ? (
                     <p className="mt-2 text-xs font-semibold text-slate-500">Tags example: size-42, solm8, facebook, priority</p>
                   ) : null}
+                </div>
+
+                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-ink">Ad / Source Context</h3>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">Captured only when Meta includes Click-to-WhatsApp referral details.</p>
+                    </div>
+                    <Link className="text-xs font-black text-royal hover:underline" href="/message-logs">
+                      Open Message Logs
+                    </Link>
+                  </div>
+                  {hasReferralContext(detail.conversation.referralContext) ? (
+                    <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                      <ContactField label="Source type" value={detail.conversation.referralContext?.sourceType || "-"} />
+                      <ContactField label="Media type" value={detail.conversation.referralContext?.mediaType || "-"} />
+                      <ContactField label="Headline" value={detail.conversation.referralContext?.headline || "-"} />
+                      <ContactField label="Body" value={detail.conversation.referralContext?.body || "-"} />
+                      <ContactField label="Source ID" value={detail.conversation.referralContext?.sourceId || "-"} />
+                      <ContactField label="CTWA click ID" value={detail.conversation.referralContext?.ctwaClid || "-"} />
+                      <ContactField label="Last referral" value={detail.conversation.referralContext?.referredAt ? formatDate(detail.conversation.referralContext.referredAt) : "-"} />
+                      <div className="min-w-0 rounded-[14px] bg-blue-50 p-3 text-xs font-semibold text-slate-600">
+                        <p className="font-black text-royal">Source URL</p>
+                        {detail.conversation.referralContext?.sourceUrl ? (
+                          <a className="mt-1 block break-all text-royal hover:underline" href={detail.conversation.referralContext.sourceUrl} target="_blank" rel="noreferrer">
+                            {detail.conversation.referralContext.sourceUrl}
+                          </a>
+                        ) : (
+                          <p className="mt-1">-</p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-sm font-bold text-slate-600">
+                      No ad referral context captured for this conversation yet.
+                    </div>
+                  )}
                 </div>
 
                 <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
@@ -1365,6 +1450,22 @@ export function InboxModulePage() {
 
 function isUnsupportedWhatsAppMessage(message: InboxMessage) {
   return message.direction === "INBOUND" && message.body.startsWith("[unsupported:");
+}
+
+function hasReferralContext(referral: ReferralContext | null | undefined) {
+  return Boolean(referral && (referral.sourceType || referral.sourceId || referral.headline || referral.ctwaClid));
+}
+
+function avatarInitials(value: string) {
+  const cleaned = value.replace(/[^\p{L}\p{N}\s]/gu, " ").trim();
+  if (!cleaned) return "WA";
+
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return cleaned.slice(0, 2).toUpperCase();
 }
 
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {

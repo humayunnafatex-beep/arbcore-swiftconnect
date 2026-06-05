@@ -70,6 +70,7 @@ export async function POST(
         stage: normalizeContactStatus(input.status),
         tags: normalizeTags(input.tags) ?? null,
         segment: "Inbox",
+        profileSource: "MANUAL",
         optedIn: true
       },
       select: {
@@ -78,7 +79,19 @@ export async function POST(
         phone: true,
         email: true,
         stage: true,
-        tags: true
+        tags: true,
+        whatsappProfileName: true,
+        profileSource: true,
+        lastReferralSourceType: true,
+        lastReferralSourceId: true,
+        lastReferralSourceUrl: true,
+        lastReferralHeadline: true,
+        lastReferralBody: true,
+        lastReferralMediaType: true,
+        lastReferralImageUrl: true,
+        lastReferralVideoUrl: true,
+        lastReferralCtwaClid: true,
+        lastReferralAt: true
       }
     });
 
@@ -91,7 +104,19 @@ export async function POST(
           phone: contact.phone,
           email: contact.email,
           status: contact.stage,
-          tags: contact.tags
+          tags: contact.tags,
+          whatsappProfileName: contact.whatsappProfileName,
+          profileSource: contact.profileSource,
+          lastReferralSourceType: contact.lastReferralSourceType,
+          lastReferralSourceId: contact.lastReferralSourceId,
+          lastReferralSourceUrl: contact.lastReferralSourceUrl,
+          lastReferralHeadline: contact.lastReferralHeadline,
+          lastReferralBody: contact.lastReferralBody,
+          lastReferralMediaType: contact.lastReferralMediaType,
+          lastReferralImageUrl: contact.lastReferralImageUrl,
+          lastReferralVideoUrl: contact.lastReferralVideoUrl,
+          lastReferralCtwaClid: contact.lastReferralCtwaClid,
+          lastReferralAt: contact.lastReferralAt?.toISOString() ?? null
         }
       }
     });

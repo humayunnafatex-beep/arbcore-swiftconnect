@@ -18,6 +18,9 @@ Major active modules:
 - Manual order message templates generated from order data for staff review before sending.
 - Order follow-up alerts, filters, and quick status/payment updates for manual order operations.
 - Product Catalog for manual product/model setup and faster Inbox order entry.
+- WhatsApp customer profile name capture and Click-to-WhatsApp referral context when Meta includes safe webhook fields.
+
+WhatsApp Cloud API can provide customer profile name in webhook contact data, but it generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and lets operators edit the customer name manually.
 
 Safe production-beta defaults remain:
 

@@ -193,6 +193,18 @@ model Contact {
   email     String?
   tags      String?
   segment   String?
+  whatsappProfileName String @default("")
+  profileSource String @default("")
+  lastReferralSourceType String @default("")
+  lastReferralSourceId String @default("")
+  lastReferralSourceUrl String @default("")
+  lastReferralHeadline String @default("")
+  lastReferralBody String @default("")
+  lastReferralMediaType String @default("")
+  lastReferralImageUrl String @default("")
+  lastReferralVideoUrl String @default("")
+  lastReferralCtwaClid String @default("")
+  lastReferralAt DateTime?
   stage     ContactStage @default(NEW_LEAD)
   optedIn   Boolean      @default(true)
   doNotContact Boolean   @default(false)
@@ -364,6 +376,15 @@ model MessageLog {
   providerMessageId String?
   providerMessageType String         @default("")
   providerMetadataSummary String     @default("")
+  referralSourceType String          @default("")
+  referralSourceId   String          @default("")
+  referralSourceUrl  String          @default("")
+  referralHeadline   String          @default("")
+  referralBody       String          @default("")
+  referralMediaType  String          @default("")
+  referralImageUrl   String          @default("")
+  referralVideoUrl   String          @default("")
+  referralCtwaClid   String          @default("")
   errorMessage      String?
   sentAt            DateTime?
   deliveredAt       DateTime?

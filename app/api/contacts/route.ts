@@ -30,7 +30,11 @@ export async function GET(request: Request) {
               { name: { contains: q, mode: Prisma.QueryMode.insensitive } },
               { phone: { contains: q, mode: Prisma.QueryMode.insensitive } },
               { email: { contains: q, mode: Prisma.QueryMode.insensitive } },
-              { tags: { contains: q, mode: Prisma.QueryMode.insensitive } }
+              { tags: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { whatsappProfileName: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { lastReferralHeadline: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { lastReferralBody: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { lastReferralSourceId: { contains: q, mode: Prisma.QueryMode.insensitive } }
             ]
           }
         : {})
@@ -87,6 +91,7 @@ export async function POST(request: Request) {
         email: input.email?.trim() || undefined,
         tags: normalizeTags(input.tags) ?? null,
         segment: input.segment?.trim() || undefined,
+        profileSource: "MANUAL",
         stage: normalizeContactStatus(input.stage),
         optedIn: input.optedIn ?? true,
         metadata: input.metadata as Prisma.InputJsonValue | undefined

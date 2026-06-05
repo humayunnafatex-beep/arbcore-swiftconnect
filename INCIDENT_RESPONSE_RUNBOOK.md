@@ -170,6 +170,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not request raw webhook payloads, access tokens, Authorization headers, provider secrets, or screenshots containing tokens. Do not attempt to bypass Meta OTP/security flow or promise that verification codes can be read through WhatsApp Cloud API.
 - Escalation: Technical owner checks whether the parser should support the message type in a future phase. Business/admin owner requests verification codes through SMS, phone call, email, or authenticator when available.
 
+## WhatsApp Profile Or Ad Referral Missing
+
+- Symptoms: Inbox shows phone number instead of customer profile name, or expected ad/source context is not shown.
+- Where to check: `/inbox`, `/contacts`, `/message-logs`, contact `whatsappProfileName`, and safe referral fields in exports if approved.
+- Safe first action: Confirm Meta included `contacts.profile.name` or message `referral` fields in the webhook. If not included, use manual contact name/status/tags.
+- What not to do: Do not request raw webhook payloads, access tokens, Authorization headers, provider secrets, or customer profile photos. Do not claim WhatsApp Cloud API provides profile photos.
+- Escalation: Technical owner verifies safe parser fields; business/admin owner confirms ad setup and customer source expectations in Meta.
+
 ## Messenger Live Page Failure
 
 - Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.

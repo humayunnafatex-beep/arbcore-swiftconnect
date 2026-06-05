@@ -46,6 +46,7 @@ export async function PUT(request: Request, { params }: Context) {
       where: { id: params.id },
       data: {
         ...("name" in input ? { name: input.name?.trim() } : {}),
+        ...("name" in input ? { profileSource: "MANUAL" } : {}),
         ...("phone" in input ? { phone: input.phone?.trim() } : {}),
         ...("email" in input ? { email: input.email?.trim() || null } : {}),
         ...("tags" in input ? { tags: normalizeTags(input.tags) ?? null } : {}),

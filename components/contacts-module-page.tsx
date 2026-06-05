@@ -24,6 +24,13 @@ type Contact = {
   email: string | null;
   tags: string | null;
   segment: string | null;
+  whatsappProfileName: string;
+  profileSource: string;
+  lastReferralSourceType: string;
+  lastReferralSourceId: string;
+  lastReferralHeadline: string;
+  lastReferralBody: string;
+  lastReferralAt: string | null;
   stage: ContactStage | string;
   optedIn: boolean;
   createdAt: string;
@@ -95,6 +102,10 @@ export function ContactsModulePage() {
         contact.name.toLowerCase().includes(query) ||
         contact.phone.toLowerCase().includes(query) ||
         (contact.email ?? "").toLowerCase().includes(query) ||
+        contact.whatsappProfileName.toLowerCase().includes(query) ||
+        contact.lastReferralHeadline.toLowerCase().includes(query) ||
+        contact.lastReferralBody.toLowerCase().includes(query) ||
+        contact.lastReferralSourceId.toLowerCase().includes(query) ||
         parseTags(contact.tags).some((tag) => tag.includes(query));
       const matchesStatus = statusFilter === "all" || normalizeContactStatus(contact.stage) === statusFilter;
       const matchesTag = tagFilter === "all" || tagsMatchSearch(contact.tags, tagFilter);
@@ -256,11 +267,16 @@ export function ContactsModulePage() {
 
   function exportCsv() {
     const rows = [
-      ["Name", "Phone", "Email", "Source", "Tags", "Status", "Last Contacted", "Created At"],
+      ["Name", "Phone", "Email", "WhatsApp Profile Name", "Last Referral Source Type", "Last Referral Source ID", "Last Referral Headline", "Last Referral At", "Source", "Tags", "Status", "Last Contacted", "Created At"],
       ...filteredContacts.map((contact) => [
         contact.name,
         contact.phone,
         contact.email ?? "",
+        contact.whatsappProfileName,
+        contact.lastReferralSourceType,
+        contact.lastReferralSourceId,
+        contact.lastReferralHeadline,
+        contact.lastReferralAt ?? "",
         contact.segment ?? "",
         contact.tags ?? "",
         getContactStatusLabel(contact.stage),
@@ -386,6 +402,9 @@ export function ContactsModulePage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="truncate text-base font-black text-ink">{contact.name}</h3>
+                    {contact.whatsappProfileName ? (
+                      <p className="mt-1 truncate text-xs font-bold text-emerald-700">WhatsApp profile: {contact.whatsappProfileName}</p>
+                    ) : null}
                     <p className="mt-1 break-all text-sm font-semibold text-slate-600">{contact.phone}</p>
                     <p className="mt-1 break-all text-xs font-semibold text-slate-500">{contact.email ?? "No email"}</p>
                   </div>
@@ -400,9 +419,17 @@ export function ContactsModulePage() {
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-semibold text-slate-500">
                   <span>Source: {contact.segment ?? "Direct"}</span>
+                  <span>Profile: {contact.profileSource || "Unknown"}</span>
                   <span>Orders: {contact._count?.orders ?? 0}</span>
                   <span>Updated: {formatDate(contact.updatedAt)}</span>
                 </div>
+                {contact.lastReferralHeadline || contact.lastReferralSourceType ? (
+                  <div className="mt-3 rounded-[14px] bg-emerald-50 p-3 text-xs font-semibold text-emerald-800">
+                    <p className="font-black">Last ad/source context</p>
+                    <p className="mt-1 line-clamp-2">{contact.lastReferralHeadline || contact.lastReferralSourceType}</p>
+                    {contact.lastReferralSourceId ? <p className="mt-1 break-all">Source ID: {contact.lastReferralSourceId}</p> : null}
+                  </div>
+                ) : null}
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <button className={`${secondaryButtonClassName} justify-center`} onClick={() => openEditModal(contact)}>
                     <Edit3 className="h-4 w-4" />
@@ -420,7 +447,7 @@ export function ContactsModulePage() {
             <table className="min-w-[1120px] w-full text-left">
               <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
                 <tr>
-                  {["Name", "Phone", "Email", "Source", "Tags", "Status", "Orders", "Last Contacted", "Created At", "Actions"].map((heading) => (
+                  {["Name", "Phone", "Email", "Profile / Ad", "Source", "Tags", "Status", "Orders", "Last Contacted", "Created At", "Actions"].map((heading) => (
                     <th key={heading} className="px-4 py-3">
                       {heading}
                     </th>
@@ -433,6 +460,14 @@ export function ContactsModulePage() {
                     <td className="px-4 py-4 font-black text-ink">{contact.name}</td>
                     <td className="px-4 py-4">{contact.phone}</td>
                     <td className="px-4 py-4">{contact.email ?? "-"}</td>
+                    <td className="px-4 py-4">
+                      <div className="max-w-56 space-y-1 text-xs">
+                        {contact.whatsappProfileName ? <p className="font-black text-emerald-700">WA: {contact.whatsappProfileName}</p> : <p className="text-slate-400">No WhatsApp profile</p>}
+                        {contact.lastReferralHeadline || contact.lastReferralSourceType ? (
+                          <p className="line-clamp-2 text-slate-600">{contact.lastReferralHeadline || contact.lastReferralSourceType}</p>
+                        ) : null}
+                      </div>
+                    </td>
                     <td className="px-4 py-4">{contact.segment ?? "Direct"}</td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-1">

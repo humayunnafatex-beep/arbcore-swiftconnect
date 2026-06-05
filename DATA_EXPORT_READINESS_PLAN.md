@@ -10,10 +10,10 @@ Exports are intended for approved business operators and support/admin users who
 
 Sprint 4 supports CSV exports for:
 
-- Contacts, including lead status and tags
+- Contacts, including lead status, tags, WhatsApp profile name, and latest safe ad referral context
 - Products, including manual product/model fields
 - Orders, including internal follow-up date and follow-up done status
-- Message Logs
+- Message Logs, including safe WhatsApp referral context when captured
 - Billing/Payment records
 - Auto Reply Analytics
 
@@ -31,12 +31,13 @@ Sprint 4 supports CSV exports for:
 - Message bodies should use safe previews where practical.
 - Billing exports are manual payment records only and must not contain card data.
 - Auto Reply Analytics exports use safe previews only and must not contain raw provider responses.
+- WhatsApp profile/referral exports must contain safe fields only. Do not export raw webhook payloads, profile photos, tokens, or Authorization headers.
 
 ## Current Export Routes
 
 - `/exports`: user-facing export page.
 - `/api/exports/contacts`: contacts CSV.
-- `/api/exports/message-logs`: message logs CSV with optional filters.
+- `/api/exports/message-logs`: message logs CSV with optional filters and safe referral columns.
 - `/api/exports/billing`: manual billing/payment records CSV.
 - `/api/exports/products`: manual product/model catalog CSV.
 - `/api/exports/orders`: manual order tracking CSV.
@@ -57,6 +58,7 @@ Future exports should follow the same company-scoped, safe-field-only rules.
 ## Security Cautions
 
 - Exports may contain customer names, phone numbers, emails, lead statuses, tags, product/model records, image URLs, stock notes, order details, delivery addresses, order follow-up reminders, message previews, payment notes, and internal business records.
+- Contacts and Message Logs exports may include WhatsApp profile names and Click-to-WhatsApp referral source summaries. Referral context may not appear for every message.
 - Share export files carefully.
 - Do not upload export files to public links.
 - Do not paste export contents into public chats.

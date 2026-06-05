@@ -290,6 +290,13 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not request raw webhook payloads, access tokens, Authorization headers, or screenshots that show provider secrets.
 - Do not promise that Meta verification/security codes can be read through WhatsApp Cloud API. Ask the user to request the code by SMS, phone call, email, or authenticator when available.
 
+### WhatsApp Profile And Ad Referral Context
+
+- WhatsApp Cloud API may include customer profile name in webhook contact data. ARBCore stores it as `whatsappProfileName` and uses it only as a display fallback after manual contact name.
+- WhatsApp Cloud API generally does not provide customer profile photo. ARBCore shows initials/avatar fallback only.
+- Click-to-WhatsApp referral context may include source type, source ID, source URL, headline, body preview, media type, and CTWA click ID. It may not appear for every message.
+- Use Inbox, Contacts, Message Logs, and approved CSV exports to review safe referral context. Do not request raw webhook payloads or provider secrets.
+
 ## Safety Rules
 
 - Do not share access tokens.

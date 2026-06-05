@@ -7,7 +7,21 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const headers = ["id", "name", "phone", "email", "status", "tags", "createdAt", "updatedAt"];
+const headers = [
+  "id",
+  "name",
+  "phone",
+  "email",
+  "status",
+  "tags",
+  "whatsappProfileName",
+  "lastReferralSourceType",
+  "lastReferralSourceId",
+  "lastReferralHeadline",
+  "lastReferralAt",
+  "createdAt",
+  "updatedAt"
+];
 
 export async function GET() {
   try {
@@ -22,6 +36,11 @@ export async function GET() {
         email: true,
         stage: true,
         tags: true,
+        whatsappProfileName: true,
+        lastReferralSourceType: true,
+        lastReferralSourceId: true,
+        lastReferralHeadline: true,
+        lastReferralAt: true,
         createdAt: true,
         updatedAt: true
       }
@@ -34,6 +53,11 @@ export async function GET() {
       email: contact.email ?? "",
       status: getContactStatusLabel(contact.stage),
       tags: contact.tags ?? "",
+      whatsappProfileName: contact.whatsappProfileName,
+      lastReferralSourceType: contact.lastReferralSourceType,
+      lastReferralSourceId: contact.lastReferralSourceId,
+      lastReferralHeadline: contact.lastReferralHeadline,
+      lastReferralAt: contact.lastReferralAt ?? "",
       createdAt: contact.createdAt,
       updatedAt: contact.updatedAt
     }));

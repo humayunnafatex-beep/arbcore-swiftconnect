@@ -63,8 +63,9 @@ export async function GET(
         conversation: {
           channel: conversation.channel,
           contactKey: conversation.contactKey,
-          displayName: contact?.name ?? (firstMessage ? getDisplayName(firstMessage) : null),
+          displayName: getBestDisplayName(contact, firstMessage),
           contact,
+          referralContext: getConversationReferralContext(contact, orderedMessages),
           internalNote: state?.internalNote ?? "",
           followUpAt: state?.followUpAt?.toISOString() ?? null,
           followUpDone: state?.followUpDone ?? false,
@@ -79,6 +80,15 @@ export async function GET(
           providerMessageId: message.providerMessageId,
           providerMessageType: message.providerMessageType,
           providerMetadataSummary: message.providerMetadataSummary,
+          referralSourceType: message.referralSourceType,
+          referralSourceId: message.referralSourceId,
+          referralSourceUrl: message.referralSourceUrl,
+          referralHeadline: message.referralHeadline,
+          referralBody: message.referralBody,
+          referralMediaType: message.referralMediaType,
+          referralImageUrl: message.referralImageUrl,
+          referralVideoUrl: message.referralVideoUrl,
+          referralCtwaClid: message.referralCtwaClid,
           errorMessage: message.errorMessage,
           mediaId: message.mediaId,
           mediaType: message.mediaType,
@@ -156,6 +166,10 @@ function getDisplayName(message: MessageWithRelations) {
   return message.contact?.name ?? message.whatsappAccount?.businessName ?? null;
 }
 
+function getBestDisplayName(contact: Awaited<ReturnType<typeof findMatchingContact>>, message: MessageWithRelations | null) {
+  return contact?.name || contact?.whatsappProfileName || (message ? getDisplayName(message) : null);
+}
+
 async function findMatchingContact(companyId: string, contactKey: string) {
   const candidates = phoneMatchCandidates(contactKey);
   const contacts = await prisma.contact.findMany({
@@ -166,7 +180,19 @@ async function findMatchingContact(companyId: string, contactKey: string) {
       phone: true,
       email: true,
       stage: true,
-      tags: true
+      tags: true,
+      whatsappProfileName: true,
+      profileSource: true,
+      lastReferralSourceType: true,
+      lastReferralSourceId: true,
+      lastReferralSourceUrl: true,
+      lastReferralHeadline: true,
+      lastReferralBody: true,
+      lastReferralMediaType: true,
+      lastReferralImageUrl: true,
+      lastReferralVideoUrl: true,
+      lastReferralCtwaClid: true,
+      lastReferralAt: true
     }
   });
   const contact = contacts.find((item) => {
@@ -180,7 +206,58 @@ async function findMatchingContact(companyId: string, contactKey: string) {
         phone: contact.phone,
         email: contact.email,
         status: contact.stage,
-        tags: contact.tags
+        tags: contact.tags,
+        whatsappProfileName: contact.whatsappProfileName,
+        profileSource: contact.profileSource,
+        lastReferralSourceType: contact.lastReferralSourceType,
+        lastReferralSourceId: contact.lastReferralSourceId,
+        lastReferralSourceUrl: contact.lastReferralSourceUrl,
+        lastReferralHeadline: contact.lastReferralHeadline,
+        lastReferralBody: contact.lastReferralBody,
+        lastReferralMediaType: contact.lastReferralMediaType,
+        lastReferralImageUrl: contact.lastReferralImageUrl,
+        lastReferralVideoUrl: contact.lastReferralVideoUrl,
+        lastReferralCtwaClid: contact.lastReferralCtwaClid,
+        lastReferralAt: contact.lastReferralAt?.toISOString() ?? null
+      }
+    : null;
+}
+
+function getConversationReferralContext(
+  contact: Awaited<ReturnType<typeof findMatchingContact>>,
+  messages: MessageWithRelations[]
+) {
+  if (contact?.lastReferralSourceType || contact?.lastReferralHeadline || contact?.lastReferralSourceId) {
+    return {
+      sourceType: contact.lastReferralSourceType,
+      sourceId: contact.lastReferralSourceId,
+      sourceUrl: contact.lastReferralSourceUrl,
+      headline: contact.lastReferralHeadline,
+      body: contact.lastReferralBody,
+      mediaType: contact.lastReferralMediaType,
+      imageUrl: contact.lastReferralImageUrl,
+      videoUrl: contact.lastReferralVideoUrl,
+      ctwaClid: contact.lastReferralCtwaClid,
+      referredAt: contact.lastReferralAt
+    };
+  }
+
+  const referralMessage = [...messages].reverse().find((message) => (
+    message.referralSourceType || message.referralHeadline || message.referralSourceId
+  ));
+
+  return referralMessage
+    ? {
+        sourceType: referralMessage.referralSourceType,
+        sourceId: referralMessage.referralSourceId,
+        sourceUrl: referralMessage.referralSourceUrl,
+        headline: referralMessage.referralHeadline,
+        body: referralMessage.referralBody,
+        mediaType: referralMessage.referralMediaType,
+        imageUrl: referralMessage.referralImageUrl,
+        videoUrl: referralMessage.referralVideoUrl,
+        ctwaClid: referralMessage.referralCtwaClid,
+        referredAt: referralMessage.createdAt.toISOString()
       }
     : null;
 }
