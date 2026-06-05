@@ -297,6 +297,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Click-to-WhatsApp referral context may include source type, source ID, source URL, headline, body preview, media type, and CTWA click ID. It may not appear for every message.
 - Use Inbox, Contacts, Message Logs, and approved CSV exports to review safe referral context. Do not request raw webhook payloads or provider secrets.
 
+### Conversation Quality Controls
+
+- Inbox supports internal read/unread, starred, priority, and quick label controls.
+- Priority values are Low, Normal, High, and Urgent.
+- Quick labels are Hot Lead, Need Follow-up, Payment Pending, Order Issue, and General.
+- New inbound messages mark conversations unread. Marking read/unread, starring, priority, and labels do not send customer messages or trigger provider actions.
+- Dashboard conversation quality metrics help operators triage unread, urgent, high-priority, starred, hot-lead, and payment-pending conversations.
+
 ## Safety Rules
 
 - Do not share access tokens.

@@ -19,8 +19,11 @@ Major active modules:
 - Order follow-up alerts, filters, and quick status/payment updates for manual order operations.
 - Product Catalog for manual product/model setup and faster Inbox order entry.
 - WhatsApp customer profile name capture and Click-to-WhatsApp referral context when Meta includes safe webhook fields.
+- Inbox conversation quality controls for read/unread, starred, priority, and quick labels.
 
 WhatsApp Cloud API can provide customer profile name in webhook contact data, but it generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and lets operators edit the customer name manually.
+
+Conversation quality controls are internal CRM states only. They do not send messages or change WhatsApp/Messenger provider behavior.
 
 Safe production-beta defaults remain:
 

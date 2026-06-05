@@ -9,13 +9,19 @@ export const dynamic = "force-dynamic";
 
 const validConversationChannels = ["WHATSAPP", "MESSENGER"] as const;
 const statusValues = ["OPEN", "PENDING", "CLOSED"] as const;
+const priorityValues = ["LOW", "NORMAL", "HIGH", "URGENT"] as const;
+const quickLabelValues = ["HOT_LEAD", "NEED_FOLLOW_UP", "PAYMENT_PENDING", "ORDER_ISSUE", "GENERAL", ""] as const;
 
 const stateSchema = z.object({
   status: z.enum(statusValues).optional(),
   assignedToId: z.string().trim().min(1).nullable().optional(),
   internalNote: z.string().max(2000).optional(),
   followUpAt: z.string().trim().nullable().optional(),
-  followUpDone: z.boolean().optional()
+  followUpDone: z.boolean().optional(),
+  isRead: z.boolean().optional(),
+  isStarred: z.boolean().optional(),
+  priority: z.enum(priorityValues).optional(),
+  quickLabel: z.enum(quickLabelValues).optional()
 });
 
 type ConversationChannel = (typeof validConversationChannels)[number];
@@ -77,7 +83,11 @@ export async function PATCH(
       ...(assignedToProvided ? { assignedToId } : {}),
       ...("internalNote" in parsed.data ? { internalNote: parsed.data.internalNote?.trim() ?? "" } : {}),
       ...(followUpAtProvided ? { followUpAt } : {}),
-      ...("followUpDone" in parsed.data ? { followUpDone: parsed.data.followUpDone ?? false } : {})
+      ...("followUpDone" in parsed.data ? { followUpDone: parsed.data.followUpDone ?? false } : {}),
+      ...("isRead" in parsed.data ? { isRead: parsed.data.isRead ?? false, lastReadAt: parsed.data.isRead ? new Date() : null } : {}),
+      ...("isStarred" in parsed.data ? { isStarred: parsed.data.isStarred ?? false } : {}),
+      ...("priority" in parsed.data ? { priority: parsed.data.priority ?? "NORMAL" } : {}),
+      ...("quickLabel" in parsed.data ? { quickLabel: parsed.data.quickLabel ?? "" } : {})
     };
 
     const state = await prisma.conversationState.upsert({
@@ -97,7 +107,12 @@ export async function PATCH(
         assignedToId,
         internalNote: parsed.data.internalNote?.trim() ?? "",
         followUpAt,
-        followUpDone: parsed.data.followUpDone ?? false
+        followUpDone: parsed.data.followUpDone ?? false,
+        isRead: parsed.data.isRead ?? false,
+        lastReadAt: parsed.data.isRead ? new Date() : null,
+        isStarred: parsed.data.isStarred ?? false,
+        priority: parsed.data.priority ?? "NORMAL",
+        quickLabel: parsed.data.quickLabel ?? ""
       },
       include: {
         assignedTo: {
@@ -119,7 +134,12 @@ export async function PATCH(
         internalNote: state.internalNote,
         followUpAt: state.followUpAt?.toISOString() ?? null,
         followUpDone: state.followUpDone,
-        followUpStatus: getFollowUpStatus(state.followUpAt, state.followUpDone)
+        followUpStatus: getFollowUpStatus(state.followUpAt, state.followUpDone),
+        isRead: state.isRead,
+        isStarred: state.isStarred,
+        priority: normalizePriority(state.priority),
+        quickLabel: normalizeQuickLabel(state.quickLabel),
+        lastReadAt: state.lastReadAt?.toISOString() ?? null
       }
     });
   } catch (error) {
@@ -134,6 +154,18 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+function normalizePriority(value: string | null | undefined): (typeof priorityValues)[number] {
+  return priorityValues.includes((value ?? "") as (typeof priorityValues)[number])
+    ? value as (typeof priorityValues)[number]
+    : "NORMAL";
+}
+
+function normalizeQuickLabel(value: string | null | undefined): (typeof quickLabelValues)[number] {
+  return quickLabelValues.includes((value ?? "") as (typeof quickLabelValues)[number])
+    ? value as (typeof quickLabelValues)[number]
+    : "";
 }
 
 function decodeConversationId(id: string): { channel: ConversationChannel; contactKey: string } {

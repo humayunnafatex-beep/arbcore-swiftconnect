@@ -178,6 +178,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not request raw webhook payloads, access tokens, Authorization headers, provider secrets, or customer profile photos. Do not claim WhatsApp Cloud API provides profile photos.
 - Escalation: Technical owner verifies safe parser fields; business/admin owner confirms ad setup and customer source expectations in Meta.
 
+## Conversation Quality State Issue
+
+- Symptoms: Read/unread, starred, priority, quick label, or Dashboard conversation quality counts look wrong.
+- Where to check: `/inbox`, selected conversation state controls, Dashboard Conversation Quality snapshot, and recent inbound message time.
+- Safe first action: Confirm the conversation was opened/updated by an operator and whether a new inbound customer message arrived after it was marked read.
+- What not to do: Do not troubleshoot this as WhatsApp/Messenger provider send failure. These are internal CRM states and do not send messages.
+- Escalation: Technical owner checks `ConversationState` scoping and filters; support owner confirms the operator workflow.
+
 ## Messenger Live Page Failure
 
 - Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.

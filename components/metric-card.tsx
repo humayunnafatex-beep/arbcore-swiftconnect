@@ -31,6 +31,12 @@ type DashboardStatistics = {
   dueFollowUps: number;
   upcomingFollowUps: number;
   doneFollowUps: number;
+  unreadConversations: number;
+  urgentConversations: number;
+  highPriorityConversations: number;
+  starredConversations: number;
+  paymentPendingConversations: number;
+  hotLeadConversations: number;
   failedMessages: number;
   sentMessages: number;
   receivedMessages: number;
@@ -228,6 +234,12 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     dueFollowUps: 0,
     upcomingFollowUps: 0,
     doneFollowUps: 0,
+    unreadConversations: 0,
+    urgentConversations: 0,
+    highPriorityConversations: 0,
+    starredConversations: 0,
+    paymentPendingConversations: 0,
+    hotLeadConversations: 0,
     failedMessages: 0,
     sentMessages: 0,
     receivedMessages: 0,
@@ -296,6 +308,19 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Pending", value: data.pendingConversations, href: "/inbox?status=PENDING", icon: Clock, tone: "blue" },
           { label: "Closed", value: data.closedConversations, href: "/inbox?status=CLOSED", icon: CheckCircle2, tone: "gray" },
           { label: "Unassigned", value: data.unassignedConversations, href: "/inbox?assignedTo=UNASSIGNED", icon: Users, tone: "purple" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Conversation Quality"
+        helper={data.unreadConversations ? "Unread and urgent conversations should be reviewed first." : "No unread conversations waiting."}
+        items={[
+          { label: "Unread", value: data.unreadConversations, href: "/inbox?read=UNREAD", icon: Inbox, tone: data.unreadConversations ? "green" : "gray" },
+          { label: "Urgent", value: data.urgentConversations, href: "/inbox?priority=URGENT", icon: AlertTriangle, tone: data.urgentConversations ? "red" : "gray" },
+          { label: "High priority", value: data.highPriorityConversations, href: "/inbox?priority=HIGH", icon: TrendingUp, tone: "purple" },
+          { label: "Starred", value: data.starredConversations, href: "/inbox?starred=STARRED", icon: CheckCircle2, tone: "blue" },
+          { label: "Hot leads", value: data.hotLeadConversations, href: "/inbox?quickLabel=HOT_LEAD", icon: Users, tone: "green" },
+          { label: "Payment pending", value: data.paymentPendingConversations, href: "/inbox?quickLabel=PAYMENT_PENDING", icon: CreditCard, tone: "red" }
         ]}
         loading={loading}
       />

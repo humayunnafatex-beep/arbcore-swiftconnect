@@ -102,7 +102,13 @@ export async function GET() {
         unassignedConversations,
         dueFollowUps,
         upcomingFollowUps,
-        doneFollowUps
+        doneFollowUps,
+        unreadConversations,
+        starredConversations,
+        highPriorityConversations,
+        urgentConversations,
+        paymentPendingConversations,
+        hotLeadConversations
       ] = await Promise.all([
         prisma.conversationState.groupBy({
           by: ["status"],
@@ -112,7 +118,13 @@ export async function GET() {
         prisma.conversationState.count({ where: { companyId, assignedToId: null } }),
         prisma.conversationState.count({ where: { companyId, followUpAt: { lte: new Date() }, followUpDone: false } }),
         prisma.conversationState.count({ where: { companyId, followUpAt: { gt: new Date() }, followUpDone: false } }),
-        prisma.conversationState.count({ where: { companyId, followUpDone: true } })
+        prisma.conversationState.count({ where: { companyId, followUpDone: true } }),
+        prisma.conversationState.count({ where: { companyId, isRead: false } }),
+        prisma.conversationState.count({ where: { companyId, isStarred: true } }),
+        prisma.conversationState.count({ where: { companyId, priority: "HIGH" } }),
+        prisma.conversationState.count({ where: { companyId, priority: "URGENT" } }),
+        prisma.conversationState.count({ where: { companyId, quickLabel: "PAYMENT_PENDING" } }),
+        prisma.conversationState.count({ where: { companyId, quickLabel: "HOT_LEAD" } })
       ]);
       const countByStatus = new Map(stateGroups.map((group) => [group.status, group._count._all]));
 
@@ -123,7 +135,13 @@ export async function GET() {
         unassignedConversations,
         dueFollowUps,
         upcomingFollowUps,
-        doneFollowUps
+        doneFollowUps,
+        unreadConversations,
+        starredConversations,
+        highPriorityConversations,
+        urgentConversations,
+        paymentPendingConversations,
+        hotLeadConversations
       };
     }, {
       openConversations: 0,
@@ -132,7 +150,13 @@ export async function GET() {
       unassignedConversations: 0,
       dueFollowUps: 0,
       upcomingFollowUps: 0,
-      doneFollowUps: 0
+      doneFollowUps: 0,
+      unreadConversations: 0,
+      starredConversations: 0,
+      highPriorityConversations: 0,
+      urgentConversations: 0,
+      paymentPendingConversations: 0,
+      hotLeadConversations: 0
     });
 
     const campaignsPromise = safeMetricGroup("campaigns", warnings, async () => {

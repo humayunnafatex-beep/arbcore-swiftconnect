@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "ConversationState" ADD COLUMN     "isRead" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isStarred" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "lastReadAt" TIMESTAMP(3),
+ADD COLUMN     "priority" TEXT NOT NULL DEFAULT 'NORMAL',
+ADD COLUMN     "quickLabel" TEXT NOT NULL DEFAULT '';

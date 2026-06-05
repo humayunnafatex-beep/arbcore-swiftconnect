@@ -152,6 +152,11 @@ model ConversationState {
   channel      String
   contactKey   String
   status       String   @default("OPEN")
+  isRead       Boolean  @default(false)
+  isStarred    Boolean  @default(false)
+  priority     String   @default("NORMAL")
+  quickLabel   String   @default("")
+  lastReadAt   DateTime?
   internalNote String   @default("")
   followUpAt   DateTime?
   followUpDone Boolean  @default(false)

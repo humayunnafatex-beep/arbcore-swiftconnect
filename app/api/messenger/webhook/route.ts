@@ -120,6 +120,12 @@ export async function POST(request: Request) {
         }
       });
 
+      await markConversationUnread({
+        companyId: company.id,
+        channel: "MESSENGER",
+        contactKey: message.senderPsid
+      });
+
       const matchedRule = await findMatchedAutoReplyRule(company.id, message.text);
 
       if (!matchedRule) {
@@ -204,6 +210,36 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+async function markConversationUnread({
+  companyId,
+  channel,
+  contactKey
+}: {
+  companyId: string;
+  channel: string;
+  contactKey: string;
+}) {
+  await prisma.conversationState.upsert({
+    where: {
+      companyId_channel_contactKey: {
+        companyId,
+        channel,
+        contactKey
+      }
+    },
+    update: {
+      isRead: false
+    },
+    create: {
+      companyId,
+      channel,
+      contactKey,
+      status: "OPEN",
+      isRead: false
+    }
+  });
 }
 
 async function findMatchedAutoReplyRule(companyId: string, inboundText: string) {

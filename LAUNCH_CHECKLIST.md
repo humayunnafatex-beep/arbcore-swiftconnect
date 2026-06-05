@@ -458,6 +458,17 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Click-to-WhatsApp referral context appears in Inbox, Contacts, Message Logs, and CSV exports when Meta includes referral data.
 - [ ] No raw webhook payload, access token, Authorization header, or provider secret is displayed or exported.
 
+## 9C-3. Conversation Quality QA
+
+- [ ] New inbound WhatsApp or Messenger message marks the conversation unread.
+- [ ] Mark read/unread works from selected Inbox conversation.
+- [ ] Star/unstar works and the starred filter shows starred conversations.
+- [ ] Priority can be set to Low, Normal, High, or Urgent.
+- [ ] Quick label can be set to Hot Lead, Need Follow-up, Payment Pending, Order Issue, General, or blank.
+- [ ] Filters work for unread/read, starred, priority, and quick label.
+- [ ] Dashboard shows unread, urgent, high-priority, starred, hot-lead, and payment-pending conversation metrics.
+- [ ] These internal CRM controls do not send messages automatically.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

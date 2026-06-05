@@ -53,7 +53,12 @@ export async function GET(
       select: {
         internalNote: true,
         followUpAt: true,
-        followUpDone: true
+        followUpDone: true,
+        isRead: true,
+        isStarred: true,
+        priority: true,
+        quickLabel: true,
+        lastReadAt: true
       }
     });
 
@@ -69,7 +74,12 @@ export async function GET(
           internalNote: state?.internalNote ?? "",
           followUpAt: state?.followUpAt?.toISOString() ?? null,
           followUpDone: state?.followUpDone ?? false,
-          followUpStatus: getFollowUpStatus(state?.followUpAt ?? null, state?.followUpDone ?? false)
+          followUpStatus: getFollowUpStatus(state?.followUpAt ?? null, state?.followUpDone ?? false),
+          isRead: state?.isRead ?? false,
+          isStarred: state?.isStarred ?? false,
+          priority: normalizePriority(state?.priority),
+          quickLabel: normalizeQuickLabel(state?.quickLabel),
+          lastReadAt: state?.lastReadAt?.toISOString() ?? null
         },
         messages: orderedMessages.map((message) => ({
           id: message.id,
@@ -286,6 +296,20 @@ function getFollowUpStatus(followUpAt: Date | null, followUpDone: boolean): "NON
   if (followUpDone) return "DONE";
   if (!followUpAt) return "NONE";
   return followUpAt.getTime() <= Date.now() ? "DUE" : "UPCOMING";
+}
+
+function normalizePriority(value: string | null | undefined): "LOW" | "NORMAL" | "HIGH" | "URGENT" {
+  return value === "LOW" || value === "HIGH" || value === "URGENT" ? value : "NORMAL";
+}
+
+function normalizeQuickLabel(value: string | null | undefined): "" | "HOT_LEAD" | "NEED_FOLLOW_UP" | "PAYMENT_PENDING" | "ORDER_ISSUE" | "GENERAL" {
+  return value === "HOT_LEAD" ||
+    value === "NEED_FOLLOW_UP" ||
+    value === "PAYMENT_PENDING" ||
+    value === "ORDER_ISSUE" ||
+    value === "GENERAL"
+    ? value
+    : "";
 }
 
 function previewText(value: string, maxLength = 140) {

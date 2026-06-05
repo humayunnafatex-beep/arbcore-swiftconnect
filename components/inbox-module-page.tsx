@@ -24,6 +24,12 @@ type ConversationStatus = "OPEN" | "PENDING" | "CLOSED";
 type StatusFilter = "ALL" | ConversationStatus;
 type FollowUpStatus = "NONE" | "DUE" | "UPCOMING" | "DONE";
 type FollowUpFilter = "ALL" | FollowUpStatus;
+type ReadFilter = "ALL" | "UNREAD" | "READ";
+type PriorityValue = "LOW" | "NORMAL" | "HIGH" | "URGENT";
+type PriorityFilter = "ALL" | PriorityValue;
+type QuickLabelValue = "" | "HOT_LEAD" | "NEED_FOLLOW_UP" | "PAYMENT_PENDING" | "ORDER_ISSUE" | "GENERAL";
+type QuickLabelFilter = "ALL" | Exclude<QuickLabelValue, "">;
+type StarredFilter = "ALL" | "STARRED";
 type ReplyStatus = "not_configured" | "validation_failed" | "provider_error" | "sent_successfully";
 type ContactStage = ContactStatusValue;
 
@@ -84,6 +90,11 @@ type ConversationSummary = {
   followUpAt: string | null;
   followUpDone: boolean;
   followUpStatus: FollowUpStatus;
+  isRead: boolean;
+  isStarred: boolean;
+  priority: PriorityValue;
+  quickLabel: QuickLabelValue;
+  lastReadAt: string | null;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -137,6 +148,11 @@ type ConversationDetailResponse = {
       followUpAt: string | null;
       followUpDone: boolean;
       followUpStatus: FollowUpStatus;
+      isRead: boolean;
+      isStarred: boolean;
+      priority: PriorityValue;
+      quickLabel: QuickLabelValue;
+      lastReadAt: string | null;
     };
     messages: InboxMessage[];
   };
@@ -173,6 +189,11 @@ type StateResponse = {
     followUpAt: string | null;
     followUpDone: boolean;
     followUpStatus: FollowUpStatus;
+    isRead: boolean;
+    isStarred: boolean;
+    priority: PriorityValue;
+    quickLabel: QuickLabelValue;
+    lastReadAt: string | null;
   };
   error?: string;
 };
@@ -268,6 +289,19 @@ const emptyOrderForm = {
 
 const contactStages = getContactStatusOptions();
 const orderMessageTemplates = getOrderMessageTemplates();
+const priorityOptions: Array<{ value: PriorityValue; label: string }> = [
+  { value: "LOW", label: "Low" },
+  { value: "NORMAL", label: "Normal" },
+  { value: "HIGH", label: "High" },
+  { value: "URGENT", label: "Urgent" }
+];
+const quickLabelOptions: Array<{ value: Exclude<QuickLabelValue, "">; label: string }> = [
+  { value: "HOT_LEAD", label: "Hot Lead" },
+  { value: "NEED_FOLLOW_UP", label: "Need Follow-up" },
+  { value: "PAYMENT_PENDING", label: "Payment Pending" },
+  { value: "ORDER_ISSUE", label: "Order Issue" },
+  { value: "GENERAL", label: "General" }
+];
 
 const replyStatusText: Record<ReplyStatus, string> = {
   not_configured: "This channel is not configured for real replies.",
@@ -285,6 +319,10 @@ export function InboxModulePage() {
   const [channel, setChannel] = useState<ChannelFilter>(initialFilters.channel);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialFilters.status);
   const [followUpFilter, setFollowUpFilter] = useState<FollowUpFilter>(initialFilters.followUp);
+  const [readFilter, setReadFilter] = useState<ReadFilter>(initialFilters.read);
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>(initialFilters.priority);
+  const [quickLabelFilter, setQuickLabelFilter] = useState<QuickLabelFilter>(initialFilters.quickLabel);
+  const [starredFilter, setStarredFilter] = useState<StarredFilter>(initialFilters.starred);
   const [assignedToFilter, setAssignedToFilter] = useState(initialFilters.assignedTo);
   const [contactStatusFilter, setContactStatusFilter] = useState(initialFilters.contactStatus);
   const [contactTagFilter, setContactTagFilter] = useState(initialFilters.contactTag);
@@ -303,9 +341,20 @@ export function InboxModulePage() {
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
-  const [draftState, setDraftState] = useState<{ status: ConversationStatus; assignedToId: string }>({
+  const [draftState, setDraftState] = useState<{
+    status: ConversationStatus;
+    assignedToId: string;
+    isRead: boolean;
+    isStarred: boolean;
+    priority: PriorityValue;
+    quickLabel: QuickLabelValue;
+  }>({
     status: "OPEN",
-    assignedToId: "UNASSIGNED"
+    assignedToId: "UNASSIGNED",
+    isRead: false,
+    isStarred: false,
+    priority: "NORMAL",
+    quickLabel: ""
   });
   const [internalDraft, setInternalDraft] = useState<{ internalNote: string; followUpAt: string; followUpDone: boolean }>({
     internalNote: "",
@@ -349,6 +398,10 @@ export function InboxModulePage() {
         channel,
         status: statusFilter,
         followUp: followUpFilter,
+        read: readFilter,
+        priority: priorityFilter,
+        quickLabel: quickLabelFilter,
+        starred: starredFilter,
         assignedTo: assignedToFilter,
         contactStatus: contactStatusFilter,
         contactTag: contactTagFilter,
@@ -378,7 +431,7 @@ export function InboxModulePage() {
     } finally {
       setLoading(false);
     }
-  }, [assignedToFilter, channel, contactStatusFilter, contactTagFilter, followUpFilter, search, statusFilter]);
+  }, [assignedToFilter, channel, contactStatusFilter, contactTagFilter, followUpFilter, priorityFilter, quickLabelFilter, readFilter, search, starredFilter, statusFilter]);
 
   useEffect(() => {
     void loadConversations();
@@ -464,7 +517,11 @@ export function InboxModulePage() {
 
     setDraftState({
       status: selectedConversation.status,
-      assignedToId: selectedConversation.assignedTo?.id ?? "UNASSIGNED"
+      assignedToId: selectedConversation.assignedTo?.id ?? "UNASSIGNED",
+      isRead: selectedConversation.isRead,
+      isStarred: selectedConversation.isStarred,
+      priority: selectedConversation.priority,
+      quickLabel: selectedConversation.quickLabel
     });
     setStateMessage(null);
   }, [selectedConversation]);
@@ -609,13 +666,20 @@ export function InboxModulePage() {
     setChannel("ALL");
     setStatusFilter("ALL");
     setFollowUpFilter("ALL");
+    setReadFilter("ALL");
+    setPriorityFilter("ALL");
+    setQuickLabelFilter("ALL");
+    setStarredFilter("ALL");
     setAssignedToFilter("ALL");
     setContactStatusFilter("ALL");
     setContactTagFilter("");
     setSearch("");
   }
 
-  async function saveConversationState(options?: { clearFollowUp?: boolean }) {
+  async function saveConversationState(options?: {
+    clearFollowUp?: boolean;
+    qualityPatch?: Partial<Pick<typeof draftState, "isRead" | "isStarred" | "priority" | "quickLabel">>;
+  }) {
     if (!selectedId) return;
 
     setStateSaving(true);
@@ -628,6 +692,10 @@ export function InboxModulePage() {
         body: JSON.stringify({
           status: draftState.status,
           assignedToId: draftState.assignedToId === "UNASSIGNED" ? null : draftState.assignedToId,
+          isRead: options?.qualityPatch?.isRead ?? draftState.isRead,
+          isStarred: options?.qualityPatch?.isStarred ?? draftState.isStarred,
+          priority: options?.qualityPatch?.priority ?? draftState.priority,
+          quickLabel: options?.qualityPatch?.quickLabel ?? draftState.quickLabel,
           internalNote: internalDraft.internalNote,
           followUpAt: options?.clearFollowUp ? null : internalDraft.followUpAt || null,
           followUpDone: options?.clearFollowUp ? false : internalDraft.followUpDone
@@ -837,7 +905,7 @@ export function InboxModulePage() {
       </section>
 
       <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[140px_140px_155px_180px_165px_minmax(220px,1fr)_150px_auto_auto]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-[130px_130px_140px_130px_140px_155px_150px_165px_minmax(220px,1fr)_140px_auto_auto]">
           <select className={`${inputClassName} w-full`} value={channel} onChange={(event) => setChannel(event.target.value as ChannelFilter)}>
             <option value="ALL">All channels</option>
             <option value="WHATSAPP">WhatsApp</option>
@@ -855,6 +923,26 @@ export function InboxModulePage() {
             <option value="DUE">Due</option>
             <option value="UPCOMING">Upcoming</option>
             <option value="DONE">Done</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={readFilter} onChange={(event) => setReadFilter(event.target.value as ReadFilter)}>
+            <option value="ALL">All read states</option>
+            <option value="UNREAD">Unread</option>
+            <option value="READ">Read</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={starredFilter} onChange={(event) => setStarredFilter(event.target.value as StarredFilter)}>
+            <option value="ALL">All stars</option>
+            <option value="STARRED">Starred</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}>
+            <option value="ALL">All priorities</option>
+            <option value="HIGH">High</option>
+            <option value="URGENT">Urgent</option>
+          </select>
+          <select className={`${inputClassName} w-full`} value={quickLabelFilter} onChange={(event) => setQuickLabelFilter(event.target.value as QuickLabelFilter)}>
+            <option value="ALL">All labels</option>
+            {quickLabelOptions.map((label) => (
+              <option key={label.value} value={label.value}>{label.label}</option>
+            ))}
           </select>
           <select className={`${inputClassName} w-full`} value={assignedToFilter} onChange={(event) => setAssignedToFilter(event.target.value)}>
             <option value="ALL">All assignees</option>
@@ -875,7 +963,7 @@ export function InboxModulePage() {
               className={`${inputClassName} w-full pl-9`}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search phone, PSID, provider ID, or message preview"
+              placeholder="Search phone, name, profile, tag, ad, provider ID, or message"
             />
           </label>
           <input
@@ -917,7 +1005,8 @@ export function InboxModulePage() {
                   onClick={() => setSelectedId(conversation.id)}
                   className={cn(
                     "w-full rounded-[18px] border p-3 text-left transition",
-                    selectedId === conversation.id ? "border-royal bg-blue-50 shadow-sm" : "border-blue-100 bg-white hover:bg-blue-50"
+                    selectedId === conversation.id ? "border-royal bg-blue-50 shadow-sm" : "border-blue-100 bg-white hover:bg-blue-50",
+                    !conversation.isRead && "ring-2 ring-emerald-100"
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -926,7 +1015,7 @@ export function InboxModulePage() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-black text-ink">{conversation.displayName ?? conversation.contactKey}</p>
+                        <p className={cn("truncate text-sm text-ink", conversation.isRead ? "font-black" : "font-black")}>{conversation.displayName ?? conversation.contactKey}</p>
                         <span className="shrink-0 text-[11px] font-bold text-slate-400">{formatDate(conversation.lastMessageAt)}</span>
                       </div>
                       <p className="mt-1 truncate text-xs font-semibold text-slate-500">{conversation.contactKey}</p>
@@ -936,6 +1025,10 @@ export function InboxModulePage() {
                       <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-slate-600">{conversation.lastMessagePreview || "No message preview"}</p>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <StatusPill label={conversation.channel} tone={conversation.channel === "WHATSAPP" ? "blue" : "purple"} />
+                        {!conversation.isRead ? <StatusPill label="Unread" tone="green" /> : null}
+                        {conversation.isStarred ? <StatusPill label="Starred" tone="purple" /> : null}
+                        {conversation.priority !== "NORMAL" ? <StatusPill label={formatPriority(conversation.priority)} tone={priorityTone(conversation.priority)} /> : null}
+                        {conversation.quickLabel ? <StatusPill label={formatQuickLabel(conversation.quickLabel)} tone="blue" /> : null}
                         <StatusPill label={conversation.status} tone={conversation.status === "OPEN" ? "green" : conversation.status === "PENDING" ? "blue" : "gray"} />
                         <StatusPill label={conversation.lastDirection} tone={conversation.lastDirection === "INBOUND" ? "green" : "blue"} />
                         <StatusPill label={conversation.lastStatus} tone={conversation.lastStatus === "FAILED" ? "red" : "gray"} />
@@ -972,11 +1065,57 @@ export function InboxModulePage() {
                     <div className="flex flex-wrap gap-2">
                       <StatusPill label={selectedConversation.status} tone={selectedConversation.status === "OPEN" ? "green" : selectedConversation.status === "PENDING" ? "blue" : "gray"} />
                       <StatusPill label={`${selectedConversation.messageCount} messages`} tone="gray" />
+                      {!selectedConversation.isRead ? <StatusPill label="Unread" tone="green" /> : <StatusPill label="Read" tone="gray" />}
+                      {selectedConversation.isStarred ? <StatusPill label="Starred" tone="purple" /> : null}
+                      {selectedConversation.priority !== "NORMAL" ? <StatusPill label={formatPriority(selectedConversation.priority)} tone={priorityTone(selectedConversation.priority)} /> : null}
+                      {selectedConversation.quickLabel ? <StatusPill label={formatQuickLabel(selectedConversation.quickLabel)} tone="blue" /> : null}
                       {selectedConversation.followUpStatus !== "NONE" ? <StatusPill label={formatFollowUpStatus(selectedConversation.followUpStatus)} tone={followUpTone(selectedConversation.followUpStatus)} /> : null}
                       <StatusPill label={`${selectedConversation.inboundCount} inbound`} tone="green" />
                       <StatusPill label={`${selectedConversation.outboundCount} outbound`} tone="blue" />
                     </div>
                   ) : null}
+                </div>
+
+                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                    <button
+                      className={secondaryButtonClassName}
+                      type="button"
+                      onClick={() => void saveConversationState({ qualityPatch: { isRead: !draftState.isRead } })}
+                      disabled={stateSaving}
+                    >
+                      {draftState.isRead ? "Mark Unread" : "Mark Read"}
+                    </button>
+                    <button
+                      className={secondaryButtonClassName}
+                      type="button"
+                      onClick={() => void saveConversationState({ qualityPatch: { isStarred: !draftState.isStarred } })}
+                      disabled={stateSaving}
+                    >
+                      {draftState.isStarred ? "Unstar" : "Star"}
+                    </button>
+                    <label className="grid gap-1.5 text-xs font-black text-slate-500">
+                      Priority
+                      <select className={`${inputClassName} w-full lg:w-40`} value={draftState.priority} onChange={(event) => setDraftState((current) => ({ ...current, priority: event.target.value as PriorityValue }))}>
+                        {priorityOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1.5 text-xs font-black text-slate-500">
+                      Quick label
+                      <select className={`${inputClassName} w-full lg:w-52`} value={draftState.quickLabel} onChange={(event) => setDraftState((current) => ({ ...current, quickLabel: event.target.value as QuickLabelValue }))}>
+                        <option value="">No label</option>
+                        {quickLabelOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className={`${primaryButtonClassName} lg:self-end`} type="button" onClick={() => void saveConversationState()} disabled={stateSaving}>
+                      Save Quality
+                    </button>
+                  </div>
+                  <p className="mt-3 text-xs font-semibold text-slate-500">Read/unread, star, priority, and quick labels are internal CRM states only. They do not send customer messages.</p>
                 </div>
 
                 <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
@@ -1468,6 +1607,21 @@ function avatarInitials(value: string) {
   return cleaned.slice(0, 2).toUpperCase();
 }
 
+function formatPriority(value: PriorityValue) {
+  return priorityOptions.find((option) => option.value === value)?.label ?? "Normal";
+}
+
+function priorityTone(value: PriorityValue): "blue" | "green" | "gray" | "purple" | "red" {
+  if (value === "URGENT") return "red";
+  if (value === "HIGH") return "purple";
+  if (value === "LOW") return "gray";
+  return "blue";
+}
+
+function formatQuickLabel(value: QuickLabelValue) {
+  return quickLabelOptions.find((option) => option.value === value)?.label ?? "General";
+}
+
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {
   return (
     <span
@@ -1551,12 +1705,38 @@ function parseFollowUpFilter(value: string | null): FollowUpFilter {
   return value === "NONE" || value === "DUE" || value === "UPCOMING" || value === "DONE" ? value : "ALL";
 }
 
+function parseReadFilter(value: string | null): ReadFilter {
+  return value === "UNREAD" || value === "READ" ? value : "ALL";
+}
+
+function parsePriorityFilter(value: string | null): PriorityFilter {
+  return value === "LOW" || value === "NORMAL" || value === "HIGH" || value === "URGENT" ? value : "ALL";
+}
+
+function parseQuickLabelFilter(value: string | null): QuickLabelFilter {
+  return value === "HOT_LEAD" ||
+    value === "NEED_FOLLOW_UP" ||
+    value === "PAYMENT_PENDING" ||
+    value === "ORDER_ISSUE" ||
+    value === "GENERAL"
+    ? value
+    : "ALL";
+}
+
+function parseStarredFilter(value: string | null): StarredFilter {
+  return value === "STARRED" ? value : "ALL";
+}
+
 function getInitialFilters() {
   if (typeof window === "undefined") {
     return {
       channel: "ALL" as ChannelFilter,
       status: "ALL" as StatusFilter,
       followUp: "ALL" as FollowUpFilter,
+      read: "ALL" as ReadFilter,
+      priority: "ALL" as PriorityFilter,
+      quickLabel: "ALL" as QuickLabelFilter,
+      starred: "ALL" as StarredFilter,
       assignedTo: "ALL",
       contactStatus: "ALL",
       contactTag: ""
@@ -1569,6 +1749,10 @@ function getInitialFilters() {
     channel: parseChannelFilter(params.get("channel")),
     status: parseStatusFilter(params.get("status")),
     followUp: parseFollowUpFilter(params.get("followUp")),
+    read: parseReadFilter(params.get("read")),
+    priority: parsePriorityFilter(params.get("priority")),
+    quickLabel: parseQuickLabelFilter(params.get("quickLabel")),
+    starred: parseStarredFilter(params.get("starred")),
     assignedTo: params.get("assignedTo")?.trim() || "ALL",
     contactStatus: params.get("contactStatus") ? normalizeContactStatus(params.get("contactStatus")) : "ALL",
     contactTag: params.get("contactTag")?.trim() || ""

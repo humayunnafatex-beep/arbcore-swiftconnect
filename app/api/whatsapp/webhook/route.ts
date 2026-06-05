@@ -111,6 +111,12 @@ export async function POST(request: Request) {
         }
       });
 
+      await markConversationUnread({
+        companyId: company.id,
+        channel: "WHATSAPP",
+        contactKey: message.from
+      });
+
       if (!message.text) {
         continue;
       }
@@ -268,6 +274,36 @@ function getProviderMetadataSummary(message: {
   }
 
   return previewText(parts.join("; "), 360);
+}
+
+async function markConversationUnread({
+  companyId,
+  channel,
+  contactKey
+}: {
+  companyId: string;
+  channel: string;
+  contactKey: string;
+}) {
+  await prisma.conversationState.upsert({
+    where: {
+      companyId_channel_contactKey: {
+        companyId,
+        channel,
+        contactKey
+      }
+    },
+    update: {
+      isRead: false
+    },
+    create: {
+      companyId,
+      channel,
+      contactKey,
+      status: "OPEN",
+      isRead: false
+    }
+  });
 }
 
 async function findOrCreateWebhookContact({

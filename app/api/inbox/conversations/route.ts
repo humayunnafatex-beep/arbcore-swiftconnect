@@ -13,6 +13,10 @@ const channels = ["ALL", "WHATSAPP", "MESSENGER"] as const;
 const directions = ["ALL", "INBOUND", "OUTBOUND"] as const;
 const statuses = ["ALL", "OPEN", "PENDING", "CLOSED"] as const;
 const followUps = ["ALL", "NONE", "DUE", "UPCOMING", "DONE"] as const;
+const readStates = ["ALL", "UNREAD", "READ"] as const;
+const priorities = ["ALL", "LOW", "NORMAL", "HIGH", "URGENT"] as const;
+const quickLabels = ["ALL", "HOT_LEAD", "NEED_FOLLOW_UP", "PAYMENT_PENDING", "ORDER_ISSUE", "GENERAL"] as const;
+const starredStates = ["ALL", "STARRED"] as const;
 const validConversationChannels = ["WHATSAPP", "MESSENGER"] as const;
 
 export async function GET(request: Request) {
@@ -24,6 +28,10 @@ export async function GET(request: Request) {
     const direction = parseOption(searchParams.get("direction"), directions, "ALL");
     const status = parseOption(searchParams.get("status"), statuses, "ALL");
     const followUp = parseOption(searchParams.get("followUp"), followUps, "ALL");
+    const readState = parseOption(searchParams.get("read"), readStates, "ALL");
+    const priority = parseOption(searchParams.get("priority"), priorities, "ALL");
+    const quickLabel = parseOption(searchParams.get("quickLabel"), quickLabels, "ALL");
+    const starred = parseOption(searchParams.get("starred"), starredStates, "ALL");
     const assignedTo = searchParams.get("assignedTo")?.trim() || "ALL";
     const contactStatus = searchParams.get("contactStatus")?.trim();
     const contactTag = searchParams.get("contactTag")?.trim();
@@ -63,6 +71,11 @@ export async function GET(request: Request) {
           followUpAt: null,
           followUpDone: false,
           followUpStatus: "NONE",
+          isRead: false,
+          isStarred: false,
+          priority: "NORMAL",
+          quickLabel: "",
+          lastReadAt: null,
           messageCount: 1,
           failedCount: message.status === "FAILED" ? 1 : 0,
           inboundCount: message.direction === "INBOUND" ? 1 : 0,
@@ -135,11 +148,20 @@ export async function GET(request: Request) {
           internalNotePreview: previewText(state?.internalNote ?? "", 80),
           followUpAt: state?.followUpAt?.toISOString() ?? null,
           followUpDone: state?.followUpDone ?? false,
-          followUpStatus: getFollowUpStatus(state?.followUpAt ?? null, state?.followUpDone ?? false)
+          followUpStatus: getFollowUpStatus(state?.followUpAt ?? null, state?.followUpDone ?? false),
+          isRead: state?.isRead ?? false,
+          isStarred: state?.isStarred ?? false,
+          priority: normalizePriority(state?.priority),
+          quickLabel: normalizeQuickLabel(state?.quickLabel),
+          lastReadAt: state?.lastReadAt?.toISOString() ?? null
         };
       })
       .filter((conversation) => status === "ALL" || conversation.status === status)
       .filter((conversation) => followUp === "ALL" || conversation.followUpStatus === followUp)
+      .filter((conversation) => readState === "ALL" || (readState === "READ" ? conversation.isRead : !conversation.isRead))
+      .filter((conversation) => priority === "ALL" || conversation.priority === priority)
+      .filter((conversation) => quickLabel === "ALL" || conversation.quickLabel === quickLabel)
+      .filter((conversation) => starred === "ALL" || conversation.isStarred)
       .filter((conversation) => {
         if (assignedTo === "ALL") return true;
         if (assignedTo === "UNASSIGNED") return !conversation.assignedTo;
@@ -201,6 +223,11 @@ type ConversationSummary = {
   followUpAt: string | null;
   followUpDone: boolean;
   followUpStatus: "NONE" | "DUE" | "UPCOMING" | "DONE";
+  isRead: boolean;
+  isStarred: boolean;
+  priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+  quickLabel: "" | "HOT_LEAD" | "NEED_FOLLOW_UP" | "PAYMENT_PENDING" | "ORDER_ISSUE" | "GENERAL";
+  lastReadAt: string | null;
   messageCount: number;
   failedCount: number;
   inboundCount: number;
@@ -242,9 +269,16 @@ function buildMessageWhere({
           OR: [
             { body: { contains: search, mode: "insensitive" } },
             { providerMessageId: { contains: search, mode: "insensitive" } },
+            { referralHeadline: { contains: search, mode: "insensitive" } },
+            { referralBody: { contains: search, mode: "insensitive" } },
+            { referralSourceId: { contains: search, mode: "insensitive" } },
             { contact: { name: { contains: search, mode: "insensitive" } } },
             { contact: { whatsappProfileName: { contains: search, mode: "insensitive" } } },
             { contact: { phone: { contains: search, mode: "insensitive" } } },
+            { contact: { tags: { contains: search, mode: "insensitive" } } },
+            { contact: { lastReferralHeadline: { contains: search, mode: "insensitive" } } },
+            { contact: { lastReferralBody: { contains: search, mode: "insensitive" } } },
+            { contact: { lastReferralSourceId: { contains: search, mode: "insensitive" } } },
             { whatsappAccount: { businessName: { contains: search, mode: "insensitive" } } },
             { whatsappAccount: { phoneNumber: { contains: search, mode: "insensitive" } } }
           ]
@@ -270,6 +304,20 @@ function normalizeChannel(value: string): ConversationChannel {
 
 function normalizeConversationStatus(value: string | null | undefined): "OPEN" | "PENDING" | "CLOSED" {
   return value === "PENDING" || value === "CLOSED" ? value : "OPEN";
+}
+
+function normalizePriority(value: string | null | undefined): ConversationSummary["priority"] {
+  return value === "LOW" || value === "HIGH" || value === "URGENT" ? value : "NORMAL";
+}
+
+function normalizeQuickLabel(value: string | null | undefined): ConversationSummary["quickLabel"] {
+  return value === "HOT_LEAD" ||
+    value === "NEED_FOLLOW_UP" ||
+    value === "PAYMENT_PENDING" ||
+    value === "ORDER_ISSUE" ||
+    value === "GENERAL"
+    ? value
+    : "";
 }
 
 function getFollowUpStatus(followUpAt: Date | null, followUpDone: boolean): "NONE" | "DUE" | "UPCOMING" | "DONE" {

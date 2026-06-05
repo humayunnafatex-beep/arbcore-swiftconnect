@@ -416,6 +416,14 @@ When Meta includes Click-to-WhatsApp referral data, ARBCore stores safe source c
 
 WhatsApp Cloud API generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and does not fake profile pictures.
 
+## 12E. Conversation Quality Controls
+
+Inbox conversations can be marked read or unread, starred, assigned a priority, and tagged with a quick label. Priority levels are Low, Normal, High, and Urgent. Quick labels are Hot Lead, Need Follow-up, Payment Pending, Order Issue, and General.
+
+New inbound customer messages mark the conversation unread. These controls are internal CRM states only and do not send messages, trigger automation, or change WhatsApp/Messenger provider behavior.
+
+The Dashboard shows a conversation quality snapshot for unread, urgent, high-priority, starred, hot-lead, and payment-pending conversations.
+
 ## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.

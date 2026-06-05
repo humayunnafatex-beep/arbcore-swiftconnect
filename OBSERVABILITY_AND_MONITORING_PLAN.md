@@ -130,6 +130,8 @@ For unsupported WhatsApp messages, evidence should include only the safe body pr
 
 For WhatsApp profile and ad referral context, evidence should include only safe customer display name, `whatsappProfileName`, source type, source ID, headline, CTWA click ID, and timestamp. Referral context may be absent when Meta does not include it. Never collect profile photos, raw webhook payloads, provider secrets, access tokens, or Authorization headers.
 
+For conversation quality controls, evidence should include conversation channel, contact key or safe display name, read/unread state, starred state, priority, quick label, assignee, and timestamp. These are internal CRM states only and should not be monitored as provider sends or webhook delivery events.
+
 For Messenger live setup, monitor Message Logs for `MESSENGER / INBOUND / RECEIVED`, `MESSENGER / OUTBOUND / SENT`, and `FAILED` patterns. Evidence should include Page ID presence, PSID used, safe provider error text, and webhook event time only. Never collect Page Access Tokens or Authorization headers.
 
 For Auto Reply Analytics, evidence should include rule name, channel, status, safe preview, timestamp, and safe error summary only. Never collect full webhook payloads, provider Authorization headers, or access tokens.
