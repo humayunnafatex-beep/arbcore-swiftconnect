@@ -73,15 +73,15 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 ## Database Migration Issue
 
 - Symptoms: Build/deploy passes but production route errors occur after schema change, or Prisma migration reports failure.
-- Where to check: Vercel logs, Supabase logs, `_prisma_migrations`, `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`.
+- Where to check: Vercel logs, Supabase logs, `_prisma_migrations`, `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`, `PRODUCTION_MIGRATION_SAFETY.md`.
 - Safe first action: Stop additional migration attempts and collect migration name/status.
-- What not to do: Do not run `prisma migrate reset`. Do not delete migration rows manually.
+- What not to do: Do not run `prisma migrate reset`. Do not delete migration rows manually. Do not run production migrations while `DIRECT_URL` is still classified as pooled unless the migration owner has explicitly reviewed the connection plan.
 - Escalation: Technical owner decides forward-fix migration or controlled restore.
 
 ## Dashboard Metric Warning
 
 - Symptoms: Dashboard loads but shows that some metrics are temporarily unavailable, or `/api/dashboard/statistics` includes a `warnings` array.
-- Where to check: `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`, recent Prisma migrations, Vercel logs, and Supabase migration status.
+- Where to check: `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`, `PRODUCTION_MIGRATION_SAFETY.md`, recent Prisma migrations, Vercel logs, and Supabase migration status.
 - Safe first action: Identify which optional metric module is warning and confirm whether related production migrations are pending.
 - What not to do: Do not reset production, expose raw Prisma errors, paste database URLs, or hide repeated warnings without migration review.
 

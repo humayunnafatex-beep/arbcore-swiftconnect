@@ -289,7 +289,9 @@ function auditEnvironment() {
       : "WARN",
     "DIRECT_URL",
     directUrl.present
-      ? `DIRECT_URL is ${formatDbClassification("DIRECT_URL")}. Prisma production migrations should use the direct Supabase connection.`
+      ? directUrl.classification === "likely pooled"
+        ? `DIRECT_URL is ${formatDbClassification("DIRECT_URL")}. This is not a runtime blocker, but Prisma production migrations should not run until DIRECT_URL uses the direct/non-pooled Supabase connection.`
+        : `DIRECT_URL is ${formatDbClassification("DIRECT_URL")}. Prisma production migrations should use the direct/non-pooled Supabase connection.`
       : "DIRECT_URL is missing. Build/runtime may still work, but production migrations need a direct Supabase connection.",
   );
 

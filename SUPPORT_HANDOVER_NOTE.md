@@ -336,6 +336,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - [ ] Check latest Vercel deployment status.
 - [ ] Run the read-only production verification script if route health is uncertain.
 - [ ] Check Supabase database health.
+- [ ] If production migration work is being discussed, confirm `PRODUCTION_MIGRATION_SAFETY.md` has been reviewed and that a pooled `DIRECT_URL` warning is treated as a migration safety issue, not a customer runtime outage.
 - [ ] Check Meta app and channel status.
 - [ ] Check ARBCore Settings for channel fields.
 - [ ] Check Channel Center diagnostics.

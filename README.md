@@ -167,7 +167,7 @@ See `POSTGRES_MIGRATION_GUIDE.md` for the full production-postgres branch plan, 
 
 For a Vercel deployment using Supabase PostgreSQL, see `VERCEL_SUPABASE_DEPLOYMENT_GUIDE.md`.
 
-Before applying Prisma migrations to Supabase production, complete `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md` and confirm connection-string classification with `SUPABASE_DB_CONNECTION_GUIDE.md`.
+Before applying Prisma migrations to Supabase production, complete `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`, review `PRODUCTION_MIGRATION_SAFETY.md`, and confirm connection-string classification with `SUPABASE_DB_CONNECTION_GUIDE.md`.
 
 ### Supabase, Neon, And Railway Notes
 
@@ -304,6 +304,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `PRODUCTION_DEPLOYMENT_VERIFICATION.md`: post-deployment production verification guide.
 - `PRODUCTION_MANUAL_QA_CHECKLIST.md`: manual production QA checklist.
 - `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`: pre-migration safety gate before applying Prisma migrations to Supabase production.
+- `PRODUCTION_MIGRATION_SAFETY.md`: direct vs pooled database URL safety guide for production Prisma migration work.
 - `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md`: Supabase production migration verification checklist.
 - `SUPABASE_DB_CONNECTION_GUIDE.md`: safe guide for pooled `DATABASE_URL` and direct `DIRECT_URL` usage.
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`: safe production monitoring plan for provider, webhook, database, deployment, and environment readiness signals.
