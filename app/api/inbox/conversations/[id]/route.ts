@@ -78,6 +78,10 @@ export async function GET(
           bodyPreview: previewText(message.body),
           providerMessageId: message.providerMessageId,
           errorMessage: message.errorMessage,
+          mediaId: message.mediaId,
+          mediaType: message.mediaType,
+          mediaMimeType: message.mediaMimeType,
+          mediaFilename: message.mediaFilename,
           createdAt: message.createdAt
         }))
       }

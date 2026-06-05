@@ -73,6 +73,10 @@ type InboxMessage = {
   bodyPreview: string;
   providerMessageId: string | null;
   errorMessage: string | null;
+  mediaId: string;
+  mediaType: string;
+  mediaMimeType: string;
+  mediaFilename: string;
   createdAt: string;
 };
 
@@ -1222,9 +1226,26 @@ export function InboxModulePage() {
                           )}
                         >
                           <p className="whitespace-pre-wrap leading-6">{message.body || message.bodyPreview}</p>
+                          {message.direction === "INBOUND" && message.mediaType === "audio" && message.mediaId ? (
+                            <div className="mt-3 rounded-[14px] bg-blue-50 p-3">
+                              <p className="mb-2 text-xs font-black uppercase text-royal">Audio message</p>
+                              <audio
+                                className="w-full"
+                                controls
+                                preload="none"
+                                src={`/api/whatsapp/media/${encodeURIComponent(message.mediaId)}`}
+                              >
+                                Could not load audio. Check WhatsApp token or media expiry.
+                              </audio>
+                              <p className="mt-2 text-[11px] font-semibold text-slate-500">
+                                Audio is streamed securely through ARBCore. If playback fails, check WhatsApp token or media expiry.
+                              </p>
+                            </div>
+                          ) : null}
                           <div className={cn("mt-3 flex flex-wrap items-center gap-2 text-[11px]", message.direction === "OUTBOUND" ? "text-blue-100" : "text-slate-400")}>
                             <span>{message.direction}</span>
                             <span>{message.status}</span>
+                            {message.mediaType ? <span>{message.mediaType}</span> : null}
                             <span>{formatDate(message.createdAt)}</span>
                           </div>
                           {message.providerMessageId ? (

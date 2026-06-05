@@ -147,6 +147,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not collect or paste access tokens, Authorization headers, raw request payloads, or file binary into tickets. Do not claim success unless Message Logs show `SENT`.
 - Escalation: Technical owner checks whether the failure happened during Meta media upload or final media message send.
 
+## WhatsApp Inbound Audio Playback Failure
+
+- Symptoms: Inbox shows `[audio] Audio message`, but the browser audio player does not load or play.
+- Where to check: Inbox selected conversation, `/api/whatsapp/media/[mediaId]`, Message Logs inbound media badge, WhatsApp token validity, and Vercel runtime logs.
+- Safe first action: Confirm the MessageLog has a company-scoped media ID and the saved WhatsApp Access Token is valid.
+- What not to do: Do not expose access tokens, Authorization headers, raw Meta media URLs, raw webhook payloads, or downloaded audio files in public tickets.
+- Escalation: Technical owner checks Meta media lookup/download response safely server-side and confirms whether the temporary media is still available.
+
 ## Messenger Live Page Failure
 
 - Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.

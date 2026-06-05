@@ -430,7 +430,17 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Message Logs show media summaries such as `[image]` or `[document]` and never show file binary or tokens.
 - [ ] Video, audio, sticker, and bulk campaign media sending remain out of scope for this phase.
 
-## 9C. Mobile Browser QA
+## 9C. WhatsApp Inbound Audio Playback QA
+
+- [ ] Send WhatsApp voice/audio message to the connected business number.
+- [ ] Inbox shows `[audio] Audio message` in the selected conversation.
+- [ ] Inbox shows an audio player for inbound WhatsApp audio.
+- [ ] Audio plays through `/api/whatsapp/media/[mediaId]` without exposing access token or raw Meta media URL.
+- [ ] Message Logs show inbound media badge for audio logs.
+- [ ] Text messages, WhatsApp text replies, and WhatsApp image/PDF outbound replies still work.
+- [ ] Other inbound media playback/download remains out of scope for this phase.
+
+## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.
 - [ ] Mobile width 390px: `/inbox` is usable with no full-page horizontal overflow.
@@ -440,7 +450,7 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Mobile daily pages `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` are recommended for operators.
 - [ ] Desktop is still recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
 
-## 9D. Auto Reply Template Library QA
+## 9E. Auto Reply Template Library QA
 
 - [ ] `/auto-reply` loads and existing rules still display.
 - [ ] Template Library appears with category filter and search.

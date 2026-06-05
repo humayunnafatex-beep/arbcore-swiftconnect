@@ -9,6 +9,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Dashboard with live CRM/support metrics and quick links.
 - Channel Center for WhatsApp and Messenger setup status.
 - WhatsApp outbound send, inbound webhook receive, and live auto-reply.
+- Inbound WhatsApp audio playback in Inbox through a secure ARBCore media proxy.
 - Messenger inbound webhook, provider-backed test send, and live auto-reply foundation.
 - Unified Inbox with conversation grouping, replies, status, assignment, contact linking, internal notes, and follow-up reminders.
 - Campaign draft planning and Contact-based audience preview for WhatsApp and Messenger, without bulk sending.
@@ -65,6 +66,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Open Send Messages and confirm missing WhatsApp API does not fake success.
 - Open Settings and confirm saved access tokens remain hidden after refresh.
 - From Inbox, confirm WhatsApp text replies still send and that Phase 1 image/PDF replies upload to Meta first, then log `SENT` only after Meta accepts the final message.
+- From Inbox, confirm inbound WhatsApp audio shows an audio player and no token or raw Meta media URL is exposed.
 - Confirm unsupported media types and oversized files are rejected safely before provider calls.
 - Configure Messenger live setup with Facebook Page ID, Page Access Token, callback URL, verify token, and `messages` subscription before live Page testing.
 - Confirm Messenger Page messages appear in Message Logs and Inbox, and that Inbox replies log `MESSENGER / OUTBOUND / SENT` only after Meta accepts.

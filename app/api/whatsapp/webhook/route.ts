@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     });
 
     for (const message of parsed.messages) {
-      const body = message.text ?? `[${message.type} message]`;
+      const body = getInboundMessageBody(message);
       const contact = await findOrCreateWebhookContact({
         companyId: company.id,
         phone: message.from,
@@ -97,7 +97,12 @@ export async function POST(request: Request) {
           body,
           direction: "INBOUND",
           status: "RECEIVED",
-          providerMessageId: message.id
+          providerMessageId: message.id,
+          mediaId: message.media?.id ?? "",
+          mediaType: message.media?.type ?? "",
+          mediaMimeType: message.media?.mimeType ?? "",
+          mediaSha256: message.media?.sha256 ?? "",
+          mediaFilename: message.media?.filename ?? ""
         }
       });
 
@@ -211,6 +216,23 @@ function previewText(value: string, maxLength = 180) {
 
 function ruleName(keyword: string) {
   return keyword ? `${keyword.charAt(0).toUpperCase()}${keyword.slice(1)} Reply` : "Auto Reply Rule";
+}
+
+function getInboundMessageBody(message: { text?: string; type: string; media?: { type?: string } }) {
+  if (message.text) return message.text;
+
+  switch (message.media?.type ?? message.type) {
+    case "audio":
+      return "[audio] Audio message";
+    case "image":
+      return "[image] Image message";
+    case "document":
+      return "[document] Document message";
+    case "video":
+      return "[video] Video message";
+    default:
+      return `[${message.type} message]`;
+  }
 }
 
 async function findOrCreateWebhookContact({

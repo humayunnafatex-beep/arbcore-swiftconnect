@@ -25,6 +25,10 @@ type WhatsAppLogMessage = {
   providerMessageId: string | null;
   providerStatus: string | null;
   errorMessage: string | null;
+  mediaId: string;
+  mediaType: string;
+  mediaMimeType: string;
+  mediaFilename: string;
   createdAt: string;
 };
 
@@ -190,6 +194,11 @@ export function WhatsAppLogsModulePage() {
                         <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black uppercase text-royal ring-1 ring-blue-100">{message.channel}</span>
                         <span className="rounded-full bg-cyan-50 px-3 py-1 text-[11px] font-black uppercase text-cyan-700 ring-1 ring-cyan-100">{message.direction}</span>
                         <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-black uppercase text-slate-600 ring-1 ring-slate-100">{message.status}</span>
+                        {message.mediaType ? (
+                          <span className="rounded-full bg-violet-50 px-3 py-1 text-[11px] font-black uppercase text-violet-700 ring-1 ring-violet-100">
+                            Inbound media: {message.mediaType}
+                          </span>
+                        ) : null}
                         <span className="text-xs font-bold text-slate-400">{formatDate(message.createdAt)}</span>
                       </div>
                       <p className="mt-3 text-sm font-black text-ink">{message.phone || "No phone recorded"}</p>
@@ -199,6 +208,9 @@ export function WhatsAppLogsModulePage() {
                       <p><span className="font-black text-royal">Channel:</span> {message.channel}</p>
                       <p className="mt-1 break-all"><span className="font-black text-royal">Provider ID:</span> {message.providerMessageId || "-"}</p>
                       <p className="mt-1"><span className="font-black text-royal">Provider Status:</span> {message.providerStatus || "-"}</p>
+                      {message.mediaType ? (
+                        <p className="mt-1"><span className="font-black text-royal">Media:</span> {message.mediaType}{message.mediaMimeType ? ` (${message.mediaMimeType})` : ""}</p>
+                      ) : null}
                       {message.errorMessage ? (
                         <p className="mt-2 flex gap-2 rounded-[12px] bg-rose-50 p-2 text-rose-700">
                           <AlertCircle className="h-4 w-4 shrink-0" />

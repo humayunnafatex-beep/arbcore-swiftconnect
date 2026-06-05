@@ -12,6 +12,13 @@ export type ParsedWhatsAppEvent = {
     timestamp?: string;
     type: string;
     text?: string;
+    media?: {
+      id?: string;
+      type?: string;
+      mimeType?: string;
+      sha256?: string;
+      filename?: string;
+    };
   }>;
   statuses: Array<{
     id: string;
@@ -325,12 +332,14 @@ export function parseWebhookEvent(payload: unknown): ParsedWhatsAppEvent {
         for (const message of value.messages) {
           if (!isRecord(message) || typeof message.from !== "string" || typeof message.id !== "string") continue;
           const text = isRecord(message.text) && typeof message.text.body === "string" ? message.text.body : undefined;
+          const messageType = typeof message.type === "string" ? message.type : "unknown";
           event.messages.push({
             from: message.from,
             id: message.id,
             timestamp: typeof message.timestamp === "string" ? message.timestamp : undefined,
-            type: typeof message.type === "string" ? message.type : "unknown",
-            text
+            type: messageType,
+            text,
+            media: getInboundMediaMetadata(message, messageType)
           });
         }
       }
@@ -414,6 +423,23 @@ function getProviderMessageId(payload: unknown) {
 
 function getMediaId(payload: unknown) {
   return isRecord(payload) && typeof payload.id === "string" ? payload.id : undefined;
+}
+
+function getInboundMediaMetadata(message: Record<string, unknown>, type: string) {
+  if (!["audio", "image", "document", "video"].includes(type)) {
+    return undefined;
+  }
+
+  const media = isRecord(message[type]) ? message[type] : null;
+  if (!media) return undefined;
+
+  return {
+    id: getString(media.id),
+    type,
+    mimeType: getString(media.mime_type),
+    sha256: getString(media.sha256),
+    filename: getString(media.filename)
+  };
 }
 
 export function getSafeWhatsAppProviderErrorSummary(providerError?: SafeWhatsAppProviderError) {

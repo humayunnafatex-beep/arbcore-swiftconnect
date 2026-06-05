@@ -63,6 +63,10 @@ export async function GET(request: Request) {
           providerMessageId: message.providerMessageId,
           providerStatus: message.status,
           errorMessage: message.errorMessage,
+          mediaId: message.mediaId,
+          mediaType: message.mediaType,
+          mediaMimeType: message.mediaMimeType,
+          mediaFilename: message.mediaFilename,
           createdAt: message.createdAt
         })),
         webhookEvents: webhookEvents.map((event) => ({

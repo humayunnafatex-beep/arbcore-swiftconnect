@@ -131,6 +131,8 @@ WhatsApp test sending stays in Send Messages. Messenger test sending is availabl
 
 After messages are received or sent, open Inbox at `/inbox` for a customer conversation view. Selected conversations include a contact card, reply composer, status dropdown, assignee dropdown, internal note, and follow-up reminder. WhatsApp conversations can create or link a contact from the customer phone number. The Inbox contact card can update customer name, email, lead status, and tags directly from the conversation. Messenger conversations use PSID, so full Messenger identity linking may require a future Messenger PSID contact field. WhatsApp replies require WhatsApp Cloud API configuration, and Messenger replies require a Page Access Token plus a Facebook PSID conversation. Use Message Logs when you need technical provider IDs, webhook summaries, or debug filtering.
 
+Inbound WhatsApp audio messages can be played from the selected Inbox conversation when the webhook stores a safe media ID. Audio is streamed through ARBCore using the saved WhatsApp token server-side; the browser does not receive the access token or raw Meta media URL. If playback fails, check the WhatsApp token, media availability, and Message Logs.
+
 ## 6. Auto Reply
 
 Auto Reply manages keyword-based replies. A rule contains a trigger keyword, reply message, match mode, priority, and active/inactive status.
@@ -393,6 +395,12 @@ Supported attachments:
 ARBCore uploads the media to Meta WhatsApp Cloud API first, then sends the customer a WhatsApp message using the returned Meta media ID. Success is logged only after Meta accepts the final message. Failed upload or send attempts are logged as `FAILED` with safe provider error details only.
 
 Video, audio, stickers, and bulk campaign media sending are not supported in this phase. Do not upload sensitive customer documents unless the business has approved that usage.
+
+## 12B. WhatsApp Inbound Audio Playback
+
+Inbound WhatsApp audio playback is supported in Inbox for received audio/voice messages. ARBCore stores safe metadata such as media ID, media type, MIME type, SHA-256, and filename when present. It does not store file binary, access tokens, authorization headers, or raw provider media URLs in the user interface.
+
+Audio playback is proxied through `/api/whatsapp/media/[mediaId]`. Other inbound media types may store safe metadata, but playback/download for image, document, and video can remain a later phase.
 
 ## 13. Support And Maintenance
 

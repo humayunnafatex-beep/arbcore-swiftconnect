@@ -356,6 +356,11 @@ model MessageLog {
   body              String
   direction         MessageDirection
   status            MessageStatus    @default(QUEUED)
+  mediaId           String           @default("")
+  mediaType         String           @default("")
+  mediaMimeType     String           @default("")
+  mediaSha256       String           @default("")
+  mediaFilename     String           @default("")
   providerMessageId String?
   errorMessage      String?
   sentAt            DateTime?
@@ -371,6 +376,8 @@ model MessageLog {
   campaign          Campaign?        @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   whatsappAccountId String?
   whatsappAccount   WhatsAppAccount? @relation(fields: [whatsappAccountId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, mediaId])
 }
 
 model WebhookEvent {

@@ -243,6 +243,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not upload sensitive customer documents unless the business has approved that workflow.
 - Video, audio, sticker, and campaign media sends are not supported yet.
 
+### WhatsApp Inbound Audio Playback Issue
+
+- Inbox can play inbound WhatsApp audio/voice messages when the webhook stored a safe media ID.
+- Audio is streamed through ARBCore. The browser must not receive the WhatsApp access token or raw Meta media URL.
+- If playback fails, check that the WhatsApp Access Token is still valid and that Meta still allows the media download.
+- Message Logs should show `[audio] Audio message` and an inbound media badge for audio logs.
+- Other inbound media playback/download is not part of this phase.
+
 ### Messenger Live Setup Issue
 
 - Messenger uses Facebook Page ID and customer PSID, not phone number.
