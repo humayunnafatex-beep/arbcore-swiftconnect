@@ -17,6 +17,7 @@ Major active modules:
 - Manual Order Tracking linked to Contacts and Inbox conversations.
 - Manual order message templates generated from order data for staff review before sending.
 - Order follow-up alerts, filters, and quick status/payment updates for manual order operations.
+- Product Catalog for manual product/model setup and faster Inbox order entry.
 
 Safe production-beta defaults remain:
 
@@ -284,10 +285,11 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `PRODUCTION_MONITORING_CHECKLIST.md`: daily, weekly, post-deployment, Meta-change, migration, and paid-client monitoring checklist.
 - `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
 - `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md`: mobile browser QA checklist for Inbox, Message Logs, Contacts, Settings, Auto Reply, and Send Messages.
-- `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, Orders, and Auto Reply Analytics.
+- `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, Products, Orders, and Auto Reply Analytics.
 - Contacts exports include lead status and tags. Recommended tags include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`.
 - Order message templates can prepare confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation text from order data. Staff must review the generated text and send manually; saving an order never auto-sends a message.
 - Order follow-up reminders are internal alerts only. Changing order status, payment status, or follow-up status does not send a WhatsApp or Messenger message automatically.
+- Product Catalog is manual. Selecting a product in the Inbox order form can fill model, price, and available size helpers, but it does not reserve stock, deduct inventory, start checkout, or send a customer message.
 
 Read-only production verification script:
 

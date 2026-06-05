@@ -65,6 +65,8 @@ Current production readiness signals include:
 - Data Exports at `/exports` for approved CSV exports of Contacts, Message Logs, Billing Records, and Auto Reply Analytics.
 - Orders at `/orders` for manual order status, payment status, and internal order follow-up review.
 - Dashboard Order Operations for due order follow-ups, unpaid/COD orders, and manual order value snapshots.
+- Products at `/products` for manual product/model catalog review and Inbox order-entry readiness.
+- Dashboard Product Catalog snapshot for active, draft, archived, and stock-note product counts.
 - Channel Center for provider setup readiness.
 - Provider Diagnostics for duplicate or missing provider IDs.
 - Optional Sentry later for grouped application exceptions.

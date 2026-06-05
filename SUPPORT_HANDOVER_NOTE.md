@@ -102,10 +102,12 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use Inbox assignment and follow-up reminders to confirm who owns a conversation.
 - Use Contacts or the Inbox contact card to update lead status and tags during customer follow-up.
 - Use Inbox or Orders to create and update manual order records for customer conversations.
+- Use Products to maintain manual product/model records for order entry.
 - Use order message templates to prepare customer-facing order confirmation or status text, then review and send manually from Inbox or copy from Orders.
 - Use Orders follow-up filters to find due, upcoming, done, or missing follow-ups.
 - Quick order status, payment status, and follow-up changes are internal record updates only and do not send customer messages automatically.
 - Order Tracking Phase 1 does not include payment gateway, courier integration, inventory automation, or automatic customer messages.
+- Product Catalog Phase 1 does not include ecommerce checkout, upload storage, stock reservation, or inventory deduction.
 - Recommended tags: `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, `repeat-customer`.
 
 ## Common Issues And Fixes
@@ -221,6 +223,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Upcoming means a future follow-up is scheduled.
 - Done means staff manually marked the follow-up complete.
 - No automatic WhatsApp, Messenger, courier, billing, or inventory action runs when a follow-up changes.
+
+### Product Catalog Confusion
+
+- Products are manual model records for faster order entry.
+- Active products appear in the Inbox order form dropdown.
+- Selecting a product can fill model name, unit price, and size helpers, but staff can still override those fields manually.
+- Stock note is informational only. It does not update automatically when orders are created.
+- Do not promise inventory automation, ecommerce checkout, image upload storage, courier integration, or payment gateway behavior.
 
 ### WhatsApp Media Reply Issue
 

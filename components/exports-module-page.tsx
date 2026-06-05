@@ -23,6 +23,12 @@ const exportCards = [
     description: "Manual order records for the current workspace. No payment gateway, courier, or inventory data is exported.",
     href: "/api/exports/orders",
     button: "Download Orders"
+  },
+  {
+    title: "Products CSV",
+    description: "Manual product/model catalog records for the current workspace. No inventory automation or token data is exported.",
+    href: "/api/exports/products",
+    button: "Download Products"
   }
 ];
 

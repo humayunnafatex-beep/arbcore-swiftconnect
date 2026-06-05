@@ -35,7 +35,9 @@ const importantPermissions = [
   "license.view",
   "billing.manage",
   "orders.view",
-  "orders.manage"
+  "orders.manage",
+  "products.view",
+  "products.manage"
 ];
 
 export default function AuthPermissionsPage() {

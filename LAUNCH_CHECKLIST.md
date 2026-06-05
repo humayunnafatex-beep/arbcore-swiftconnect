@@ -100,7 +100,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Incident response owner has reviewed `INCIDENT_RESPONSE_RUNBOOK.md`.
 - [ ] `/exports` loads and CSV export access is limited to approved operators.
 - [ ] Exported CSV files are not shared through public links.
-- [ ] Contacts, Message Logs, Billing Records, Orders, and Auto Reply Analytics CSV downloads are available from `/exports`.
+- [ ] Contacts, Message Logs, Billing Records, Products, Orders, and Auto Reply Analytics CSV downloads are available from `/exports`.
 - [ ] CSV exports are company-scoped and do not include tokens, raw webhook payloads, cookies, sessions, database URLs, or provider secrets.
 
 ## 2A. Beta Client Onboarding Docs
@@ -297,6 +297,12 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 ## 5A. Orders QA
 
+- [ ] Products opens at `/products`.
+- [ ] Create, edit, filter, and archive product records work.
+- [ ] Active product appears in Inbox order form product dropdown.
+- [ ] Selecting a product fills model name, unit price, and available size helper.
+- [ ] Product selection still allows manual override of model, size, and price.
+- [ ] Products CSV export downloads manual product/model records only.
 - [ ] Orders opens at `/orders`.
 - [ ] Create order from Inbox conversation works.
 - [ ] Order appears in `/orders`.
@@ -312,6 +318,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Orders Preview/Copy Message generates reviewed customer text without sending.
 - [ ] Generated order messages do not include internal notes.
 - [ ] No payment gateway, courier, or inventory automation is presented as active.
+- [ ] Product Catalog does not claim ecommerce checkout, stock deduction, or image upload storage.
 - [ ] Dashboard quick links open filtered Inbox and Message Logs views.
 - [ ] Due follow-up link opens `/inbox?followUp=DUE`.
 - [ ] Failed messages link opens `/message-logs?status=FAILED`.

@@ -109,6 +109,13 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - Safe first action: Confirm the order was manually entered and compare against the customer conversation.
 - What not to do: Do not claim payment, courier, inventory, or customer notification automation. Do not send automatic order messages in Phase 1.
 
+## Product Catalog Issue
+
+- Symptoms: Product dropdown is empty, wrong price fills the order form, sizes are confusing, image preview does not load, or archived product still appears active.
+- Where to check: `/products`, `/api/products?status=ACTIVE`, selected Inbox conversation Orders section, Products CSV export, and product status.
+- Safe first action: Confirm the product is `ACTIVE`, price is entered as integer BDT, available sizes are comma-separated, and image URL starts with `http://` or `https://`.
+- What not to do: Do not claim stock was reserved or deducted. Do not add ecommerce checkout, payment gateway, courier, or automatic customer message behavior during incident response.
+
 ## Order Follow-up Alert Issue
 
 - Symptoms: Due, upcoming, done, or no-follow-up filters do not match the expected order list.

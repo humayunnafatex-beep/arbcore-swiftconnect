@@ -63,7 +63,11 @@ export async function GET() {
       doneOrderFollowUps,
       unpaidOrders,
       codOrders,
-      totalOrderValue
+      totalOrderValue,
+      activeProducts,
+      draftProducts,
+      archivedProducts,
+      productsWithStockNote
     ] = await Promise.all([
       prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } }),
       prisma.messageLog.count({
@@ -173,7 +177,11 @@ export async function GET() {
       prisma.order.aggregate({
         where: { companyId, orderStatus: { in: ["CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"] } },
         _sum: { totalAmount: true }
-      })
+      }),
+      prisma.product.count({ where: { companyId, status: "ACTIVE" } }),
+      prisma.product.count({ where: { companyId, status: "DRAFT" } }),
+      prisma.product.count({ where: { companyId, status: "ARCHIVED" } }),
+      prisma.product.count({ where: { companyId, stockNote: { not: "" } } })
     ]);
     const stateByConversation = new Map(conversationStates.map((state) => [`${state.channel}:${state.contactKey}`, state]));
     const conversationKeys = new Set<string>();
@@ -250,6 +258,10 @@ export async function GET() {
       unpaidOrders,
       codOrders,
       totalOrderValue: totalOrderValue._sum.totalAmount ?? 0,
+      activeProducts,
+      draftProducts,
+      archivedProducts,
+      productsWithStockNote,
       teamMembers,
       aiCreditsUsed,
       whatsappConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),

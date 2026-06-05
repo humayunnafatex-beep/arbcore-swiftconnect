@@ -71,6 +71,8 @@ Basic Contacts workflow:
 
 Orders tracks simple manual customer order records linked to a Contact or Inbox conversation. It stores product/model name, size, quantity, BDT amount fields, customer delivery details, payment status, order status, and internal notes.
 
+Product Catalog at `/products` stores a company-scoped manual product/model list with name, SKU, BDT price, available sizes, stock note, image URL, status, and internal notes. It is a helper for order entry only. There is no ecommerce checkout, stock reservation, inventory deduction, or automatic customer message.
+
 Order statuses are `DRAFT`, `CONFIRMED`, `PACKED`, `SHIPPED`, `DELIVERED`, and `CANCELLED`. Payment statuses are `UNPAID`, `PARTIAL`, `PAID`, and `COD`.
 
 Phase 1 is manual tracking only. There is no payment gateway, courier integration, inventory automation, or automatic customer notification when an order is saved.
@@ -82,12 +84,20 @@ Order follow-up reminders are internal only. Use `/orders` to filter by due, upc
 Basic order workflow:
 
 1. Open Inbox and select a customer conversation.
-2. In the Orders section, enter model, size, quantity, price, delivery charge, customer details, delivery address, payment status, order status, and notes.
+2. In the Orders section, select an active product if useful, or manually enter model, size, quantity, price, delivery charge, customer details, delivery address, payment status, order status, and notes.
 3. Click Save Order.
 4. Open Orders at `/orders` to filter and update order/payment status.
 5. Add an internal order follow-up if staff need to check payment, delivery, or customer confirmation later.
 6. Use Prepare Message in Inbox or Preview/Copy Message in Orders when a reviewed customer update is needed.
 7. Use Data Exports to download Orders CSV when approved.
+
+Basic product workflow:
+
+1. Open Products at `/products`.
+2. Create or edit a product/model with price, available sizes, stock note, image URL, and status.
+3. Keep active products available for Inbox order entry.
+4. Archive old products instead of deleting customer history.
+5. Use Products CSV when approved.
 
 ## 4. Campaigns
 
@@ -241,7 +251,7 @@ The logs page supports filters by channel, direction, status, result limit, and 
 
 ## 9A. Data Exports
 
-Data Exports at `/exports` lets approved operators download workspace-scoped CSV files for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
+Data Exports at `/exports` lets approved operators download workspace-scoped CSV files for Contacts, Message Logs, Billing records, Products, Orders, and Auto Reply Analytics.
 
 Use `DATA_EXPORT_READINESS_PLAN.md` before sharing export files. Exports may include customer names, phone numbers, emails, lead statuses, tags, message previews, payment references, and internal notes. Share carefully and never upload export files to public links.
 
@@ -252,6 +262,7 @@ Current export routes:
 3. `/api/exports/billing`: Billing/payment records CSV.
 4. `/api/exports/auto-reply-analytics`: Auto Reply Analytics CSV with optional channel and day-range filters.
 5. `/api/exports/orders`: Orders CSV.
+6. `/api/exports/products`: Products CSV.
 
 Exports may contain customer or business data such as phone numbers, Messenger PSIDs, message previews, payment notes, and auto-reply previews. Exports do not include access tokens, database URLs, cookies, raw sessions, raw webhook payloads, or provider access tokens. Do not share exported CSV files through public links.
 

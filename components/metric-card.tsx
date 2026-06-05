@@ -66,6 +66,10 @@ type DashboardStatistics = {
   unpaidOrders: number;
   codOrders: number;
   totalOrderValue: number;
+  activeProducts: number;
+  draftProducts: number;
+  archivedProducts: number;
+  productsWithStockNote: number;
   teamMembers: number;
   aiCreditsUsed: number;
   whatsappConfigured: boolean;
@@ -247,6 +251,10 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     unpaidOrders: 0,
     codOrders: 0,
     totalOrderValue: 0,
+    activeProducts: 0,
+    draftProducts: 0,
+    archivedProducts: 0,
+    productsWithStockNote: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
     billing: {
@@ -339,6 +347,17 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Interested", value: data.interestedLeads, href: "/contacts?status=INTERESTED", icon: TrendingUp, tone: "green" },
           { label: "Ordered", value: data.orderedContacts, href: "/contacts?status=ORDERED", icon: CheckCircle2, tone: "purple" },
           { label: "Follow-up", value: data.followUpContacts, href: "/contacts?status=FOLLOW_UP", icon: Clock, tone: "red" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Product Catalog"
+        helper={data.activeProducts ? "Active products can speed up Inbox order entry." : "No active products yet."}
+        items={[
+          { label: "Active", value: data.activeProducts, href: "/products?status=ACTIVE", icon: ShoppingBag, tone: "green" },
+          { label: "Draft", value: data.draftProducts, href: "/products?status=DRAFT", icon: FileText, tone: "blue" },
+          { label: "Archived", value: data.archivedProducts, href: "/products?status=ARCHIVED", icon: AlertTriangle, tone: "gray" },
+          { label: "Stock notes", value: data.productsWithStockNote, href: "/products", icon: Clock, tone: "purple" }
         ]}
         loading={loading}
       />

@@ -7,6 +7,7 @@ import { getApiErrorMessage } from "@/lib/api-client";
 import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
 import { parseTags, stringifyTags } from "@/lib/contact-tags";
 import { getOrderMessageTemplates, type OrderMessageTemplateId } from "@/lib/order-message-templates";
+import { parseAvailableSizes } from "@/lib/product-input";
 import { cn } from "@/lib/utils";
 import { AppShell } from "./app-shell";
 import {
@@ -171,6 +172,22 @@ type OrdersResponse = {
   error?: string;
 };
 
+type Product = {
+  id: string;
+  name: string;
+  sku: string;
+  price: number;
+  availableSizes: string;
+  stockNote: string;
+};
+
+type ProductsResponse = {
+  success: boolean;
+  data?: {
+    products: Product[];
+  };
+};
+
 type OrderMessagePreviewResponse = {
   success: boolean;
   data?: {
@@ -261,6 +278,8 @@ export function InboxModulePage() {
   const [contactMessage, setContactMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderForm, setOrderForm] = useState(emptyOrderForm);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState("");
   const [orderSaving, setOrderSaving] = useState(false);
   const [orderMessage, setOrderMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [orderTemplateById, setOrderTemplateById] = useState<Record<string, OrderMessageTemplateId>>({});
@@ -270,6 +289,14 @@ export function InboxModulePage() {
   const selectedConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
     [conversations, selectedId]
+  );
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === selectedProductId) ?? null,
+    [products, selectedProductId]
+  );
+  const selectedProductSizes = useMemo(
+    () => parseAvailableSizes(selectedProduct?.availableSizes),
+    [selectedProduct?.availableSizes]
   );
 
   const loadConversations = useCallback(async () => {
@@ -329,6 +356,24 @@ export function InboxModulePage() {
       })
       .catch(() => {
         if (active) setAssignees([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/products?status=ACTIVE&limit=500")
+      .then(async (response) => {
+        const result = (await response.json()) as ProductsResponse;
+        if (!response.ok || result.success === false) throw new Error("Failed to load products.");
+        if (active) setProducts(result.data?.products ?? []);
+      })
+      .catch(() => {
+        if (active) setProducts([]);
       });
 
     return () => {
@@ -411,6 +456,7 @@ export function InboxModulePage() {
     if (!selectedId) {
       setOrders([]);
       setOrderForm(emptyOrderForm);
+      setSelectedProductId("");
       return;
     }
 
@@ -650,6 +696,7 @@ export function InboxModulePage() {
       if (!response.ok || !result.success) throw new Error(result.error || "Failed to save order.");
       setOrderMessage({ tone: "success", text: "Order saved." });
       setOrderForm(emptyOrderForm);
+      setSelectedProductId("");
       await loadConversationOrders(selectedId);
       await loadConversations();
     } catch (error) {
@@ -657,6 +704,20 @@ export function InboxModulePage() {
     } finally {
       setOrderSaving(false);
     }
+  }
+
+  function applyProductToOrder(productId: string) {
+    setSelectedProductId(productId);
+    const product = products.find((item) => item.id === productId);
+    if (!product) return;
+    const sizes = parseAvailableSizes(product.availableSizes);
+
+    setOrderForm((current) => ({
+      ...current,
+      modelName: product.name,
+      unitPrice: String(product.price),
+      size: current.size || sizes[0] || ""
+    }));
   }
 
   async function prepareOrderMessage(orderId: string) {
@@ -1006,8 +1067,31 @@ export function InboxModulePage() {
                     <p className="mt-4 rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-sm font-semibold text-slate-500">No orders linked to this conversation yet.</p>
                   )}
                   <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                    <select className={`${inputClassName} w-full lg:col-span-3`} value={selectedProductId} onChange={(event) => applyProductToOrder(event.target.value)}>
+                      <option value="">Select product/model</option>
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}{product.sku ? ` - ${product.sku}` : ""} - BDT {product.price.toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedProduct ? (
+                      <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-semibold leading-5 text-slate-600 lg:col-span-3">
+                        <p className="font-black text-ink">Selected product helper</p>
+                        <p>Available sizes: {selectedProduct.availableSizes || "N/A"}</p>
+                        <p>Stock note: {selectedProduct.stockNote || "No stock note"}</p>
+                        <p className="mt-1 text-slate-500">Model, size, and price remain editable. Selecting a product does not reserve or reduce inventory.</p>
+                      </div>
+                    ) : null}
                     <input className={`${inputClassName} w-full`} value={orderForm.modelName} onChange={(event) => setOrderForm((current) => ({ ...current, modelName: event.target.value }))} placeholder="Model name" />
-                    <input className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))} placeholder="Size" />
+                    {selectedProductSizes.length ? (
+                      <select className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))}>
+                        <option value="">Select size</option>
+                        {selectedProductSizes.map((size) => <option key={size} value={size}>{size}</option>)}
+                      </select>
+                    ) : (
+                      <input className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))} placeholder="Size" />
+                    )}
                     <input className={`${inputClassName} w-full`} type="number" min="1" value={orderForm.quantity} onChange={(event) => setOrderForm((current) => ({ ...current, quantity: event.target.value }))} placeholder="Quantity" />
                     <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.unitPrice} onChange={(event) => setOrderForm((current) => ({ ...current, unitPrice: event.target.value }))} placeholder="Unit price" />
                     <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.deliveryCharge} onChange={(event) => setOrderForm((current) => ({ ...current, deliveryCharge: event.target.value }))} placeholder="Delivery charge" />

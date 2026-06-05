@@ -113,6 +113,7 @@ model Company {
   whatsappAccounts WhatsAppAccount[]
   contacts        Contact[]
   orders          Order[]
+  products        Product[]
   campaigns       Campaign[]
   conversations   Conversation[]
   messageLogs     MessageLog[]
@@ -206,6 +207,27 @@ model Contact {
   crmDeals      CrmDeal[]
   messageLogs   MessageLog[]
   orders        Order[]
+}
+
+model Product {
+  id             String   @id @default(cuid())
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name           String
+  sku            String   @default("")
+  price          Int      @default(0)
+  availableSizes String   @default("")
+  stockNote      String   @default("")
+  imageUrl       String   @default("")
+  status         String   @default("ACTIVE")
+  notes          String   @default("")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, status])
 }
 
 model Order {
