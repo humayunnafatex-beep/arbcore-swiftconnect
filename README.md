@@ -65,6 +65,7 @@ Use the release package docs for handover:
 - `BETA_V1_ACCESS_CONTROL_PLAN.md`
 - `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md`
 - `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`
+- `BETA_LAUNCH_HANDOFF_PACK.md`
 - `V1_1_HARDENING_ROADMAP.md`
 - `V1_1_IMPLEMENTATION_BACKLOG.md`
 - `V1_1_SPRINT_1_PLAN.md`
@@ -313,6 +314,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
 - `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md`: mobile browser QA checklist for Inbox, Message Logs, Contacts, Settings, Auto Reply, and Send Messages.
 - `MESSENGER_LIVE_QA_CHECKLIST.md`: Messenger live setup QA for Page ID, Page Access Token handling, webhook verification, inbound, manual reply, auto-reply, and safe diagnostics.
+- `BETA_LAUNCH_HANDOFF_PACK.md`: single owner/admin/manager/agent launch-day handoff pack for daily beta operations.
 - `BETA_OPERATIONS_QA_CHECKLIST.md`: end-to-end daily beta operations checklist from inbound message to follow-up completion.
 - `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, Products, Orders, and Auto Reply Analytics.
 - Contacts exports include lead status and tags. Recommended tags include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`.

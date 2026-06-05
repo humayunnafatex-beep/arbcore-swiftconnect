@@ -43,6 +43,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `OPERATING_MANUAL.md`
 - `LAUNCH_CHECKLIST.md`
 - `BETA_RELEASE_NOTES.md`
+- `BETA_LAUNCH_HANDOFF_PACK.md`
 - `PRODUCTION_QA_REPORT.md`
 - `SECURITY_QA_REPORT.md`
 - `MIGRATION_AUDIT.md`
@@ -70,6 +71,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 ## Common Support Tasks
 
 - Check Channel Center for WhatsApp and Messenger setup readiness.
+- Use `BETA_LAUNCH_HANDOFF_PACK.md` as the single launch-day handoff document for owner/admin/manager/agent daily use.
 - Use `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md` as the Beta issue triage workflow for feedback, bugs, access, provider, billing, and security concerns.
 - Run or review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` after a deployment.
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.

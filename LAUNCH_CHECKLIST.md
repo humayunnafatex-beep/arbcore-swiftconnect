@@ -16,6 +16,8 @@ For beta client onboarding and support handover, review `CLIENT_ONBOARDING_GUIDE
 
 For Welzz Stride internal beta operations, use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md`.
 
+For launch-day role handoff, use `BETA_LAUNCH_HANDOFF_PACK.md`.
+
 For post-deployment verification, review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` and `PRODUCTION_MANUAL_QA_CHECKLIST.md`. The optional read-only script is `scripts/verify-production.mjs`.
 The script now includes a safe environment readiness audit that reads the shell environment and local `.env` file, reports missing/unsafe values by name only, and never prints tokens or secrets.
 
@@ -106,6 +108,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 
 ## 2A. Beta Client Onboarding Docs
 
+- [ ] `BETA_LAUNCH_HANDOFF_PACK.md` has been reviewed with owner/admin/manager/agent users.
 - [ ] `BETA_V1_STAKEHOLDER_REVIEW_CHECKLIST.md` has been completed for final stakeholder review and sign-off.
 - [ ] `BETA_V1_DEPLOYMENT_READINESS.md` has been completed after the `v1.0.0-beta` tag and before deployment or expanded beta access.
 - [ ] `BETA_V1_INTERNAL_DEPLOYMENT_RUNBOOK.md` is used by the deployment operator.

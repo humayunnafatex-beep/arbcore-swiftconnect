@@ -476,6 +476,8 @@ Phase 1 remains manual. Media saved replies, AI-generated replies, shortcut auto
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.
 
+For launch-day role handoff, use `BETA_LAUNCH_HANDOFF_PACK.md`. It gives owner, admin, manager, and agent staff one concise guide for production URL, WhatsApp connection, daily workflow, Messenger pending setup, logs, follow-ups, safety rules, and launch-day QA.
+
 Before any Supabase production migration work, review `PRODUCTION_MIGRATION_SAFETY.md`. `DATABASE_URL` may be pooled for runtime, but `DIRECT_URL` should be direct/non-pooled for Prisma migrations. A pooled `DIRECT_URL` warning is not a runtime blocker, but it should be resolved before migration work.
 
 Mobile browser support is intended for daily operations such as `/inbox`, `/message-logs`, `/contacts`, and `/send-messages`. Use `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` to test Android Chrome, iPhone Safari, and tablet widths. Desktop remains recommended for Meta setup, Settings token entry, Admin Workspaces, Provider Diagnostics, and Billing setup.
