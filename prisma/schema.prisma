@@ -124,6 +124,7 @@ model Company {
   aiUsages        AIUsage[]
   messageTemplates MessageTemplate[]
   savedReplies    SavedReply[]
+  activityLogs    ActivityLog[]
   webhookEvents   WebhookEvent[]
   conversationStates ConversationState[]
   subscriptions    Subscription[]
@@ -144,6 +145,32 @@ model User {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   assignedConversationStates ConversationState[]
+}
+
+model ActivityLog {
+  id              String   @id @default(cuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  actorUserId     String   @default("")
+  actorName       String   @default("")
+  actorEmail      String   @default("")
+  actorRole       String   @default("")
+
+  action          String
+  entityType      String
+  entityId        String   @default("")
+  entityLabel     String   @default("")
+
+  summary         String   @default("")
+  metadataSummary String   @default("")
+
+  createdAt       DateTime @default(now())
+
+  @@index([companyId])
+  @@index([companyId, createdAt])
+  @@index([companyId, entityType])
+  @@index([companyId, action])
 }
 
 model ConversationState {

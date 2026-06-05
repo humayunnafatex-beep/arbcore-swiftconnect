@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { normalizeContactStatus } from "@/lib/contact-status";
 import { tagsMatchSearch } from "@/lib/contact-tags";
 import { prisma } from "@/lib/prisma";
@@ -96,6 +97,16 @@ export async function POST(request: Request) {
         optedIn: input.optedIn ?? true,
         metadata: input.metadata as Prisma.InputJsonValue | undefined
       }
+    });
+
+    await recordActivity({
+      companyId: company.id,
+      action: "CONTACT_CREATED",
+      entityType: "CONTACT",
+      entityId: contact.id,
+      entityLabel: safeActivityLabel(contact.name, contact.phone),
+      summary: "Created contact record.",
+      metadataSummary: `Stage: ${contact.stage || "UNKNOWN"}`
     });
 
     return created(contact);

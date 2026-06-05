@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { normalizeContactStatus } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
 import { contactUpdateSchema, normalizeTags } from "@/lib/validators";
@@ -57,6 +58,16 @@ export async function PUT(request: Request, { params }: Context) {
       }
     });
 
+    await recordActivity({
+      companyId: company.id,
+      action: "CONTACT_UPDATED",
+      entityType: "CONTACT",
+      entityId: contact.id,
+      entityLabel: safeActivityLabel(contact.name, contact.phone),
+      summary: formatChangeSummary(existing, contact, ["name", "phone", "email", "tags", "segment", "stage", "optedIn"]),
+      metadataSummary: `Stage: ${contact.stage || "UNKNOWN"}`
+    });
+
     return ok(contact);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -87,6 +98,16 @@ export async function DELETE(_request: Request, { params }: Context) {
     }
 
     await prisma.contact.delete({ where: { id: params.id } });
+
+    await recordActivity({
+      companyId: company.id,
+      action: "CONTACT_DELETED",
+      entityType: "CONTACT",
+      entityId: params.id,
+      entityLabel: safeActivityLabel(existing.name, existing.phone),
+      summary: "Deleted contact record."
+    });
+
     return ok({ id: params.id, deleted: true });
   } catch (error) {
     return handleApiError(error);

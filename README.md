@@ -21,12 +21,15 @@ Major active modules:
 - WhatsApp customer profile name capture and Click-to-WhatsApp referral context when Meta includes safe webhook fields.
 - Inbox conversation quality controls for read/unread, starred, priority, and quick labels.
 - Saved Replies / Quick Replies for inserting reusable text into the Inbox composer.
+- Staff Activity Logs for internal-only audit summaries of manual operator actions.
 
 WhatsApp Cloud API can provide customer profile name in webhook contact data, but it generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and lets operators edit the customer name manually.
 
 Conversation quality controls are internal CRM states only. They do not send messages or change WhatsApp/Messenger provider behavior.
 
 Saved Replies are text-only in Phase 1. They insert into the composer only; staff must review and click Send manually.
+
+Staff Activity Logs are internal only. They store safe summaries for manual CRM, order, product, saved reply, auto-reply, and inbox state changes. Logging never stores access tokens, cookies, raw webhook payloads, provider secrets, or full raw request bodies, and logging failure should not block the main business action.
 
 Safe production-beta defaults remain:
 

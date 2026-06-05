@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiError, created, handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { generateOrderNumber, orderInputSchema } from "@/lib/order-input";
 import { calculateOrderTotal, normalizeOrderStatus, normalizePaymentStatus } from "@/lib/order-status";
 import { prisma } from "@/lib/prisma";
@@ -86,6 +87,16 @@ export async function POST(request: Request) {
         notes: input.notes ?? ""
       },
       include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "ORDER_CREATED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: safeActivityLabel(order.orderNumber, order.customerName || order.customerPhone),
+      summary: "Created order record.",
+      metadataSummary: `Status: ${order.orderStatus}; Payment: ${order.paymentStatus}`
     });
 
     return created({ order });

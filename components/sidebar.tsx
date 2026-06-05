@@ -40,6 +40,7 @@ const navigation = [
   { label: "Send Messages", icon: MessagesSquare, href: "/send-messages" },
   { label: "Saved Replies", icon: MessageSquareQuote, href: "/saved-replies" },
   { label: "Message Logs", icon: ClipboardList, href: "/message-logs" },
+  { label: "Activity Logs", icon: ClipboardList, href: "/activity-logs" },
   { label: "Data Exports", icon: DatabaseBackup, href: "/exports" },
   { label: "AI Studio", icon: Bot, href: "/ai-studio", badge: "AI" },
   { label: "Auto Reply", icon: BriefcaseBusiness, href: "/auto-reply" },

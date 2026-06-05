@@ -1,5 +1,6 @@
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { autoReplyRuleCreateSchema } from "@/lib/validators";
 
@@ -47,6 +48,16 @@ export async function POST(request: Request) {
         isActive: input.isActive ?? true,
         matchMode: input.matchMode ?? "CONTAINS"
       }
+    });
+
+    await recordActivity({
+      companyId: company.id,
+      action: "AUTO_REPLY_RULE_CREATED",
+      entityType: "AUTO_REPLY_RULE",
+      entityId: rule.id,
+      entityLabel: safeActivityLabel(rule.keyword, rule.matchMode),
+      summary: "Created auto reply rule.",
+      metadataSummary: `Active: ${rule.isActive ? "yes" : "no"}; Priority: ${rule.priority}`
     });
 
     return created(rule);

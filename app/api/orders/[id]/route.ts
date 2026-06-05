@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiError, handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { orderInputSchema } from "@/lib/order-input";
 import { calculateOrderTotal, normalizeOrderStatus, normalizePaymentStatus } from "@/lib/order-status";
 import { prisma } from "@/lib/prisma";
@@ -68,6 +69,16 @@ export async function PATCH(request: Request, { params }: Context) {
       include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
     });
 
+    await recordActivity({
+      companyId: context.company.id,
+      action: "ORDER_UPDATED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: safeActivityLabel(order.orderNumber, order.customerName || order.customerPhone),
+      summary: formatChangeSummary(existing, order, ["orderStatus", "paymentStatus", "quantity", "unitPrice", "deliveryCharge", "totalAmount", "followUpAt", "followUpDone"]),
+      metadataSummary: `Status: ${order.orderStatus}; Payment: ${order.paymentStatus}`
+    });
+
     return ok({ order });
   } catch (error) {
     return handleApiError(error);
@@ -96,6 +107,16 @@ export async function DELETE(_request: Request, { params }: Context) {
       where: { id: params.id },
       data: { orderStatus: "CANCELLED" },
       include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "ORDER_CANCELLED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: safeActivityLabel(order.orderNumber, order.customerName || order.customerPhone),
+      summary: "Cancelled order record.",
+      metadataSummary: `Status: ${order.orderStatus}`
     });
 
     return ok({ order, cancelled: true });

@@ -342,3 +342,6 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - [ ] Check the latest commit and build result.
 - [ ] Follow `INCIDENT_RESPONSE_RUNBOOK.md` for the affected incident type.
 - [ ] Collect the user action, page, time, channel, and safe error text.
+## Staff Activity Logs Support
+
+Activity Logs are available at `/activity-logs` for internal review of manual operator actions. They show safe summaries only, such as who created or updated contacts, orders, products, saved replies, auto-reply rules, and inbox state. They do not expose tokens, raw webhook payloads, cookies, sessions, or Authorization headers. If a business action succeeds but the activity log is missing, treat it as a logging/observability issue rather than a customer workflow failure.

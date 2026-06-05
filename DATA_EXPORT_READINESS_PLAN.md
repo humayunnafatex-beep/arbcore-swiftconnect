@@ -76,3 +76,8 @@ If export behavior needs to be disabled:
 - Disable the export API routes in a follow-up commit.
 - No database rollback should be needed because Sprint 4 does not add schema changes.
 - Re-run `npm.cmd run build` and `npm.cmd run verify:production`.
+## Activity Logs Export
+
+Activity Logs CSV is available at `/api/exports/activity-logs` and from `/exports`. It includes created time, safe actor fields, action, entity type, entity label, summary, and metadata summary for the current workspace.
+
+The export is internal only. It must not include access tokens, cookies, database URLs, sessions, raw webhook payloads, Authorization headers, or provider secrets. Share only with approved admins, support operators, or technical reviewers.

@@ -413,6 +413,20 @@ export async function GET() {
       activeSavedReplies: 0
     });
 
+    const activityPromise = safeMetricGroup("activity", warnings, async () => {
+      const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const last7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const [recentActivityCount24h, recentActivityCount7d] = await Promise.all([
+        prisma.activityLog.count({ where: { companyId, createdAt: { gte: last24h } } }),
+        prisma.activityLog.count({ where: { companyId, createdAt: { gte: last7d } } })
+      ]);
+
+      return { recentActivityCount24h, recentActivityCount7d };
+    }, {
+      recentActivityCount24h: 0,
+      recentActivityCount7d: 0
+    });
+
     const [
       channels,
       messageHealth,
@@ -424,7 +438,8 @@ export async function GET() {
       products,
       billing,
       workspace,
-      savedReplies
+      savedReplies,
+      activity
     ] = await Promise.all([
       channelsPromise,
       messageHealthPromise,
@@ -436,7 +451,8 @@ export async function GET() {
       productsPromise,
       billingPromise,
       workspacePromise,
-      savedRepliesPromise
+      savedRepliesPromise,
+      activityPromise
     ]);
     const dashboardBilling = {
       ...billing.billing,
@@ -457,6 +473,7 @@ export async function GET() {
       ...products,
       ...workspace,
       ...savedReplies,
+      ...activity,
       billing: dashboardBilling,
       warnings,
       apiStatus: warnings.length ? "Degraded" : "Operational"

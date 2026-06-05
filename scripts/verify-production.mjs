@@ -14,6 +14,7 @@ const checks = [
   "/inbox",
   "/message-logs",
   "/saved-replies",
+  "/activity-logs",
   "/campaigns",
   "/products",
   "/orders",

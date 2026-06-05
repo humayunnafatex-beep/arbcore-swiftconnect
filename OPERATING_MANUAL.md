@@ -430,6 +430,12 @@ Saved Replies let operators manage reusable text answers for common customer que
 
 In Inbox, active saved replies can be inserted into the reply composer for the selected WhatsApp or Messenger conversation. If the composer already has text, the operator can append or replace. Saved Replies never auto-send; staff must review the text and click Send manually.
 
+## 12G. Staff Activity Logs
+
+Activity Logs at `/activity-logs` are internal only. Admins and approved reviewers can see safe summaries of manual staff actions such as contact changes, inbox status updates, order edits, product updates, saved reply changes, and auto-reply rule changes.
+
+Activity Logs are not customer-visible and are not a replacement for provider logs. They do not store access tokens, cookies, database URLs, raw webhook payloads, or Authorization headers. If activity logging fails, the main business action should still complete.
+
 Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
 
 ## 13. Support And Maintenance

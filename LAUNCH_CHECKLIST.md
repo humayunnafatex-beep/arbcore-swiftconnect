@@ -480,6 +480,14 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Saved replies do not auto-send; staff must click Send manually.
 - [ ] Text/media reply, image/PDF attachment, and order prepared message flows still work.
 
+## 9C-5. Staff Activity Logs QA
+
+- [ ] `/activity-logs` loads from the sidebar for approved internal reviewers.
+- [ ] Creating or updating contacts, orders, products, saved replies, auto-reply rules, and inbox state creates safe activity summaries.
+- [ ] Activity Logs show actor, action, entity, summary, and time without exposing tokens, cookies, sessions, raw webhook payloads, or Authorization headers.
+- [ ] Activity Logs CSV export is available from `/exports`.
+- [ ] Logging failure does not block the original business action.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

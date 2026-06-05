@@ -1,5 +1,6 @@
 import { ApiError, handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { validateProductInput } from "@/lib/product-input";
 import { prisma } from "@/lib/prisma";
 
@@ -34,6 +35,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       data: input
     });
 
+    await recordActivity({
+      companyId: context.company.id,
+      action: "PRODUCT_UPDATED",
+      entityType: "PRODUCT",
+      entityId: product.id,
+      entityLabel: safeActivityLabel(product.name, product.sku),
+      summary: formatChangeSummary(existing, product, ["name", "sku", "basePrice", "salePrice", "status", "stockNote", "availableSizes"]),
+      metadataSummary: `Status: ${product.status}`
+    });
+
     return ok({ product });
   } catch (error) {
     return handleApiError(error);
@@ -50,6 +61,16 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     const product = await prisma.product.update({
       where: { id: params.id },
       data: { status: "ARCHIVED" }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "PRODUCT_ARCHIVED",
+      entityType: "PRODUCT",
+      entityId: product.id,
+      entityLabel: safeActivityLabel(product.name, product.sku),
+      summary: "Archived product record.",
+      metadataSummary: `Status: ${product.status}`
     });
 
     return ok({ product, archived: true });

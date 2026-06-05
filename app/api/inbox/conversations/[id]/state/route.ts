@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -75,7 +76,17 @@ export async function PATCH(
           contactKey: conversation.contactKey
         }
       },
-      select: { status: true }
+      select: {
+        status: true,
+        assignedToId: true,
+        internalNote: true,
+        followUpAt: true,
+        followUpDone: true,
+        isRead: true,
+        isStarred: true,
+        priority: true,
+        quickLabel: true
+      }
     });
     const nextStatus = parsed.data.status ?? normalizeConversationStatus(current?.status);
     const updateData = {
@@ -126,6 +137,16 @@ export async function PATCH(
       }
     });
 
+    await recordActivity({
+      companyId: company.id,
+      action: getConversationAction(parsed.data),
+      entityType: "CONVERSATION",
+      entityId: params.id,
+      entityLabel: safeActivityLabel(conversation.channel, conversation.contactKey),
+      summary: formatChangeSummary(current, state, ["status", "assignedToId", "internalNote", "followUpAt", "followUpDone", "isRead", "isStarred", "priority", "quickLabel"]),
+      metadataSummary: `Status: ${normalizeConversationStatus(state.status)}; Priority: ${normalizePriority(state.priority)}`
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -154,6 +175,17 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+function getConversationAction(data: z.infer<typeof stateSchema>) {
+  if ("status" in data) return "CONVERSATION_STATUS_UPDATED";
+  if ("assignedToId" in data) return "CONVERSATION_ASSIGNED";
+  if ("isRead" in data) return "CONVERSATION_READ_UPDATED";
+  if ("priority" in data) return "CONVERSATION_PRIORITY_UPDATED";
+  if ("quickLabel" in data) return "CONVERSATION_LABEL_UPDATED";
+  if ("followUpAt" in data || "followUpDone" in data) return "CONVERSATION_FOLLOWUP_UPDATED";
+  if ("internalNote" in data) return "CONVERSATION_NOTE_UPDATED";
+  return "CONVERSATION_UPDATED";
 }
 
 function normalizePriority(value: string | null | undefined): (typeof priorityValues)[number] {

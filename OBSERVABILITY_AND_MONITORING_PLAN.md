@@ -150,3 +150,8 @@ Future v1.1 or production expansion may add:
 - Dashboard trend for provider failure rate.
 
 Until implemented, these are planning placeholders only.
+## Staff Activity Logs
+
+Use `/activity-logs` to review safe summaries of manual operator actions during support investigations. These logs help confirm whether staff changed contact, order, product, saved reply, auto-reply, or inbox state records.
+
+Activity logging is best-effort and should not block customer workflows. Missing activity records should be investigated as an observability issue. Do not use Activity Logs for provider webhook payload inspection; use Message Logs and safe provider diagnostics instead.

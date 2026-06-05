@@ -125,3 +125,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 ## Recommended Next Phase
 
 Stabilize beta testing with 2-5 controlled users, then proceed to campaign/template hardening or billing readiness only after production QA feedback is collected.
+## Staff Activity Logs
+
+- Added internal-only Activity Logs for manual staff actions across contacts, inbox state, orders, products, saved replies, and auto-reply rules.
+- Activity Logs store safe summaries only and do not expose tokens, raw webhook payloads, cookies, sessions, Authorization headers, or provider secrets.
+- Activity Logs CSV export is available from Data Exports for approved internal review.

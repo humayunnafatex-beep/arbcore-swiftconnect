@@ -1,5 +1,6 @@
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { autoReplyRuleUpdateSchema } from "@/lib/validators";
 
@@ -48,6 +49,16 @@ export async function PUT(request: Request, { params }: Context) {
       }
     });
 
+    await recordActivity({
+      companyId: company.id,
+      action: "AUTO_REPLY_RULE_UPDATED",
+      entityType: "AUTO_REPLY_RULE",
+      entityId: rule.id,
+      entityLabel: safeActivityLabel(rule.keyword, rule.matchMode),
+      summary: formatChangeSummary(existing, rule, ["keyword", "priority", "isActive", "matchMode"]),
+      metadataSummary: `Active: ${rule.isActive ? "yes" : "no"}; Priority: ${rule.priority}`
+    });
+
     return ok(rule);
   } catch (error) {
     return handleApiError(error);
@@ -65,6 +76,16 @@ export async function DELETE(_request: Request, { params }: Context) {
     }
 
     await prisma.autoReplyRule.delete({ where: { id: params.id } });
+
+    await recordActivity({
+      companyId: company.id,
+      action: "AUTO_REPLY_RULE_DELETED",
+      entityType: "AUTO_REPLY_RULE",
+      entityId: params.id,
+      entityLabel: safeActivityLabel(existing.keyword, existing.matchMode),
+      summary: "Deleted auto reply rule."
+    });
+
     return ok({ id: params.id, deleted: true });
   } catch (error) {
     return handleApiError(error);

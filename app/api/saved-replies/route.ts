@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import {
   normalizeSavedReplyCategory,
@@ -65,6 +66,16 @@ export async function POST(request: Request) {
         channel: validation.data.channel ?? "ALL",
         status: validation.data.status ?? "ACTIVE"
       }
+    });
+
+    await recordActivity({
+      companyId: company.id,
+      action: "SAVED_REPLY_CREATED",
+      entityType: "SAVED_REPLY",
+      entityId: reply.id,
+      entityLabel: safeActivityLabel(reply.title, reply.shortcut),
+      summary: "Created saved reply.",
+      metadataSummary: `Category: ${reply.category}; Channel: ${reply.channel}; Status: ${reply.status}`
     });
 
     return NextResponse.json({ success: true, data: { reply } }, { status: 201 });

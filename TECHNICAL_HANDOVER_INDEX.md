@@ -35,6 +35,7 @@ Use this index as the main table of contents for developers, support, QA, and op
 - `MIGRATION_AUDIT.md`
 - `OBSERVABILITY_AND_MONITORING_PLAN.md`
 - `DATA_EXPORT_READINESS_PLAN.md`
+- `OPERATING_MANUAL.md` - includes Staff Activity Logs usage and safety notes.
 
 ## QA Docs
 
@@ -45,6 +46,7 @@ Use this index as the main table of contents for developers, support, QA, and op
 - `PRODUCTION_MONITORING_CHECKLIST.md`
 - `BETA_FEEDBACK_FORM.md`
 - `DATA_EXPORT_READINESS_PLAN.md`
+- `SUPPORT_HANDOVER_NOTE.md` - includes Activity Logs support triage guidance.
 - `WORKSPACE_SWITCHING_TEST_CHECKLIST.md`
 - `TENANT_ENFORCEMENT_STAGING_CHECKLIST.md`
 

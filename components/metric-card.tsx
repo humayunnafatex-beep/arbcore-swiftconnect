@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Bot, CheckCircle2, Clock, CreditCard, FileText, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, ShoppingBag, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, ClipboardList, CreditCard, FileText, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, ShoppingBag, TrendingUp, Users } from "lucide-react";
 import { kpis } from "@/data/dashboard";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -83,6 +83,8 @@ type DashboardStatistics = {
   teamMembers: number;
   aiCreditsUsed: number;
   activeSavedReplies: number;
+  recentActivityCount24h: number;
+  recentActivityCount7d: number;
   whatsappConfigured: boolean;
   messengerConfigured: boolean;
   billing: {
@@ -279,6 +281,8 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     archivedProducts: 0,
     productsWithStockNote: 0,
     activeSavedReplies: 0,
+    recentActivityCount24h: 0,
+    recentActivityCount7d: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
     billing: {
@@ -439,6 +443,16 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Saved replies", value: data.activeSavedReplies, href: "/saved-replies", icon: MessageSquareText, tone: "blue" },
           { label: "Unread", value: data.unreadConversations, href: "/inbox?read=UNREAD", icon: Inbox, tone: data.unreadConversations ? "green" : "gray" },
           { label: "Hot leads", value: data.hotLeadConversations, href: "/inbox?quickLabel=HOT_LEAD", icon: Users, tone: "green" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Staff Activity"
+        helper={data.recentActivityCount24h ? "Recent manual operator actions are being tracked." : "Manual staff actions will appear after updates are made."}
+        items={[
+          { label: "Last 24h", value: data.recentActivityCount24h, href: "/activity-logs", icon: ClipboardList, tone: data.recentActivityCount24h ? "green" : "gray" },
+          { label: "Last 7 days", value: data.recentActivityCount7d, href: "/activity-logs", icon: ClipboardList, tone: "blue" },
+          { label: "Open logs", value: 1, href: "/activity-logs", icon: LinkIcon, tone: "blue", displayValue: "Open" }
         ]}
         loading={loading}
       />

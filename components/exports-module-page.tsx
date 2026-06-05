@@ -35,6 +35,12 @@ const exportCards = [
     description: "Reusable text replies for Inbox operators. No provider tokens, raw payloads, or auto-send records are exported.",
     href: "/api/exports/saved-replies",
     button: "Download Saved Replies"
+  },
+  {
+    title: "Activity Logs CSV",
+    description: "Internal audit summaries for manual staff actions. No tokens, cookies, raw webhook payloads, or secrets are exported.",
+    href: "/api/exports/activity-logs",
+    button: "Download Activity Logs"
   }
 ];
 

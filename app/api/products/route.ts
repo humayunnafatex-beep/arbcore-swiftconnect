@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { created, handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { normalizeProductStatus, validateProductInput } from "@/lib/product-input";
 import { prisma } from "@/lib/prisma";
 
@@ -50,6 +51,16 @@ export async function POST(request: Request) {
         companyId: context.company.id,
         ...input
       }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "PRODUCT_CREATED",
+      entityType: "PRODUCT",
+      entityId: product.id,
+      entityLabel: safeActivityLabel(product.name, product.sku),
+      summary: "Created product record.",
+      metadataSummary: `Status: ${product.status}`
     });
 
     return created({ product });

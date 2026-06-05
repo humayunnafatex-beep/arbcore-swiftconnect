@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
+import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { validateSavedReplyInput } from "@/lib/saved-reply-input";
 
@@ -35,7 +36,7 @@ export async function PATCH(request: Request, { params }: Context) {
     const { context } = await requirePermission("savedReplies.manage");
     const existing = await prisma.savedReply.findFirst({
       where: { id: params.id, companyId: context.company.id },
-      select: { id: true }
+      select: { id: true, title: true, category: true, shortcut: true, channel: true, status: true }
     });
 
     if (!existing) {
@@ -53,6 +54,16 @@ export async function PATCH(request: Request, { params }: Context) {
       data: validation.data
     });
 
+    await recordActivity({
+      companyId: context.company.id,
+      action: "SAVED_REPLY_UPDATED",
+      entityType: "SAVED_REPLY",
+      entityId: reply.id,
+      entityLabel: safeActivityLabel(reply.title, reply.shortcut),
+      summary: formatChangeSummary(existing, reply, ["title", "category", "shortcut", "channel", "status"]),
+      metadataSummary: `Category: ${reply.category}; Channel: ${reply.channel}; Status: ${reply.status}`
+    });
+
     return NextResponse.json({ success: true, data: { reply } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
@@ -66,7 +77,7 @@ export async function DELETE(_request: Request, { params }: Context) {
     const { context } = await requirePermission("savedReplies.manage");
     const existing = await prisma.savedReply.findFirst({
       where: { id: params.id, companyId: context.company.id },
-      select: { id: true }
+      select: { id: true, title: true, shortcut: true }
     });
 
     if (!existing) {
@@ -76,6 +87,16 @@ export async function DELETE(_request: Request, { params }: Context) {
     const reply = await prisma.savedReply.update({
       where: { id: params.id },
       data: { status: "ARCHIVED" }
+    });
+
+    await recordActivity({
+      companyId: context.company.id,
+      action: "SAVED_REPLY_ARCHIVED",
+      entityType: "SAVED_REPLY",
+      entityId: reply.id,
+      entityLabel: safeActivityLabel(existing.title, existing.shortcut),
+      summary: "Archived saved reply.",
+      metadataSummary: `Status: ${reply.status}`
     });
 
     return NextResponse.json({ success: true, data: { reply } });

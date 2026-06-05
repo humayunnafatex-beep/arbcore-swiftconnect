@@ -218,3 +218,8 @@ STRICT_PROVIDER_WEBHOOK_ROUTING=false
 
 - Run `npm.cmd run verify:production` after rollback.
 - Document the incident and follow-up fix.
+## Staff Activity Log Issues
+
+If `/activity-logs` is unavailable or missing expected entries, first confirm the production migration for `ActivityLog` has been applied. Do not reset the production database.
+
+Activity Logs contain safe summaries only. They should never contain access tokens, cookies, sessions, raw webhook payloads, Authorization headers, database URLs, or provider secrets. If sensitive data is found in an activity record, restrict access, rotate any exposed credential, and open a security incident.
