@@ -40,6 +40,7 @@ export async function PATCH(request: Request, { params }: Context) {
     const quantity = input.quantity ?? existing.quantity;
     const unitPrice = input.unitPrice ?? existing.unitPrice;
     const deliveryCharge = input.deliveryCharge ?? existing.deliveryCharge;
+    const followUpAt = parseOptionalDate(input.followUpAt);
     const data: Prisma.OrderUpdateInput = {
       ...(input.contactId !== undefined ? { contact: contact ? { connect: { id: contact.id } } : { disconnect: true } } : {}),
       ...(input.channel !== undefined ? { channel: input.channel } : {}),
@@ -56,6 +57,8 @@ export async function PATCH(request: Request, { params }: Context) {
       ...(input.deliveryAddress !== undefined ? { deliveryAddress: input.deliveryAddress } : {}),
       ...(input.paymentStatus !== undefined ? { paymentStatus: normalizePaymentStatus(input.paymentStatus) } : {}),
       ...(input.orderStatus !== undefined ? { orderStatus: normalizeOrderStatus(input.orderStatus) } : {}),
+      ...(input.followUpAt !== undefined ? { followUpAt } : {}),
+      ...(input.followUpDone !== undefined ? { followUpDone: input.followUpDone } : {}),
       ...(input.notes !== undefined ? { notes: input.notes } : {})
     };
 
@@ -69,6 +72,17 @@ export async function PATCH(request: Request, { params }: Context) {
   } catch (error) {
     return handleApiError(error);
   }
+}
+
+function parseOptionalDate(value: string | null | undefined) {
+  if (value === null) return null;
+  if (value === undefined || !value.trim()) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new ApiError(400, "INVALID_FOLLOW_UP_AT", "Follow-up date is invalid.");
+  }
+
+  return parsed;
 }
 
 export async function DELETE(_request: Request, { params }: Context) {

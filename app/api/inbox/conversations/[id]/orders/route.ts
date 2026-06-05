@@ -68,6 +68,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
         deliveryAddress: input.deliveryAddress ?? "",
         paymentStatus: normalizePaymentStatus(input.paymentStatus),
         orderStatus: normalizeOrderStatus(input.orderStatus),
+        followUpAt: parseOptionalDate(input.followUpAt),
+        followUpDone: input.followUpDone ?? false,
         notes: input.notes ?? ""
       },
       include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
@@ -77,6 +79,17 @@ export async function POST(request: Request, { params }: { params: { id: string 
   } catch (error) {
     return handleApiError(error);
   }
+}
+
+function parseOptionalDate(value: string | null | undefined) {
+  if (value === null) return null;
+  if (value === undefined || !value.trim()) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new ApiError(400, "INVALID_FOLLOW_UP_AT", "Follow-up date is invalid.");
+  }
+
+  return parsed;
 }
 
 function decodeConversationId(id: string): { channel: ConversationChannel; contactKey: string } {

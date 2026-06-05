@@ -293,7 +293,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Dashboard shows Channel Activity metrics.
 - [ ] Dashboard shows Auto Reply Performance metrics for the last 30 days.
 - [ ] Dashboard shows Lead Status Snapshot metrics.
-- [ ] Dashboard shows Order Snapshot metrics.
+- [ ] Dashboard shows Order Operations metrics.
 
 ## 5A. Orders QA
 
@@ -301,9 +301,13 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Create order from Inbox conversation works.
 - [ ] Order appears in `/orders`.
 - [ ] Order status can update to Draft, Confirmed, Packed, Shipped, Delivered, and Cancelled.
-- [ ] Payment status can update to Unpaid, Partial, Paid, and COD.
+- [ ] Payment status can update to Unpaid, Partial, Paid, and COD through quick update.
+- [ ] Order follow-up can be scheduled, marked done, cleared, and filtered by Due, Upcoming, Done, and None.
+- [ ] Dashboard Order Operations links open due follow-ups and unpaid orders.
 - [ ] Orders CSV export downloads manual order records only.
+- [ ] Orders CSV includes follow-up date and follow-up done fields.
 - [ ] Saving an order does not send an automatic WhatsApp or Messenger message.
+- [ ] Saving quick status/payment/follow-up updates does not send an automatic WhatsApp or Messenger message.
 - [ ] Inbox Prepare Message fills the reply composer from selected order data without auto-sending.
 - [ ] Orders Preview/Copy Message generates reviewed customer text without sending.
 - [ ] Generated order messages do not include internal notes.

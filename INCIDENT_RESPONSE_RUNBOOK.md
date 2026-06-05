@@ -105,9 +105,16 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 ## Manual Order Record Issue
 
 - Symptoms: Order status, payment status, customer details, delivery address, or total amount looks wrong.
-- Where to check: `/orders`, selected Inbox conversation Orders section, order message preview, Contacts order count, and Orders CSV export if approved.
+- Where to check: `/orders`, selected Inbox conversation Orders section, order follow-up filters, order message preview, Contacts order count, and Orders CSV export if approved.
 - Safe first action: Confirm the order was manually entered and compare against the customer conversation.
 - What not to do: Do not claim payment, courier, inventory, or customer notification automation. Do not send automatic order messages in Phase 1.
+
+## Order Follow-up Alert Issue
+
+- Symptoms: Due, upcoming, done, or no-follow-up filters do not match the expected order list.
+- Where to check: Order `followUpAt`, `followUpDone`, `/orders?followUp=DUE`, Dashboard Order Operations, and Orders CSV export.
+- Safe first action: Confirm the follow-up date/time and done checkbox on the order record.
+- What not to do: Do not treat a follow-up alert as a provider send, payment gateway action, courier update, or automatic customer notification.
 
 ## Order Message Template Issue
 

@@ -16,6 +16,7 @@ Major active modules:
 - Customer lead statuses and tags for Contacts and Inbox CRM follow-up.
 - Manual Order Tracking linked to Contacts and Inbox conversations.
 - Manual order message templates generated from order data for staff review before sending.
+- Order follow-up alerts, filters, and quick status/payment updates for manual order operations.
 
 Safe production-beta defaults remain:
 
@@ -286,6 +287,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, Orders, and Auto Reply Analytics.
 - Contacts exports include lead status and tags. Recommended tags include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`.
 - Order message templates can prepare confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation text from order data. Staff must review the generated text and send manually; saving an order never auto-sends a message.
+- Order follow-up reminders are internal alerts only. Changing order status, payment status, or follow-up status does not send a WhatsApp or Messenger message automatically.
 
 Read-only production verification script:
 

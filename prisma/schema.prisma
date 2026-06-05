@@ -233,6 +233,8 @@ model Order {
 
   paymentStatus   String   @default("UNPAID")
   orderStatus     String   @default("DRAFT")
+  followUpAt       DateTime?
+  followUpDone     Boolean  @default(false)
 
   notes           String   @default("")
 
@@ -242,6 +244,7 @@ model Order {
   @@index([companyId, createdAt])
   @@index([companyId, orderStatus])
   @@index([companyId, paymentStatus])
+  @@index([companyId, followUpAt])
   @@index([contactId])
   @@index([companyId, channel, customerKey])
 }

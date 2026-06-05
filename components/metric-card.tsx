@@ -56,9 +56,13 @@ type DashboardStatistics = {
   autoReplySuccessRate30d: number;
   draftOrders: number;
   confirmedOrders: number;
+  packedOrders: number;
   shippedOrders: number;
   deliveredOrders: number;
   cancelledOrders: number;
+  dueOrderFollowUps: number;
+  upcomingOrderFollowUps: number;
+  doneOrderFollowUps: number;
   unpaidOrders: number;
   codOrders: number;
   totalOrderValue: number;
@@ -233,9 +237,13 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     autoReplySuccessRate30d: 0,
     draftOrders: 0,
     confirmedOrders: 0,
+    packedOrders: 0,
     shippedOrders: 0,
     deliveredOrders: 0,
     cancelledOrders: 0,
+    dueOrderFollowUps: 0,
+    upcomingOrderFollowUps: 0,
+    doneOrderFollowUps: 0,
     unpaidOrders: 0,
     codOrders: 0,
     totalOrderValue: 0,
@@ -307,13 +315,17 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
         loading={loading}
       />
       <MetricSection
-        title="Order Snapshot"
-        helper={data.unpaidOrders ? "Unpaid orders need payment follow-up." : "No unpaid order follow-up needed."}
+        title="Order Operations"
+        helper={data.dueOrderFollowUps ? "Due order follow-ups need attention." : data.unpaidOrders ? "Unpaid orders need payment follow-up." : "No order follow-up alerts."}
         items={[
           { label: "Draft", value: data.draftOrders, href: "/orders?status=DRAFT", icon: ShoppingBag, tone: "gray" },
           { label: "Confirmed", value: data.confirmedOrders, href: "/orders?status=CONFIRMED", icon: CheckCircle2, tone: "green" },
+          { label: "Packed", value: data.packedOrders, href: "/orders?status=PACKED", icon: ShoppingBag, tone: "purple" },
           { label: "Shipped", value: data.shippedOrders, href: "/orders?status=SHIPPED", icon: Send, tone: "blue" },
           { label: "Delivered", value: data.deliveredOrders, href: "/orders?status=DELIVERED", icon: CheckCircle2, tone: "green" },
+          { label: "Due follow-ups", value: data.dueOrderFollowUps, href: "/orders?followUp=DUE", icon: AlertTriangle, tone: data.dueOrderFollowUps ? "red" : "gray" },
+          { label: "Upcoming", value: data.upcomingOrderFollowUps, href: "/orders?followUp=UPCOMING", icon: Clock, tone: "blue" },
+          { label: "Unpaid", value: data.unpaidOrders, href: "/orders?paymentStatus=UNPAID", icon: CreditCard, tone: data.unpaidOrders ? "red" : "gray" },
           { label: "COD", value: data.codOrders, href: "/orders?paymentStatus=COD", icon: CreditCard, tone: "purple" },
           { label: "Value", value: data.totalOrderValue, href: "/orders", icon: CreditCard, tone: "blue", displayValue: `BDT ${data.totalOrderValue.toLocaleString()}` }
         ]}

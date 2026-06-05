@@ -15,6 +15,8 @@ export const orderInputSchema = z.object({
   deliveryAddress: z.string().trim().max(1000).optional(),
   paymentStatus: z.string().trim().optional(),
   orderStatus: z.string().trim().optional(),
+  followUpAt: z.union([z.string().trim(), z.null()]).optional(),
+  followUpDone: z.coerce.boolean().optional(),
   notes: z.string().trim().max(2000).optional()
 });
 

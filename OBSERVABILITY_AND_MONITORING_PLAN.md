@@ -63,7 +63,8 @@ Current production readiness signals include:
 - ARBCore Message Logs for channel send/receive status.
 - Auto Reply Analytics for rule-level trigger/send performance.
 - Data Exports at `/exports` for approved CSV exports of Contacts, Message Logs, Billing Records, and Auto Reply Analytics.
-- Orders at `/orders` for manual order status and payment status review.
+- Orders at `/orders` for manual order status, payment status, and internal order follow-up review.
+- Dashboard Order Operations for due order follow-ups, unpaid/COD orders, and manual order value snapshots.
 - Channel Center for provider setup readiness.
 - Provider Diagnostics for duplicate or missing provider IDs.
 - Optional Sentry later for grouped application exceptions.

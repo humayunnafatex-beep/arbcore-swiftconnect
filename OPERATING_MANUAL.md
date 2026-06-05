@@ -77,14 +77,17 @@ Phase 1 is manual tracking only. There is no payment gateway, courier integratio
 
 Order message templates can prepare customer-facing confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation messages from saved order data. Staff must review the generated message and click Send Reply manually from Inbox, or copy the preview from Orders. Templates do not auto-send and do not include internal order notes.
 
+Order follow-up reminders are internal only. Use `/orders` to filter by due, upcoming, done, or no follow-up, and to save quick order status, payment status, and follow-up updates. These updates do not send automatic WhatsApp or Messenger messages.
+
 Basic order workflow:
 
 1. Open Inbox and select a customer conversation.
 2. In the Orders section, enter model, size, quantity, price, delivery charge, customer details, delivery address, payment status, order status, and notes.
 3. Click Save Order.
 4. Open Orders at `/orders` to filter and update order/payment status.
-5. Use Prepare Message in Inbox or Preview/Copy Message in Orders when a reviewed customer update is needed.
-6. Use Data Exports to download Orders CSV when approved.
+5. Add an internal order follow-up if staff need to check payment, delivery, or customer confirmation later.
+6. Use Prepare Message in Inbox or Preview/Copy Message in Orders when a reviewed customer update is needed.
+7. Use Data Exports to download Orders CSV when approved.
 
 ## 4. Campaigns
 

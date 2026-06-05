@@ -11,7 +11,7 @@ Exports are intended for approved business operators and support/admin users who
 Sprint 4 supports CSV exports for:
 
 - Contacts, including lead status and tags
-- Orders
+- Orders, including internal follow-up date and follow-up done status
 - Message Logs
 - Billing/Payment records
 - Auto Reply Analytics
@@ -54,7 +54,7 @@ Future exports should follow the same company-scoped, safe-field-only rules.
 
 ## Security Cautions
 
-- Exports may contain customer names, phone numbers, emails, lead statuses, tags, order details, delivery addresses, message previews, payment notes, and internal business records.
+- Exports may contain customer names, phone numbers, emails, lead statuses, tags, order details, delivery addresses, order follow-up reminders, message previews, payment notes, and internal business records.
 - Share export files carefully.
 - Do not upload export files to public links.
 - Do not paste export contents into public chats.

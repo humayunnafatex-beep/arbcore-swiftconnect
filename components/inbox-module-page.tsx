@@ -157,6 +157,8 @@ type Order = {
   deliveryAddress: string;
   paymentStatus: string;
   orderStatus: string;
+  followUpAt: string | null;
+  followUpDone: boolean;
   notes: string;
   updatedAt: string;
 };
@@ -681,6 +683,28 @@ export function InboxModulePage() {
     }
   }
 
+  async function updateOrderFollowUp(order: Order, patch: { followUpAt: string | null; followUpDone: boolean }) {
+    setOrderMessage(null);
+
+    try {
+      const response = await fetch(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch)
+      });
+      const result = (await response.json()) as { success: boolean; error?: unknown };
+      if (!response.ok || !result.success) {
+        const message = typeof result.error === "string" ? result.error : "Failed to update order follow-up.";
+        throw new Error(message);
+      }
+
+      setOrderMessage({ tone: "success", text: "Order follow-up updated. No customer message was sent." });
+      if (selectedId) await loadConversationOrders(selectedId);
+    } catch (error) {
+      setOrderMessage({ tone: "error", text: getApiErrorMessage(error) });
+    }
+  }
+
   return (
     <AppShell>
       <section className="rounded-[28px] border border-blue-100 bg-white/95 p-5 shadow-panel sm:p-7">
@@ -936,6 +960,25 @@ export function InboxModulePage() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             <StatusPill label={order.paymentStatus} tone={order.paymentStatus === "PAID" ? "green" : order.paymentStatus === "COD" ? "blue" : "gray"} />
                             <StatusPill label={order.orderStatus} tone={order.orderStatus === "CANCELLED" ? "red" : order.orderStatus === "DELIVERED" ? "green" : "blue"} />
+                            <OrderFollowUpBadge order={order} />
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              className={`${secondaryButtonClassName} h-9 text-xs`}
+                              type="button"
+                              onClick={() => void updateOrderFollowUp(order, { followUpAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), followUpDone: false })}
+                            >
+                              Follow up tomorrow
+                            </button>
+                            {order.followUpAt ? (
+                              <button
+                                className={`${secondaryButtonClassName} h-9 text-xs`}
+                                type="button"
+                                onClick={() => void updateOrderFollowUp(order, { followUpAt: null, followUpDone: false })}
+                              >
+                                Clear follow-up
+                              </button>
+                            ) : null}
                           </div>
                           <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
                             <select
@@ -1212,6 +1255,19 @@ function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "
       {label}
     </span>
   );
+}
+
+function OrderFollowUpBadge({ order }: { order: Order }) {
+  if (order.followUpDone) {
+    return <StatusPill label="Follow-up done" tone="green" />;
+  }
+
+  if (!order.followUpAt) {
+    return null;
+  }
+
+  const due = new Date(order.followUpAt).getTime() <= Date.now();
+  return <StatusPill label={`${due ? "Due" : "Upcoming"} ${formatDate(order.followUpAt)}`} tone={due ? "red" : "blue"} />;
 }
 
 function ContactField({ label, value }: { label: string; value: string }) {

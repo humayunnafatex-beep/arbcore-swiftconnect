@@ -103,6 +103,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use Contacts or the Inbox contact card to update lead status and tags during customer follow-up.
 - Use Inbox or Orders to create and update manual order records for customer conversations.
 - Use order message templates to prepare customer-facing order confirmation or status text, then review and send manually from Inbox or copy from Orders.
+- Use Orders follow-up filters to find due, upcoming, done, or missing follow-ups.
+- Quick order status, payment status, and follow-up changes are internal record updates only and do not send customer messages automatically.
 - Order Tracking Phase 1 does not include payment gateway, courier integration, inventory automation, or automatic customer messages.
 - Recommended tags: `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, `repeat-customer`.
 
@@ -211,6 +213,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Internal order notes are not included in generated customer messages.
 - Preparing or copying a message does not send it. Staff must review the text and click Send Reply manually.
 - Do not promise automatic order confirmation, payment, courier, inventory, or delivery integration in this phase.
+
+### Order Follow-up Alert Confusion
+
+- Order follow-ups are internal reminders for operators.
+- Due means the follow-up time has passed and is not marked done.
+- Upcoming means a future follow-up is scheduled.
+- Done means staff manually marked the follow-up complete.
+- No automatic WhatsApp, Messenger, courier, billing, or inventory action runs when a follow-up changes.
 
 ### WhatsApp Media Reply Issue
 

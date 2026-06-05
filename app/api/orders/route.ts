@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { created, handleApiError, ok } from "@/lib/api";
+import { ApiError, created, handleApiError, ok } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { generateOrderNumber, orderInputSchema } from "@/lib/order-input";
 import { calculateOrderTotal, normalizeOrderStatus, normalizePaymentStatus } from "@/lib/order-status";
@@ -13,13 +13,17 @@ export async function GET(request: Request) {
     const { context } = await requirePermission("orders.view");
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status")?.trim();
+    const orderStatus = searchParams.get("orderStatus")?.trim();
     const paymentStatus = searchParams.get("paymentStatus")?.trim();
+    const followUp = searchParams.get("followUp")?.trim().toUpperCase();
     const contactId = searchParams.get("contactId")?.trim();
     const search = searchParams.get("search")?.trim();
+    const sort = searchParams.get("sort")?.trim().toLowerCase();
     const limit = parseLimit(searchParams.get("limit"));
     const where: Prisma.OrderWhereInput = {
       companyId: context.company.id,
-      ...(status && status !== "ALL" ? { orderStatus: normalizeOrderStatus(status) } : {}),
+      ...buildFollowUpWhere(followUp),
+      ...((orderStatus && orderStatus !== "ALL") || (status && status !== "ALL") ? { orderStatus: normalizeOrderStatus(orderStatus || status) } : {}),
       ...(paymentStatus && paymentStatus !== "ALL" ? { paymentStatus: normalizePaymentStatus(paymentStatus) } : {}),
       ...(contactId ? { contactId } : {}),
       ...(search
@@ -40,7 +44,7 @@ export async function GET(request: Request) {
     const orders = await prisma.order.findMany({
       where,
       take: limit,
-      orderBy: { updatedAt: "desc" },
+      orderBy: getOrderBy(sort),
       include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
     });
 
@@ -77,6 +81,8 @@ export async function POST(request: Request) {
         deliveryAddress: input.deliveryAddress ?? "",
         paymentStatus: normalizePaymentStatus(input.paymentStatus),
         orderStatus: normalizeOrderStatus(input.orderStatus),
+        followUpAt: parseOptionalDate(input.followUpAt),
+        followUpDone: input.followUpDone ?? false,
         notes: input.notes ?? ""
       },
       include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
@@ -96,4 +102,44 @@ function parseLimit(value: string | null) {
   const parsed = Number(value ?? 100);
   if (!Number.isFinite(parsed)) return 100;
   return Math.min(Math.max(Math.floor(parsed), 1), 500);
+}
+
+function buildFollowUpWhere(value: string | undefined): Prisma.OrderWhereInput {
+  const now = new Date();
+  switch (value) {
+    case "DUE":
+      return { followUpAt: { lte: now }, followUpDone: false };
+    case "UPCOMING":
+      return { followUpAt: { gt: now }, followUpDone: false };
+    case "DONE":
+      return { followUpDone: true };
+    case "NONE":
+      return { followUpAt: null };
+    default:
+      return {};
+  }
+}
+
+function getOrderBy(sort: string | undefined): Prisma.OrderOrderByWithRelationInput {
+  switch (sort) {
+    case "newest":
+      return { createdAt: "desc" };
+    case "followup":
+      return { followUpAt: "asc" };
+    case "amount":
+      return { totalAmount: "desc" };
+    case "updated":
+    default:
+      return { updatedAt: "desc" };
+  }
+}
+
+function parseOptionalDate(value: string | null | undefined) {
+  if (value === null) return null;
+  if (value === undefined || !value.trim()) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new ApiError(400, "INVALID_FOLLOW_UP_AT", "Follow-up date is invalid.");
+  }
+  return parsed;
 }
