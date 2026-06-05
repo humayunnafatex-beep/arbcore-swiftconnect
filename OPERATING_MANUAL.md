@@ -424,6 +424,14 @@ New inbound customer messages mark the conversation unread. These controls are i
 
 The Dashboard shows a conversation quality snapshot for unread, urgent, high-priority, starred, hot-lead, and payment-pending conversations.
 
+## 12F. Saved Replies And Quick Replies
+
+Saved Replies let operators manage reusable text answers for common customer questions such as price, size, delivery, COD, order confirmation, payment request, and human support.
+
+In Inbox, active saved replies can be inserted into the reply composer for the selected WhatsApp or Messenger conversation. If the composer already has text, the operator can append or replace. Saved Replies never auto-send; staff must review the text and click Send manually.
+
+Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
+
 ## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.

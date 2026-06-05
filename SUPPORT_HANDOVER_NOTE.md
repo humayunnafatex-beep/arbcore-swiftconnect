@@ -305,6 +305,13 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - New inbound messages mark conversations unread. Marking read/unread, starring, priority, and labels do not send customer messages or trigger provider actions.
 - Dashboard conversation quality metrics help operators triage unread, urgent, high-priority, starred, hot-lead, and payment-pending conversations.
 
+### Saved Replies / Quick Replies
+
+- Saved Replies are reusable text templates for Inbox operators.
+- Recommended first replies: price, size, delivery, COD, order confirmation, payment request, and human support.
+- Inserting a saved reply only fills or appends to the composer. It never sends automatically.
+- Phase 1 is text-only. Do not claim media saved replies or AI-generated replies are active.
+
 ## Safety Rules
 
 - Do not share access tokens.

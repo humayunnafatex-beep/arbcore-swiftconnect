@@ -132,6 +132,8 @@ For WhatsApp profile and ad referral context, evidence should include only safe 
 
 For conversation quality controls, evidence should include conversation channel, contact key or safe display name, read/unread state, starred state, priority, quick label, assignee, and timestamp. These are internal CRM states only and should not be monitored as provider sends or webhook delivery events.
 
+For Saved Replies, evidence should include saved reply title, category, channel, shortcut, whether it was inserted into the composer, and whether the operator clicked Send. Saved Replies do not auto-send and should not be monitored as provider delivery events until a manual send occurs.
+
 For Messenger live setup, monitor Message Logs for `MESSENGER / INBOUND / RECEIVED`, `MESSENGER / OUTBOUND / SENT`, and `FAILED` patterns. Evidence should include Page ID presence, PSID used, safe provider error text, and webhook event time only. Never collect Page Access Tokens or Authorization headers.
 
 For Auto Reply Analytics, evidence should include rule name, channel, status, safe preview, timestamp, and safe error summary only. Never collect full webhook payloads, provider Authorization headers, or access tokens.

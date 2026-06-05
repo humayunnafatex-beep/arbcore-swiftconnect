@@ -172,6 +172,20 @@ type ReplyResponse = {
   };
 };
 
+type SavedReply = {
+  id: string;
+  title: string;
+  category: string;
+  body: string;
+  shortcut: string;
+  channel: string;
+  status: string;
+};
+
+type SavedRepliesResponse =
+  | { success: true; data: { replies: SavedReply[] } }
+  | { success: false; error: string };
+
 type AssigneesResponse = {
   success: boolean;
   data: {
@@ -341,6 +355,12 @@ export function InboxModulePage() {
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
+  const [savedReplies, setSavedReplies] = useState<SavedReply[]>([]);
+  const [savedReplyLoading, setSavedReplyLoading] = useState(false);
+  const [savedReplyError, setSavedReplyError] = useState<string | null>(null);
+  const [savedReplySearch, setSavedReplySearch] = useState("");
+  const [savedReplyCategory, setSavedReplyCategory] = useState("ALL");
+  const [pendingSavedReply, setPendingSavedReply] = useState<SavedReply | null>(null);
   const [draftState, setDraftState] = useState<{
     status: ConversationStatus;
     assignedToId: string;
@@ -388,6 +408,20 @@ export function InboxModulePage() {
     () => parseAvailableSizes(selectedProduct?.availableSizes),
     [selectedProduct?.availableSizes]
   );
+  const savedReplyCategories = useMemo(() => {
+    return Array.from(new Set(savedReplies.map((reply) => reply.category))).sort();
+  }, [savedReplies]);
+  const filteredSavedReplies = useMemo(() => {
+    const query = savedReplySearch.trim().toLowerCase();
+    return savedReplies.filter((reply) => {
+      const matchesCategory = savedReplyCategory === "ALL" || reply.category === savedReplyCategory;
+      const matchesSearch = !query ||
+        reply.title.toLowerCase().includes(query) ||
+        reply.body.toLowerCase().includes(query) ||
+        reply.shortcut.toLowerCase().includes(query);
+      return matchesCategory && matchesSearch;
+    });
+  }, [savedReplies, savedReplyCategory, savedReplySearch]);
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
@@ -511,6 +545,45 @@ export function InboxModulePage() {
       active = false;
     };
   }, [loadConversationDetail, selectedId]);
+
+  useEffect(() => {
+    if (!detail?.conversation.channel) {
+      setSavedReplies([]);
+      return;
+    }
+
+    let active = true;
+    setSavedReplyLoading(true);
+    setSavedReplyError(null);
+
+    const params = new URLSearchParams({
+      status: "ACTIVE",
+      channel: detail.conversation.channel,
+      limit: "100"
+    });
+
+    fetch(`/api/saved-replies?${params.toString()}`)
+      .then(async (response) => {
+        const result = (await response.json()) as SavedRepliesResponse;
+        if (!response.ok || !result.success) {
+          throw new Error(result.success ? "Failed to load saved replies." : result.error);
+        }
+        if (active) setSavedReplies(result.data.replies);
+      })
+      .catch((requestError) => {
+        if (active) {
+          setSavedReplyError(getApiErrorMessage(requestError));
+          setSavedReplies([]);
+        }
+      })
+      .finally(() => {
+        if (active) setSavedReplyLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [detail?.conversation.channel]);
 
   useEffect(() => {
     if (!selectedConversation) return;
@@ -660,6 +733,32 @@ export function InboxModulePage() {
   function clearReplyAttachment() {
     setReplyAttachment(null);
     if (replyFileInputRef.current) replyFileInputRef.current.value = "";
+  }
+
+  function insertSavedReply(reply: SavedReply) {
+    setReplyStatus(null);
+    setReplyError(null);
+    setReplyProviderError(null);
+
+    if (replyBody.trim()) {
+      setPendingSavedReply(reply);
+      return;
+    }
+
+    setReplyBody(reply.body);
+  }
+
+  function applyPendingSavedReply(mode: "append" | "replace") {
+    if (!pendingSavedReply) return;
+
+    setReplyBody((current) => {
+      if (mode === "replace" || !current.trim()) {
+        return pendingSavedReply.body;
+      }
+
+      return `${current.trimEnd()}\n\n${pendingSavedReply.body}`;
+    });
+    setPendingSavedReply(null);
   }
 
   function clearFilters() {
@@ -1522,6 +1621,50 @@ export function InboxModulePage() {
                       Verify in Message Logs
                     </Link>
                   </div>
+                  <div className="mt-4 rounded-[16px] border border-blue-100 bg-blue-50 p-3">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <p className="text-xs font-black uppercase text-royal">Quick Replies</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">Insert saved text only. Review before sending.</p>
+                      </div>
+                      <Link className="text-xs font-black text-royal hover:underline" href="/saved-replies">
+                        Manage Saved Replies
+                      </Link>
+                    </div>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-[150px_1fr]">
+                      <select className={inputClassName} value={savedReplyCategory} onChange={(event) => setSavedReplyCategory(event.target.value)}>
+                        <option value="ALL">All categories</option>
+                        {savedReplyCategories.map((category) => (
+                          <option key={category} value={category}>{formatSavedReplyOption(category)}</option>
+                        ))}
+                      </select>
+                      <input className={inputClassName} value={savedReplySearch} onChange={(event) => setSavedReplySearch(event.target.value)} placeholder="Search saved replies or shortcuts" />
+                    </div>
+                    {pendingSavedReply ? (
+                      <div className="mt-3 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-sm font-bold text-amber-800">
+                        <p>Composer already has text. Insert "{pendingSavedReply.title}"?</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button className={secondaryButtonClassName} type="button" onClick={() => applyPendingSavedReply("append")}>Append</button>
+                          <button className={secondaryButtonClassName} type="button" onClick={() => applyPendingSavedReply("replace")}>Replace composer</button>
+                          <button className={secondaryButtonClassName} type="button" onClick={() => setPendingSavedReply(null)}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : null}
+                    <DataState loading={savedReplyLoading} error={savedReplyError} empty={!filteredSavedReplies.length} emptyText="No active saved replies for this channel yet.">
+                      <div className="mt-3 grid gap-2 lg:grid-cols-2">
+                        {filteredSavedReplies.slice(0, 8).map((reply) => (
+                          <button key={reply.id} className="rounded-[14px] border border-blue-100 bg-white p-3 text-left hover:bg-blue-50" type="button" onClick={() => insertSavedReply(reply)}>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-black text-ink">{reply.title}</span>
+                              <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black uppercase text-royal">{formatSavedReplyOption(reply.category)}</span>
+                              {reply.shortcut ? <span className="rounded-full bg-slate-50 px-2 py-1 text-[10px] font-black text-slate-500">/{reply.shortcut}</span> : null}
+                            </div>
+                            <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-slate-500">{reply.body}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </DataState>
+                  </div>
                   <textarea
                     className="mt-4 min-h-24 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
                     value={replyBody}
@@ -1620,6 +1763,14 @@ function priorityTone(value: PriorityValue): "blue" | "green" | "gray" | "purple
 
 function formatQuickLabel(value: QuickLabelValue) {
   return quickLabelOptions.find((option) => option.value === value)?.label ?? "General";
+}
+
+function formatSavedReplyOption(value: string) {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(" ");
 }
 
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {

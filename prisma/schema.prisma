@@ -123,6 +123,7 @@ model Company {
   aiGenerations   AiGeneration[]
   aiUsages        AIUsage[]
   messageTemplates MessageTemplate[]
+  savedReplies    SavedReply[]
   webhookEvents   WebhookEvent[]
   conversationStates ConversationState[]
   subscriptions    Subscription[]
@@ -335,6 +336,26 @@ model MessageTemplate {
 
   @@unique([companyId, name])
   @@index([companyId])
+}
+
+model SavedReply {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title    String
+  category String   @default("GENERAL")
+  body     String
+  shortcut String   @default("")
+  channel  String   @default("ALL")
+  status   String   @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([companyId, category])
 }
 
 model Conversation {

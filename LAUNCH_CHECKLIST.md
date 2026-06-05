@@ -469,6 +469,17 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Dashboard shows unread, urgent, high-priority, starred, hot-lead, and payment-pending conversation metrics.
 - [ ] These internal CRM controls do not send messages automatically.
 
+## 9C-4. Saved Replies / Quick Replies QA
+
+- [ ] `/saved-replies` loads from the sidebar and mobile navigation.
+- [ ] Suggested replies pre-fill the create form and do not auto-save.
+- [ ] Create, edit, and archive saved reply works.
+- [ ] Inbox loads active saved replies for the selected channel.
+- [ ] Insert fills an empty composer.
+- [ ] Append and Replace composer choices appear when the composer already has text.
+- [ ] Saved replies do not auto-send; staff must click Send manually.
+- [ ] Text/media reply, image/PDF attachment, and order prepared message flows still work.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

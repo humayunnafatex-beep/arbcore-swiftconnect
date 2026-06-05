@@ -394,15 +394,17 @@ export async function GET() {
     });
 
     const workspacePromise = safeMetricGroup("workspace", warnings, async () => {
-      const [teamMembers, aiCreditsUsed] = await Promise.all([
+      const [teamMembers, aiCreditsUsed, activeSavedReplies] = await Promise.all([
         prisma.user.count({ where: { companyId, isActive: true } }),
-        prisma.aiGeneration.count({ where: { companyId } })
+        prisma.aiGeneration.count({ where: { companyId } }),
+        prisma.savedReply.count({ where: { companyId, status: "ACTIVE" } })
       ]);
 
-      return { teamMembers, aiCreditsUsed };
+      return { teamMembers, aiCreditsUsed, activeSavedReplies };
     }, {
       teamMembers: 0,
-      aiCreditsUsed: 0
+      aiCreditsUsed: 0,
+      activeSavedReplies: 0
     });
 
     const [

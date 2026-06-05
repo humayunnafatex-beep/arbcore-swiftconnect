@@ -81,6 +81,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Click-to-WhatsApp referral context is captured when Meta includes safe fields, but referral data may not appear for every message or ad click.
 - Inbox conversations now support internal read/unread state, starred conversations, priority levels, and quick labels for daily triage.
 - Dashboard shows a conversation quality snapshot. These CRM states do not send customer messages or change provider behavior.
+- Saved Replies / Quick Replies allow operators to manage reusable text replies and insert them into the Inbox composer. Staff must review and click Send manually.
+- Saved Replies Phase 1 is text-only; no media saved replies, AI generation, or auto-send behavior is active.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.

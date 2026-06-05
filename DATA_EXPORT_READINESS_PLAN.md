@@ -16,6 +16,7 @@ Sprint 4 supports CSV exports for:
 - Message Logs, including safe WhatsApp referral context when captured
 - Billing/Payment records
 - Auto Reply Analytics
+- Saved Replies text templates
 
 ## Export Rules
 
@@ -42,6 +43,7 @@ Sprint 4 supports CSV exports for:
 - `/api/exports/products`: manual product/model catalog CSV.
 - `/api/exports/orders`: manual order tracking CSV.
 - `/api/exports/auto-reply-analytics`: auto reply event analytics CSV with optional channel and day-range filters.
+- `/api/exports/saved-replies`: saved replies CSV with title, category, shortcut, channel, body, status, and timestamps.
 
 ## Future Exports
 
@@ -59,6 +61,7 @@ Future exports should follow the same company-scoped, safe-field-only rules.
 
 - Exports may contain customer names, phone numbers, emails, lead statuses, tags, product/model records, image URLs, stock notes, order details, delivery addresses, order follow-up reminders, message previews, payment notes, and internal business records.
 - Contacts and Message Logs exports may include WhatsApp profile names and Click-to-WhatsApp referral source summaries. Referral context may not appear for every message.
+- Saved Replies exports include reusable text bodies. Review before sharing because they may include business wording or support instructions.
 - Share export files carefully.
 - Do not upload export files to public links.
 - Do not paste export contents into public chats.

@@ -29,6 +29,12 @@ const exportCards = [
     description: "Manual product/model catalog records for the current workspace. No inventory automation or token data is exported.",
     href: "/api/exports/products",
     button: "Download Products"
+  },
+  {
+    title: "Saved Replies CSV",
+    description: "Reusable text replies for Inbox operators. No provider tokens, raw payloads, or auto-send records are exported.",
+    href: "/api/exports/saved-replies",
+    button: "Download Saved Replies"
   }
 ];
 

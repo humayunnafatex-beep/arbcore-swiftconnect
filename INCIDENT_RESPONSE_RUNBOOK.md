@@ -186,6 +186,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not troubleshoot this as WhatsApp/Messenger provider send failure. These are internal CRM states and do not send messages.
 - Escalation: Technical owner checks `ConversationState` scoping and filters; support owner confirms the operator workflow.
 
+## Saved Reply Issue
+
+- Symptoms: Saved Replies page does not load, a reply cannot be saved/archived, or Inbox does not show expected quick replies.
+- Where to check: `/saved-replies`, selected Inbox conversation channel, `/api/saved-replies?status=ACTIVE`, and browser-safe UI error text.
+- Safe first action: Confirm the saved reply is `ACTIVE` and channel is `ALL` or matches the selected conversation channel.
+- What not to do: Do not treat inserting a saved reply as a provider send. Saved replies only fill the composer; staff must click Send manually.
+- Escalation: Technical owner checks saved reply API permissions and company scoping.
+
 ## Messenger Live Page Failure
 
 - Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.

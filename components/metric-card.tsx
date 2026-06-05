@@ -82,6 +82,7 @@ type DashboardStatistics = {
   productsWithStockNote: number;
   teamMembers: number;
   aiCreditsUsed: number;
+  activeSavedReplies: number;
   whatsappConfigured: boolean;
   messengerConfigured: boolean;
   billing: {
@@ -277,6 +278,7 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     draftProducts: 0,
     archivedProducts: 0,
     productsWithStockNote: 0,
+    activeSavedReplies: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
     billing: {
@@ -427,6 +429,16 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "With audience", value: data.campaignsWithAudienceCriteria, href: "/campaigns", icon: Users, tone: "purple" },
           { label: "Ready + audience", value: data.readyCampaignsWithAudience, href: "/campaigns?status=READY", icon: CreditCard, tone: "green" },
           { label: "Open Campaigns", value: 1, href: "/campaigns", icon: LinkIcon, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Inbox Productivity"
+        helper={data.activeSavedReplies ? "Saved replies help operators answer common questions faster." : "Create saved replies for common answers."}
+        items={[
+          { label: "Saved replies", value: data.activeSavedReplies, href: "/saved-replies", icon: MessageSquareText, tone: "blue" },
+          { label: "Unread", value: data.unreadConversations, href: "/inbox?read=UNREAD", icon: Inbox, tone: data.unreadConversations ? "green" : "gray" },
+          { label: "Hot leads", value: data.hotLeadConversations, href: "/inbox?quickLabel=HOT_LEAD", icon: Users, tone: "green" }
         ]}
         loading={loading}
       />
