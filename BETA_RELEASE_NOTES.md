@@ -149,3 +149,10 @@ Stabilize beta testing with 2-5 controlled users, then proceed to campaign/templ
 - Inbox selected product helper now shows product image preview when available.
 - Staff can manually send a selected product image in WhatsApp conversations. Images are never auto-sent.
 - No upload/storage infrastructure was added; product images remain URL-based.
+
+## Customer Follow-up Queue
+
+- Added `/follow-ups` as a daily manual queue for conversation and order follow-ups.
+- Queue supports overdue, today, upcoming, and completed filters.
+- Staff can mark follow-ups done, reopen them, update dates, and jump to Inbox or Orders.
+- No automatic follow-up sending was added.

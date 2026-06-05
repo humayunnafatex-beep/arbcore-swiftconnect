@@ -427,6 +427,38 @@ export async function GET() {
       recentActivityCount7d: 0
     });
 
+    const followUpQueuePromise = safeMetricGroup("followUpQueue", warnings, async () => {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const tomorrowStart = new Date(todayStart);
+      tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+      const [
+        overdueConversationFollowUps,
+        overdueOrderFollowUps,
+        todayConversationFollowUps,
+        todayOrderFollowUps,
+        upcomingConversationFollowUps,
+        upcomingOrderFollowUpsForQueue
+      ] = await Promise.all([
+        prisma.conversationState.count({ where: { companyId, followUpAt: { lt: todayStart }, followUpDone: false } }),
+        prisma.order.count({ where: { companyId, followUpAt: { lt: todayStart }, followUpDone: false } }),
+        prisma.conversationState.count({ where: { companyId, followUpAt: { gte: todayStart, lt: tomorrowStart }, followUpDone: false } }),
+        prisma.order.count({ where: { companyId, followUpAt: { gte: todayStart, lt: tomorrowStart }, followUpDone: false } }),
+        prisma.conversationState.count({ where: { companyId, followUpAt: { gte: tomorrowStart }, followUpDone: false } }),
+        prisma.order.count({ where: { companyId, followUpAt: { gte: tomorrowStart }, followUpDone: false } })
+      ]);
+
+      return {
+        overdueFollowUps: overdueConversationFollowUps + overdueOrderFollowUps,
+        todayFollowUps: todayConversationFollowUps + todayOrderFollowUps,
+        totalUpcomingFollowUps: upcomingConversationFollowUps + upcomingOrderFollowUpsForQueue
+      };
+    }, {
+      overdueFollowUps: 0,
+      todayFollowUps: 0,
+      totalUpcomingFollowUps: 0
+    });
+
     const [
       channels,
       messageHealth,
@@ -439,7 +471,8 @@ export async function GET() {
       billing,
       workspace,
       savedReplies,
-      activity
+      activity,
+      followUpQueue
     ] = await Promise.all([
       channelsPromise,
       messageHealthPromise,
@@ -452,7 +485,8 @@ export async function GET() {
       billingPromise,
       workspacePromise,
       savedRepliesPromise,
-      activityPromise
+      activityPromise,
+      followUpQueuePromise
     ]);
     const dashboardBilling = {
       ...billing.billing,
@@ -474,6 +508,7 @@ export async function GET() {
       ...workspace,
       ...savedReplies,
       ...activity,
+      ...followUpQueue,
       billing: dashboardBilling,
       warnings,
       apiStatus: warnings.length ? "Degraded" : "Operational"

@@ -31,6 +31,9 @@ type DashboardStatistics = {
   dueFollowUps: number;
   upcomingFollowUps: number;
   doneFollowUps: number;
+  overdueFollowUps: number;
+  todayFollowUps: number;
+  totalUpcomingFollowUps: number;
   unreadConversations: number;
   urgentConversations: number;
   highPriorityConversations: number;
@@ -237,6 +240,9 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     dueFollowUps: 0,
     upcomingFollowUps: 0,
     doneFollowUps: 0,
+    overdueFollowUps: 0,
+    todayFollowUps: 0,
+    totalUpcomingFollowUps: 0,
     unreadConversations: 0,
     urgentConversations: 0,
     highPriorityConversations: 0,
@@ -332,11 +338,12 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
       />
       <MetricSection
         title="Follow-up Overview"
-        helper={data.dueFollowUps ? "Due follow-ups should be handled from Inbox." : "No follow-ups due."}
+        helper={data.overdueFollowUps || data.todayFollowUps ? "Use the Follow-up Queue for daily customer/order follow-ups." : "No follow-ups due today."}
         items={[
-          { label: "Due", value: data.dueFollowUps, href: "/inbox?followUp=DUE", icon: AlertTriangle, tone: "red" },
-          { label: "Upcoming", value: data.upcomingFollowUps, href: "/inbox?followUp=UPCOMING", icon: Clock, tone: "blue" },
-          { label: "Done", value: data.doneFollowUps, href: "/inbox?followUp=DONE", icon: CheckCircle2, tone: "green" }
+          { label: "Overdue", value: data.overdueFollowUps, href: "/follow-ups?status=OVERDUE", icon: AlertTriangle, tone: data.overdueFollowUps ? "red" : "gray" },
+          { label: "Today", value: data.todayFollowUps, href: "/follow-ups?status=TODAY", icon: Clock, tone: data.todayFollowUps ? "blue" : "gray" },
+          { label: "Upcoming", value: data.totalUpcomingFollowUps, href: "/follow-ups?status=UPCOMING", icon: Clock, tone: "blue" },
+          { label: "Open queue", value: 1, href: "/follow-ups", icon: CheckCircle2, tone: "green", displayValue: "Open" }
         ]}
         loading={loading}
       />

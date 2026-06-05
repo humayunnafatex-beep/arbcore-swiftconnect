@@ -8,6 +8,7 @@ import {
   BriefcaseBusiness,
   Building2,
   Cable,
+  CalendarClock,
   ClipboardList,
   ContactRound,
   CreditCard,
@@ -35,6 +36,7 @@ const navigationSections = [
     items: [
       { label: "Dashboard", icon: Home, href: "/" },
       { label: "Inbox", icon: Inbox, href: "/inbox" },
+      { label: "Follow-ups", icon: CalendarClock, href: "/follow-ups" },
       { label: "Contacts", icon: ContactRound, href: "/contacts" },
       { label: "Orders", icon: ShoppingBag, href: "/orders" },
       { label: "Products", icon: PackageOpen, href: "/products" },

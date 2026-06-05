@@ -458,6 +458,14 @@ In Inbox, selecting a product shows the product image preview when available. St
 
 No upload or storage system is included yet. If the business needs local product image uploads later, add a safe storage plan before accepting private files or signed URLs.
 
+## 12K. Customer Follow-up Queue
+
+Follow-up Queue at `/follow-ups` gives staff one daily view for overdue, today, upcoming, and completed follow-ups. It combines conversation follow-ups from Inbox and order follow-ups from Orders.
+
+Each item shows safe customer context, source type, channel/contact key, follow-up date, done state, priority when available, and related order/conversation information. Staff can open the related Inbox conversation or Order list, mark a follow-up done, reopen it, or update the follow-up date.
+
+The queue is manual only. It does not send automatic WhatsApp or Messenger messages. Staff should open Inbox and use Saved Replies or manual messages when a customer follow-up needs communication.
+
 Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
 
 ## 13. Support And Maintenance

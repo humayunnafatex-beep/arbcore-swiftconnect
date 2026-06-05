@@ -513,6 +513,15 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Send Product Image is manual only and does not trigger on product selection.
 - [ ] WhatsApp product image send logs SENT only after provider success and FAILED on provider error.
 
+## 9C-9. Customer Follow-up Queue QA
+
+- [ ] `/follow-ups` loads from the sidebar.
+- [ ] Queue shows conversation and order follow-ups.
+- [ ] Overdue, today, upcoming, and done filters work.
+- [ ] Mark Done, Reopen, and Update Date work without sending customer messages.
+- [ ] Open Inbox and Open Order links route staff back to the related work area.
+- [ ] Follow-up updates appear in Activity Logs as safe summaries.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

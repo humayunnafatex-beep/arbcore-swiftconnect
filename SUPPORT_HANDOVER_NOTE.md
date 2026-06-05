@@ -359,3 +359,9 @@ The UI labels daily operations, review/insight, and admin/system areas so staff 
 Product images are URL-based in this phase. Ask staff to use public HTTPS image URLs on the Products page. Invalid or empty image URLs should not block saving a product, but they will not be available for Inbox image sending.
 
 From Inbox, staff can manually send the selected product image for WhatsApp conversations. This does not auto-send on product selection and does not add storage/upload infrastructure. If a product image send fails, check that the URL is public HTTPS and review Message Logs for the safe provider error.
+
+## Customer Follow-up Queue Support
+
+The Follow-up Queue at `/follow-ups` combines Inbox conversation follow-ups and Order follow-ups. Staff can mark follow-ups done, reopen them, update dates, and jump to Inbox or Orders for the actual customer work.
+
+The queue does not send automatic follow-up messages. If staff expect a customer message to be sent, remind them to open Inbox and send manually using Saved Replies or normal replies.

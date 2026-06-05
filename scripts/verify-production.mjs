@@ -12,6 +12,7 @@ const checks = [
   "/dashboard",
   "/channels",
   "/inbox",
+  "/follow-ups",
   "/message-logs",
   "/saved-replies",
   "/activity-logs",
