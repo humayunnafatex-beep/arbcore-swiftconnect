@@ -28,29 +28,55 @@ import {
 import { cn } from "@/lib/utils";
 import { RobotAvatar } from "./robot-avatar";
 
-const navigation = [
-  { label: "Dashboard", icon: Home, href: "/" },
-  { label: "Connect", icon: MessageCircle, href: "/connect" },
-  { label: "Channel Center", icon: Cable, href: "/channels" },
-  { label: "Inbox", icon: Inbox, href: "/inbox" },
-  { label: "Contacts", icon: ContactRound, href: "/contacts" },
-  { label: "Products", icon: PackageOpen, href: "/products" },
-  { label: "Orders", icon: ShoppingBag, href: "/orders" },
-  { label: "Campaigns", icon: Send, href: "/campaigns" },
-  { label: "Send Messages", icon: MessagesSquare, href: "/send-messages" },
-  { label: "Saved Replies", icon: MessageSquareQuote, href: "/saved-replies" },
-  { label: "Message Logs", icon: ClipboardList, href: "/message-logs" },
-  { label: "Activity Logs", icon: ClipboardList, href: "/activity-logs" },
-  { label: "Data Exports", icon: DatabaseBackup, href: "/exports" },
-  { label: "AI Studio", icon: Bot, href: "/ai-studio", badge: "AI" },
-  { label: "Auto Reply", icon: BriefcaseBusiness, href: "/auto-reply" },
-  { label: "CRM", icon: Megaphone, href: "/crm" },
-  { label: "Analytics", icon: BarChart3, href: "/analytics" },
-  { label: "Settings", icon: Settings, href: "/settings" },
-  { label: "Billing", icon: CreditCard, href: "/billing" },
-  { label: "Admin Workspaces", icon: Building2, href: "/admin/workspaces" },
-  { label: "License", icon: ShieldCheck, href: "/license" }
+const navigationSections = [
+  {
+    title: "Daily operations",
+    helper: "Manager / Agent focus",
+    items: [
+      { label: "Dashboard", icon: Home, href: "/" },
+      { label: "Inbox", icon: Inbox, href: "/inbox" },
+      { label: "Contacts", icon: ContactRound, href: "/contacts" },
+      { label: "Orders", icon: ShoppingBag, href: "/orders" },
+      { label: "Products", icon: PackageOpen, href: "/products" },
+      { label: "Saved Replies", icon: MessageSquareQuote, href: "/saved-replies" }
+    ]
+  },
+  {
+    title: "Channels & automation",
+    helper: "Owner/Admin setup, Manager operation",
+    items: [
+      { label: "Connect", icon: MessageCircle, href: "/connect" },
+      { label: "Channel Center", icon: Cable, href: "/channels" },
+      { label: "Send Messages", icon: MessagesSquare, href: "/send-messages" },
+      { label: "Auto Reply", icon: BriefcaseBusiness, href: "/auto-reply" },
+      { label: "Campaigns", icon: Send, href: "/campaigns" }
+    ]
+  },
+  {
+    title: "Review & insight",
+    helper: "Manager/Admin visibility",
+    items: [
+      { label: "Message Logs", icon: ClipboardList, href: "/message-logs" },
+      { label: "Activity Logs", icon: ClipboardList, href: "/activity-logs" },
+      { label: "CRM", icon: Megaphone, href: "/crm" },
+      { label: "Analytics", icon: BarChart3, href: "/analytics" },
+      { label: "Data Exports", icon: DatabaseBackup, href: "/exports" },
+      { label: "AI Studio", icon: Bot, href: "/ai-studio", badge: "AI" }
+    ]
+  },
+  {
+    title: "Admin & system",
+    helper: "Owner/Admin responsibility",
+    items: [
+      { label: "Settings", icon: Settings, href: "/settings" },
+      { label: "Billing", icon: CreditCard, href: "/billing" },
+      { label: "Admin Workspaces", icon: Building2, href: "/admin/workspaces" },
+      { label: "License", icon: ShieldCheck, href: "/license" }
+    ]
+  }
 ];
+
+const navigation = navigationSections.flatMap((section) => section.items);
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -66,36 +92,44 @@ export function Sidebar() {
       </div>
 
       <nav className="soft-scrollbar flex-1 space-y-2 overflow-y-auto px-4 py-5">
-        {navigation.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        {navigationSections.map((section) => (
+          <div key={section.title} className="space-y-2">
+            <div className="px-2 pt-3">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">{section.title}</p>
+              <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{section.helper}</p>
+            </div>
+            {section.items.map((item) => {
+              const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
-          return (
-          <Link
-            key={item.label}
-            href={item.href}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex h-12 w-full items-center gap-3 rounded-[14px] px-4 text-sm font-semibold transition",
-              active
-                ? "bg-gradient-to-r from-royal to-electric text-white shadow-glow"
-                : "text-slate-700 hover:bg-blue-50 hover:text-royal"
-            )}
-          >
-            <item.icon className="h-5 w-5 shrink-0" />
-            <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
-            {item.badge ? (
-              <span
-                className={cn(
-                  "rounded-lg px-2 py-1 text-xs ring-1",
-                  active ? "bg-white/20 text-white ring-white/20" : "bg-blue-100 text-royal ring-blue-100"
-                )}
-              >
-                {item.badge}
-              </span>
-            ) : null}
-          </Link>
-          );
-        })}
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex h-12 w-full items-center gap-3 rounded-[14px] px-4 text-sm font-semibold transition",
+                    active
+                      ? "bg-gradient-to-r from-royal to-electric text-white shadow-glow"
+                      : "text-slate-700 hover:bg-blue-50 hover:text-royal"
+                  )}
+                >
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+                  {item.badge ? (
+                    <span
+                      className={cn(
+                        "rounded-lg px-2 py-1 text-xs ring-1",
+                        active ? "bg-white/20 text-white ring-white/20" : "bg-blue-100 text-royal ring-blue-100"
+                      )}
+                    >
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="p-5">

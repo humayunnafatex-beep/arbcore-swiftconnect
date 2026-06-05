@@ -136,3 +136,9 @@ Stabilize beta testing with 2-5 controlled users, then proceed to campaign/templ
 - Improved Settings Team Members management with clear create, Save Role, Deactivate, and Reactivate actions.
 - Added last active owner protection to prevent accidental owner lockout.
 - Team member create, role update, deactivate, and reactivate actions are recorded in Activity Logs.
+
+## Role-Based Staff Guidance
+
+- Added role-oriented UI guidance in the sidebar, account menu, and Team Members settings.
+- Owner/Admin, Manager, and Agent responsibilities are explained without enabling hard enforcement.
+- Enforcement flags remain off by default for beta stability.

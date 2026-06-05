@@ -23,6 +23,7 @@ Major active modules:
 - Saved Replies / Quick Replies for inserting reusable text into the Inbox composer.
 - Staff Activity Logs for internal-only audit summaries of manual operator actions.
 - Team Member Management for clear create, role update, deactivate/reactivate, and last-owner protection.
+- Role-based staff guidance in navigation, account menu, and Settings while hard enforcement remains off.
 
 WhatsApp Cloud API can provide customer profile name in webhook contact data, but it generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and lets operators edit the customer name manually.
 
@@ -33,6 +34,8 @@ Saved Replies are text-only in Phase 1. They insert into the composer only; staf
 Staff Activity Logs are internal only. They store safe summaries for manual CRM, order, product, saved reply, auto-reply, and inbox state changes. Logging never stores access tokens, cookies, raw webhook payloads, provider secrets, or full raw request bodies, and logging failure should not block the main business action.
 
 Team Member records are internal workspace user records unless full auth invite/login is configured. Owners/admins can change roles and deactivate/reactivate members. The last active owner is protected from demotion or deactivation.
+
+Role-based staff guidance is UI/readiness only in this beta pass. Owner/Admin, Manager, and Agent work areas are labeled to reduce confusion, but hard route/action enforcement remains controlled by the existing enforcement flags and stays off by default.
 
 Safe production-beta defaults remain:
 

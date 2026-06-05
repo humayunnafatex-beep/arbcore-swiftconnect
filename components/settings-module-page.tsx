@@ -5,6 +5,7 @@ import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Sav
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
 import { ApiClientError, apiRequest, getApiErrorMessage } from "@/lib/api-client";
+import { roleGuidance } from "@/lib/role-guidance";
 
 type UserRole = "OWNER" | "ADMIN" | "MANAGER" | "AGENT";
 
@@ -403,6 +404,9 @@ async function createTeamMember() {
         </Panel>
 
         <Panel icon={<Lock className="h-5 w-5" />} title="Security / Session" action={<button className={secondaryButtonClassName} onClick={() => save("Security")}><ShieldCheck className="h-4 w-4" />Review</button>}>
+          <p className="mb-3 rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-800">
+            Owner/Admin guidance: security, provider credentials, billing, workspace switching, and enforcement flags should be handled by owners/admins during beta.
+          </p>
           <Info label="Session mode" value="Demo cookie auth" />
           <Info label="Current role" value="OWNER" />
           <Info label="Password storage" value="bcryptjs hash" />
@@ -413,6 +417,17 @@ async function createTeamMember() {
         <Panel icon={<Users className="h-5 w-5" />} title="Team Members" action={<button className={secondaryButtonClassName} onClick={loadTeam}><RefreshCw className="h-4 w-4" />Refresh</button>}>
           <p className="mb-3 rounded-[16px] bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
             Creating a team member creates a workspace record. Auth invite/login setup may require admin follow-up. At least one active owner must remain in the workspace.
+          </p>
+          <div className="mb-3 grid gap-2 sm:grid-cols-2">
+            {(["OWNER", "ADMIN", "MANAGER", "AGENT"] as UserRole[]).map((role) => (
+              <div key={role} className="rounded-[16px] border border-blue-100 bg-white px-4 py-3">
+                <p className="text-sm font-black text-ink">{roleGuidance[role].label}</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">{roleGuidance[role].summary}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mb-3 rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-800">
+            Role-based UI guidance is visible now, but hard permission enforcement remains OFF until `PERMISSIONS_ENFORCED=true` is intentionally enabled and tested.
           </p>
           <div className="grid gap-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4 lg:grid-cols-[1fr_1fr_160px_auto]">
             <Field label="Name" value={newMember.name} onChange={(value) => setNewMember({ ...newMember, name: value })} />

@@ -496,6 +496,14 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Last active owner cannot be deactivated or demoted.
 - [ ] Team member create, role update, deactivate, and reactivate actions appear in Activity Logs.
 
+## 9C-7. Role-Based Staff Guidance QA
+
+- [ ] Sidebar groups daily operations, channels/automation, review/insight, and admin/system areas.
+- [ ] Topbar account menu shows role guidance for the current user.
+- [ ] Settings Team Members explains Owner, Admin, Manager, and Agent responsibilities.
+- [ ] Docs clearly state role guidance is UI/readiness only while enforcement flags remain off.
+- [ ] No hard enforcement flags are enabled by this release.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

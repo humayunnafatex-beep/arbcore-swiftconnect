@@ -349,3 +349,7 @@ Activity Logs are available at `/activity-logs` for internal review of manual op
 ## Team Member Management Support
 
 Team members are managed from Settings by owners/admins. New members are workspace records only unless the auth invite/login process is configured separately. Prefer deactivation/reactivation over hard deletion. If a role or deactivate action fails with last-owner protection, add or promote another active owner first, then retry the change.
+
+## Role-Based Staff Guidance Support
+
+The UI labels daily operations, review/insight, and admin/system areas so staff understand which modules match their role. This is guidance-only while enforcement flags remain off. If a staff member can still open a page outside their expected role area during beta, treat that as expected unless `PERMISSIONS_ENFORCED=true` has been intentionally enabled and tested.

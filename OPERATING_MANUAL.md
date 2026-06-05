@@ -444,6 +444,12 @@ Use Save Role to apply role changes. Use Deactivate to remove access without har
 
 Team member create, role update, deactivate, and reactivate actions are recorded in Activity Logs as safe internal summaries.
 
+## 12I. Role-Based Staff Guidance
+
+Role guidance is visible in the sidebar, topbar account menu, and Team Members settings. It is a beta readiness aid and does not enable hard route enforcement while `AUTH_ENFORCED`, `PERMISSIONS_ENFORCED`, `TENANT_MEMBERSHIP_ENFORCED`, and `STRICT_PROVIDER_WEBHOOK_ROUTING` remain off.
+
+Owner and Admin roles are responsible for full app access, settings, billing, provider setup, workspace controls, and team management. Manager is intended for daily operations such as Inbox, Contacts, Orders, Products, Saved Replies, Auto Reply, and Activity Logs. Agent is intended for customer handling through Inbox, Contacts, Orders, and Saved Replies, without being encouraged toward admin/system controls.
+
 Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
 
 ## 13. Support And Maintenance

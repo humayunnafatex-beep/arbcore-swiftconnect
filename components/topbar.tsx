@@ -14,6 +14,7 @@ import {
   UserRound
 } from "lucide-react";
 import { apiRequest } from "@/lib/api-client";
+import { getRoleGuidance } from "@/lib/role-guidance";
 import { RobotAvatar } from "./robot-avatar";
 
 type AuthMe = {
@@ -63,6 +64,9 @@ export function Topbar() {
       .join("")
       .toUpperCase();
   }, [auth?.prismaUser?.email, auth?.user?.name]);
+
+  const role = auth?.user?.role ?? auth?.prismaUser?.role ?? "OWNER";
+  const guidance = getRoleGuidance(role);
 
   async function logout() {
     await apiRequest("/api/auth/logout", { method: "POST" });
@@ -130,7 +134,7 @@ export function Topbar() {
               </span>
               <span className="hidden min-w-0 text-left xl:block">
                 <span className="block truncate text-sm font-bold text-ink">{auth?.user?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}</span>
-                <span className="block truncate text-xs font-medium text-slate-500">{auth?.user?.role ?? auth?.prismaUser?.role ?? "Admin"}</span>
+                <span className="block truncate text-xs font-medium text-slate-500">{guidance.label}</span>
               </span>
               <ChevronDown className="hidden h-4 w-4 text-slate-500 xl:block" />
             </button>
@@ -144,6 +148,11 @@ export function Topbar() {
                   </p>
                   <p className="mt-1 truncate text-xs font-semibold text-slate-500">{auth?.user?.email ?? auth?.prismaUser?.email ?? "admin@arbcore.ai"}</p>
                   <p className="mt-2 text-xs font-bold text-royal">{auth?.company?.name ?? "ARBCore AI"}</p>
+                  <div className="mt-3 rounded-[12px] border border-blue-100 bg-white px-3 py-2">
+                    <p className="text-xs font-black text-ink">{guidance.label} guidance</p>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">{guidance.focus}</p>
+                    <p className="mt-2 text-[11px] font-bold text-amber-700">UI guidance only. Permission enforcement remains off for beta.</p>
+                  </div>
                 </div>
                 <button
                   onClick={logout}
