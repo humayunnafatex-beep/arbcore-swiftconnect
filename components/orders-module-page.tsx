@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ClipboardList, RefreshCw, Search } from "lucide-react";
+import { Clipboard, ClipboardList, RefreshCw, Search } from "lucide-react";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
+import { getOrderMessageTemplates, type OrderMessageTemplateId } from "@/lib/order-message-templates";
 import { ORDER_STATUSES, PAYMENT_STATUSES, getOrderStatusLabel, getPaymentStatusLabel } from "@/lib/order-status";
 import { AppShell } from "./app-shell";
-import { DataState, Toast, formatDate, inputClassName, primaryButtonClassName, useApiData, useToast } from "./saas-page-utils";
+import { DataState, Toast, formatDate, inputClassName, primaryButtonClassName, secondaryButtonClassName, useApiData, useToast } from "./saas-page-utils";
 
 type Order = {
   id: string;
@@ -26,12 +27,22 @@ type OrdersResponse = {
   orders: Order[];
 };
 
+type OrderMessagePreviewResponse = {
+  message: string;
+  templateLabel: string;
+};
+
+const orderMessageTemplates = getOrderMessageTemplates();
+
 export function OrdersModulePage() {
   const { toast, showToast } = useToast();
   const initialFilters = getInitialOrderFilters();
   const [orderStatus, setOrderStatus] = useState(initialFilters.status);
   const [paymentStatus, setPaymentStatus] = useState(initialFilters.paymentStatus);
   const [search, setSearch] = useState(initialFilters.search);
+  const [templateByOrderId, setTemplateByOrderId] = useState<Record<string, OrderMessageTemplateId>>({});
+  const [preview, setPreview] = useState<{ orderId: string; orderNumber: string; templateLabel: string; message: string } | null>(null);
+  const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
   const query = useMemo(() => {
     const params = new URLSearchParams({ limit: "200" });
     if (orderStatus !== "ALL") params.set("status", orderStatus);
@@ -51,6 +62,48 @@ export function OrdersModulePage() {
       orders.reload();
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
+    }
+  }
+
+  async function generateMessage(order: Order, copyToClipboard = false) {
+    const templateId = templateByOrderId[order.id] ?? "ORDER_CONFIRMATION";
+    setPreviewLoadingId(order.id);
+
+    try {
+      const result = await apiRequest<OrderMessagePreviewResponse>(`/api/orders/${order.id}/message-preview?templateId=${encodeURIComponent(templateId)}`);
+      setPreview({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        templateLabel: result.templateLabel,
+        message: result.message
+      });
+
+      if (copyToClipboard && typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(result.message);
+        showToast("Order message copied. Review before sending.");
+      } else {
+        showToast("Order message preview ready.");
+      }
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setPreviewLoadingId(null);
+    }
+  }
+
+  async function copyPreviewMessage() {
+    if (!preview) return;
+
+    try {
+      if (typeof navigator === "undefined" || !navigator.clipboard) {
+        showToast("Copy is not available in this browser. Use the preview text.", "error");
+        return;
+      }
+
+      await navigator.clipboard.writeText(preview.message);
+      showToast("Order message copied. Review before sending.");
+    } catch {
+      showToast("Copy failed. Use the preview text.", "error");
     }
   }
 
@@ -96,16 +149,47 @@ export function OrdersModulePage() {
         </div>
       </section>
 
+      {preview ? (
+        <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase text-royal">Message Preview</p>
+              <h2 className="mt-1 text-lg font-black text-ink">{preview.templateLabel} - {preview.orderNumber}</h2>
+              <p className="mt-1 text-xs font-semibold text-slate-500">Review this generated order message before sending manually from Inbox or the customer channel.</p>
+            </div>
+            <button
+              className={secondaryButtonClassName}
+              type="button"
+              onClick={() => void copyPreviewMessage()}
+            >
+              <Clipboard className="h-4 w-4" />
+              Copy
+            </button>
+          </div>
+          <pre className="mt-4 whitespace-pre-wrap rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-700">{preview.message}</pre>
+        </section>
+      ) : null}
+
       <section className="overflow-hidden rounded-[24px] border border-blue-100 bg-white/95 shadow-panel">
         <DataState loading={orders.loading} error={orders.error} empty={!items.length} emptyText="No orders match this view. Create an order from an Inbox conversation.">
           <div className="grid gap-3 p-4 lg:hidden">
-            {items.map((order) => <OrderCard key={order.id} order={order} onUpdate={updateOrder} />)}
+            {items.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onUpdate={updateOrder}
+                templateId={templateByOrderId[order.id] ?? "ORDER_CONFIRMATION"}
+                onTemplateChange={(templateId) => setTemplateByOrderId((current) => ({ ...current, [order.id]: templateId }))}
+                onGenerate={(copy) => void generateMessage(order, copy)}
+                messageLoading={previewLoadingId === order.id}
+              />
+            ))}
           </div>
           <div className="hidden overflow-x-auto lg:block">
-            <table className="min-w-[1120px] w-full text-left">
+            <table className="min-w-[1320px] w-full text-left">
               <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
                 <tr>
-                  {["Order", "Customer", "Model", "Size", "Qty", "Total", "Payment", "Status", "Updated"].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}
+                  {["Order", "Customer", "Model", "Size", "Qty", "Total", "Payment", "Status", "Message", "Updated"].map((heading) => <th key={heading} className="px-4 py-3">{heading}</th>)}
                 </tr>
               </thead>
               <tbody className="divide-y divide-blue-50">
@@ -119,6 +203,25 @@ export function OrdersModulePage() {
                     <td className="px-4 py-4">BDT {order.totalAmount.toLocaleString()}</td>
                     <td className="px-4 py-4"><StatusSelect value={order.paymentStatus} options={PAYMENT_STATUSES} label={getPaymentStatusLabel} onChange={(value) => void updateOrder(order, { paymentStatus: value })} /></td>
                     <td className="px-4 py-4"><StatusSelect value={order.orderStatus} options={ORDER_STATUSES} label={getOrderStatusLabel} onChange={(value) => void updateOrder(order, { orderStatus: value })} /></td>
+                    <td className="px-4 py-4">
+                      <div className="grid min-w-48 gap-2">
+                        <select
+                          className={`${inputClassName} h-10 w-full text-xs`}
+                          value={templateByOrderId[order.id] ?? "ORDER_CONFIRMATION"}
+                          onChange={(event) => setTemplateByOrderId((current) => ({ ...current, [order.id]: event.target.value as OrderMessageTemplateId }))}
+                        >
+                          {orderMessageTemplates.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
+                        </select>
+                        <div className="flex gap-2">
+                          <button className={`${secondaryButtonClassName} h-9 px-3 text-xs`} type="button" onClick={() => void generateMessage(order)} disabled={previewLoadingId === order.id}>
+                            {previewLoadingId === order.id ? "Loading..." : "Preview"}
+                          </button>
+                          <button className={`${secondaryButtonClassName} h-9 px-3 text-xs`} type="button" onClick={() => void generateMessage(order, true)} disabled={previewLoadingId === order.id}>
+                            Copy
+                          </button>
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-4 py-4">{formatDate(order.updatedAt)}</td>
                   </tr>
                 ))}
@@ -132,7 +235,21 @@ export function OrdersModulePage() {
   );
 }
 
-function OrderCard({ order, onUpdate }: { order: Order; onUpdate: (order: Order, patch: Partial<Pick<Order, "orderStatus" | "paymentStatus">>) => Promise<void> }) {
+function OrderCard({
+  order,
+  onUpdate,
+  templateId,
+  onTemplateChange,
+  onGenerate,
+  messageLoading
+}: {
+  order: Order;
+  onUpdate: (order: Order, patch: Partial<Pick<Order, "orderStatus" | "paymentStatus">>) => Promise<void>;
+  templateId: OrderMessageTemplateId;
+  onTemplateChange: (templateId: OrderMessageTemplateId) => void;
+  onGenerate: (copy: boolean) => void;
+  messageLoading: boolean;
+}) {
   return (
     <article className="rounded-[18px] border border-blue-100 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
@@ -146,6 +263,19 @@ function OrderCard({ order, onUpdate }: { order: Order; onUpdate: (order: Order,
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <StatusSelect value={order.paymentStatus} options={PAYMENT_STATUSES} label={getPaymentStatusLabel} onChange={(value) => void onUpdate(order, { paymentStatus: value })} />
         <StatusSelect value={order.orderStatus} options={ORDER_STATUSES} label={getOrderStatusLabel} onChange={(value) => void onUpdate(order, { orderStatus: value })} />
+      </div>
+      <div className="mt-3 grid gap-2">
+        <select className={`${inputClassName} h-10 w-full text-xs`} value={templateId} onChange={(event) => onTemplateChange(event.target.value as OrderMessageTemplateId)}>
+          {orderMessageTemplates.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
+        </select>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button className={`${secondaryButtonClassName} justify-center text-xs`} type="button" onClick={() => onGenerate(false)} disabled={messageLoading}>
+            {messageLoading ? "Loading..." : "Preview Message"}
+          </button>
+          <button className={`${secondaryButtonClassName} justify-center text-xs`} type="button" onClick={() => onGenerate(true)} disabled={messageLoading}>
+            Copy Message
+          </button>
+        </div>
       </div>
       <p className="mt-3 text-xs font-semibold text-slate-500">Updated {formatDate(order.updatedAt)}</p>
     </article>

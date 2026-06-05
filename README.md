@@ -15,6 +15,7 @@ Major active modules:
 - Auto Reply Analytics for rule trigger attempts, sent replies, failed replies, and safe failure previews.
 - Customer lead statuses and tags for Contacts and Inbox CRM follow-up.
 - Manual Order Tracking linked to Contacts and Inbox conversations.
+- Manual order message templates generated from order data for staff review before sending.
 
 Safe production-beta defaults remain:
 
@@ -284,6 +285,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md`: mobile browser QA checklist for Inbox, Message Logs, Contacts, Settings, Auto Reply, and Send Messages.
 - `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, Orders, and Auto Reply Analytics.
 - Contacts exports include lead status and tags. Recommended tags include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`.
+- Order message templates can prepare confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation text from order data. Staff must review the generated text and send manually; saving an order never auto-sends a message.
 
 Read-only production verification script:
 

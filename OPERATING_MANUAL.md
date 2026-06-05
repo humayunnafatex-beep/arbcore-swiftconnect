@@ -75,13 +75,16 @@ Order statuses are `DRAFT`, `CONFIRMED`, `PACKED`, `SHIPPED`, `DELIVERED`, and `
 
 Phase 1 is manual tracking only. There is no payment gateway, courier integration, inventory automation, or automatic customer notification when an order is saved.
 
+Order message templates can prepare customer-facing confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation messages from saved order data. Staff must review the generated message and click Send Reply manually from Inbox, or copy the preview from Orders. Templates do not auto-send and do not include internal order notes.
+
 Basic order workflow:
 
 1. Open Inbox and select a customer conversation.
 2. In the Orders section, enter model, size, quantity, price, delivery charge, customer details, delivery address, payment status, order status, and notes.
 3. Click Save Order.
 4. Open Orders at `/orders` to filter and update order/payment status.
-5. Use Data Exports to download Orders CSV when approved.
+5. Use Prepare Message in Inbox or Preview/Copy Message in Orders when a reviewed customer update is needed.
+6. Use Data Exports to download Orders CSV when approved.
 
 ## 4. Campaigns
 

@@ -304,6 +304,9 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Payment status can update to Unpaid, Partial, Paid, and COD.
 - [ ] Orders CSV export downloads manual order records only.
 - [ ] Saving an order does not send an automatic WhatsApp or Messenger message.
+- [ ] Inbox Prepare Message fills the reply composer from selected order data without auto-sending.
+- [ ] Orders Preview/Copy Message generates reviewed customer text without sending.
+- [ ] Generated order messages do not include internal notes.
 - [ ] No payment gateway, courier, or inventory automation is presented as active.
 - [ ] Dashboard quick links open filtered Inbox and Message Logs views.
 - [ ] Due follow-up link opens `/inbox?followUp=DUE`.

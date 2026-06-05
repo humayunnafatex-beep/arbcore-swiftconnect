@@ -6,6 +6,7 @@ import { Cable, ClipboardList, Inbox, MessageCircle, Paperclip, RefreshCw, Searc
 import { getApiErrorMessage } from "@/lib/api-client";
 import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
 import { parseTags, stringifyTags } from "@/lib/contact-tags";
+import { getOrderMessageTemplates, type OrderMessageTemplateId } from "@/lib/order-message-templates";
 import { cn } from "@/lib/utils";
 import { AppShell } from "./app-shell";
 import {
@@ -168,6 +169,15 @@ type OrdersResponse = {
   error?: string;
 };
 
+type OrderMessagePreviewResponse = {
+  success: boolean;
+  data?: {
+    message: string;
+    templateLabel: string;
+  };
+  error?: string;
+};
+
 type ContactForm = {
   name: string;
   email: string;
@@ -197,6 +207,7 @@ const emptyOrderForm = {
 };
 
 const contactStages = getContactStatusOptions();
+const orderMessageTemplates = getOrderMessageTemplates();
 
 const replyStatusText: Record<ReplyStatus, string> = {
   not_configured: "This channel is not configured for real replies.",
@@ -250,6 +261,8 @@ export function InboxModulePage() {
   const [orderForm, setOrderForm] = useState(emptyOrderForm);
   const [orderSaving, setOrderSaving] = useState(false);
   const [orderMessage, setOrderMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [orderTemplateById, setOrderTemplateById] = useState<Record<string, OrderMessageTemplateId>>({});
+  const [preparingOrderMessageId, setPreparingOrderMessageId] = useState<string | null>(null);
   const replyFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedConversation = useMemo(
@@ -644,6 +657,30 @@ export function InboxModulePage() {
     }
   }
 
+  async function prepareOrderMessage(orderId: string) {
+    const templateId = orderTemplateById[orderId] ?? "ORDER_CONFIRMATION";
+    setPreparingOrderMessageId(orderId);
+    setOrderMessage(null);
+    setReplyStatus(null);
+    setReplyError(null);
+    setReplyProviderError(null);
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}/message-preview?templateId=${encodeURIComponent(templateId)}`);
+      const result = (await response.json()) as OrderMessagePreviewResponse;
+      if (!response.ok || !result.success || !result.data?.message) {
+        throw new Error(result.error || "Failed to prepare order message.");
+      }
+
+      setReplyBody(result.data.message);
+      setOrderMessage({ tone: "success", text: `${result.data.templateLabel} prepared. Review the message, then click Send Reply.` });
+    } catch (error) {
+      setOrderMessage({ tone: "error", text: getApiErrorMessage(error) });
+    } finally {
+      setPreparingOrderMessageId(null);
+    }
+  }
+
   return (
     <AppShell>
       <section className="rounded-[28px] border border-blue-100 bg-white/95 p-5 shadow-panel sm:p-7">
@@ -899,6 +936,25 @@ export function InboxModulePage() {
                           <div className="mt-2 flex flex-wrap gap-2">
                             <StatusPill label={order.paymentStatus} tone={order.paymentStatus === "PAID" ? "green" : order.paymentStatus === "COD" ? "blue" : "gray"} />
                             <StatusPill label={order.orderStatus} tone={order.orderStatus === "CANCELLED" ? "red" : order.orderStatus === "DELIVERED" ? "green" : "blue"} />
+                          </div>
+                          <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                            <select
+                              className={`${inputClassName} h-10 w-full text-xs`}
+                              value={orderTemplateById[order.id] ?? "ORDER_CONFIRMATION"}
+                              onChange={(event) => setOrderTemplateById((current) => ({ ...current, [order.id]: event.target.value as OrderMessageTemplateId }))}
+                            >
+                              {orderMessageTemplates.map((template) => (
+                                <option key={template.id} value={template.id}>{template.label}</option>
+                              ))}
+                            </select>
+                            <button
+                              className={`${secondaryButtonClassName} h-10 justify-center text-xs`}
+                              type="button"
+                              onClick={() => void prepareOrderMessage(order.id)}
+                              disabled={preparingOrderMessageId === order.id}
+                            >
+                              {preparingOrderMessageId === order.id ? "Preparing..." : "Prepare Message"}
+                            </button>
                           </div>
                         </article>
                       ))}

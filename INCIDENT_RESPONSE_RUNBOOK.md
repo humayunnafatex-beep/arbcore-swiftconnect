@@ -105,9 +105,16 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 ## Manual Order Record Issue
 
 - Symptoms: Order status, payment status, customer details, delivery address, or total amount looks wrong.
-- Where to check: `/orders`, selected Inbox conversation Orders section, Contacts order count, and Orders CSV export if approved.
+- Where to check: `/orders`, selected Inbox conversation Orders section, order message preview, Contacts order count, and Orders CSV export if approved.
 - Safe first action: Confirm the order was manually entered and compare against the customer conversation.
 - What not to do: Do not claim payment, courier, inventory, or customer notification automation. Do not send automatic order messages in Phase 1.
+
+## Order Message Template Issue
+
+- Symptoms: Prepared order message has missing fields, wrong total, wrong status, or confusing customer text.
+- Where to check: The saved order record, `/api/orders/[id]/message-preview`, Inbox reply composer, and Orders preview/copy panel.
+- Safe first action: Correct the underlying order data, regenerate the message, and ask staff to review before sending.
+- What not to do: Do not auto-send the prepared text. Do not include internal order notes, access tokens, provider headers, payment gateway claims, courier tracking claims, or inventory automation claims.
 - Escalation: Business/admin owner decides correction; technical owner checks API/build issues.
 
 ## Data Export Request

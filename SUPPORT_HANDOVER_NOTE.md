@@ -102,6 +102,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use Inbox assignment and follow-up reminders to confirm who owns a conversation.
 - Use Contacts or the Inbox contact card to update lead status and tags during customer follow-up.
 - Use Inbox or Orders to create and update manual order records for customer conversations.
+- Use order message templates to prepare customer-facing order confirmation or status text, then review and send manually from Inbox or copy from Orders.
 - Order Tracking Phase 1 does not include payment gateway, courier integration, inventory automation, or automatic customer messages.
 - Recommended tags: `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, `repeat-customer`.
 
@@ -202,6 +203,14 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Do not block users because of plan limits in the current beta; over-limit warnings are report-only.
 - Do not store card data or payment credentials.
 - Gateway automation is not active yet.
+
+### Order Message Template Confusion
+
+- Order message templates are manual text helpers only.
+- Templates use saved order fields such as order number, product/model, size, quantity, total, payment status, order status, and delivery address.
+- Internal order notes are not included in generated customer messages.
+- Preparing or copying a message does not send it. Staff must review the text and click Send Reply manually.
+- Do not promise automatic order confirmation, payment, courier, inventory, or delivery integration in this phase.
 
 ### WhatsApp Media Reply Issue
 

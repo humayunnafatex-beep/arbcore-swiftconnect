@@ -15,6 +15,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Contacts create, edit, delete, import, search, status/tag filters, and duplicate-phone handling.
 - Customer lead statuses and tags for sales tracking from Contacts and the Inbox contact card.
 - Manual Order Tracking from Inbox conversations with order/payment status updates.
+- Manual order message templates for reviewed confirmation and status-update text from order data.
 - Auto Reply rule create, edit, activate, deactivate, delete, and live matching.
 - Auto Reply Analytics for rule attempts, sent replies, failed replies, success rate, and safe recent event previews.
 - Message Logs for WhatsApp and Messenger filtering and provider status checks.
@@ -48,6 +49,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Create or edit a contact with status and tags, then filter by status/tag.
 - From Inbox, update a linked contact status/tags and confirm the contact card refreshes.
 - From Inbox, create an order and confirm it appears on `/orders`.
+- From Inbox, prepare an order message and confirm it fills the reply composer without sending automatically.
+- From Orders, preview or copy an order message and confirm staff review is still required.
 - Open Auto Reply and confirm active rule workflow.
 - Open Auto Reply Analytics and confirm rule performance loads without exposing tokens or raw webhook payloads.
 - Open Data Exports and confirm CSV options are available without exposing tokens or raw webhook payloads.
