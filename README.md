@@ -43,6 +43,8 @@ Product images use public HTTPS image URLs in this phase. No upload/storage infr
 
 Follow-up Queue is manual only. It helps staff review conversation and order follow-ups, mark them done, update dates, and jump back to Inbox or Orders. It does not send automatic follow-up messages.
 
+Order follow-up messaging is manual only. Order follow-up links can open Inbox with the related customer and order context, where order-specific templates insert text into the composer for staff review before sending.
+
 Safe production-beta defaults remain:
 
 ```env
@@ -313,6 +315,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - Contacts exports include lead status and tags. Recommended tags include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`.
 - Order message templates can prepare confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation text from order data. Staff must review the generated text and send manually; saving an order never auto-sends a message.
 - Order follow-up reminders are internal alerts only. Changing order status, payment status, or follow-up status does not send a WhatsApp or Messenger message automatically.
+- Order follow-up links can open Inbox with the related order highlighted. Saved Replies remain generic reusable replies; Order Templates remain order-specific operational messages that insert into the composer only.
 - Product Catalog is manual. Selecting a product in the Inbox order form can fill model, price, and available size helpers, but it does not reserve stock, deduct inventory, start checkout, or send a customer message.
 
 Read-only production verification script:

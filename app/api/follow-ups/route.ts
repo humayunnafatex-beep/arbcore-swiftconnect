@@ -206,7 +206,9 @@ function mapOrderFollowUp(order: Prisma.OrderGetPayload<{ include: { contact: { 
     priority: "",
     status: order.orderStatus,
     relatedLabel: `${order.orderNumber || "Order"}${order.modelName ? ` - ${order.modelName}` : ""}`,
-    inboxHref: order.customerKey ? `/inbox?channel=${encodeURIComponent(order.channel)}&search=${encodeURIComponent(order.customerKey)}` : null,
+    inboxHref: order.customerKey || order.customerPhone
+      ? `/inbox?channel=${encodeURIComponent(order.channel)}&search=${encodeURIComponent(order.customerKey || order.customerPhone)}&orderId=${encodeURIComponent(order.id)}`
+      : null,
     orderHref: `/orders?search=${encodeURIComponent(order.orderNumber || order.customerPhone || order.id)}`
   };
 }

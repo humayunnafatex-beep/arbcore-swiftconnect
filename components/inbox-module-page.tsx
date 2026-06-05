@@ -341,7 +341,7 @@ export function InboxModulePage() {
   const [assignedToFilter, setAssignedToFilter] = useState(initialFilters.assignedTo);
   const [contactStatusFilter, setContactStatusFilter] = useState(initialFilters.contactStatus);
   const [contactTagFilter, setContactTagFilter] = useState(initialFilters.contactTag);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialFilters.search);
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -397,6 +397,7 @@ export function InboxModulePage() {
   const [orderTemplateById, setOrderTemplateById] = useState<Record<string, OrderMessageTemplateId>>({});
   const [preparingOrderMessageId, setPreparingOrderMessageId] = useState<string | null>(null);
   const replyFileInputRef = useRef<HTMLInputElement | null>(null);
+  const focusOrderId = initialFilters.orderId;
 
   const selectedConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
@@ -409,6 +410,10 @@ export function InboxModulePage() {
   const selectedProductSizes = useMemo(
     () => parseAvailableSizes(selectedProduct?.availableSizes),
     [selectedProduct?.availableSizes]
+  );
+  const focusedOrder = useMemo(
+    () => orders.find((order) => order.id === focusOrderId) ?? null,
+    [focusOrderId, orders]
   );
   const savedReplyCategories = useMemo(() => {
     return Array.from(new Set(savedReplies.map((reply) => reply.category))).sort();
@@ -1015,7 +1020,7 @@ export function InboxModulePage() {
       }
 
       setReplyBody(result.data.message);
-      setOrderMessage({ tone: "success", text: `${result.data.templateLabel} prepared. Review the message, then click Send Reply.` });
+      setOrderMessage({ tone: "success", text: `${result.data.templateLabel} inserted into the composer. Review or edit it, then click Send Reply manually.` });
     } catch (error) {
       setOrderMessage({ tone: "error", text: getApiErrorMessage(error) });
     } finally {
@@ -1401,16 +1406,31 @@ export function InboxModulePage() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Orders</h3>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">Manual order records only. Saving an order does not send a customer message.</p>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">Manual order records only. Preparing a message inserts text into the composer; staff must click Send Reply manually.</p>
                     </div>
                     <Link className="text-xs font-black text-royal hover:underline" href="/orders">
                       Open Orders
                     </Link>
                   </div>
+                  {focusedOrder ? (
+                    <div className="mt-4 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-semibold leading-5 text-amber-800">
+                      <p className="font-black text-ink">Opened from Follow-up Queue</p>
+                      <p>Order: {focusedOrder.orderNumber || focusedOrder.id} - {focusedOrder.modelName || "No model"}</p>
+                      <p>Status: {focusedOrder.orderStatus} - Payment: {focusedOrder.paymentStatus}</p>
+                      <p>Follow-up: {focusedOrder.followUpDone ? "Done" : focusedOrder.followUpAt ? formatDate(focusedOrder.followUpAt) : "No date"}</p>
+                      <p className="mt-1">Choose an order template below, prepare the message, review it in the composer, then send manually.</p>
+                    </div>
+                  ) : detail.conversation.followUpStatus !== "NONE" ? (
+                    <div className="mt-4 rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-semibold leading-5 text-slate-600">
+                      <p className="font-black text-ink">Active conversation follow-up</p>
+                      <p>Status: {formatFollowUpStatus(detail.conversation.followUpStatus)}{detail.conversation.followUpAt ? ` - ${formatDate(detail.conversation.followUpAt)}` : ""}</p>
+                      <p>Use Saved Replies or linked order templates below to prepare a manual response.</p>
+                    </div>
+                  ) : null}
                   {orders.length ? (
                     <div className="mt-4 grid gap-2 lg:grid-cols-2">
                       {orders.slice(0, 4).map((order) => (
-                        <article key={order.id} className="rounded-[14px] border border-blue-100 bg-blue-50 p-3">
+                        <article key={order.id} className={cn("rounded-[14px] border p-3", focusOrderId === order.id ? "border-amber-200 bg-amber-50 ring-2 ring-amber-100" : "border-blue-100 bg-blue-50")}>
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="text-sm font-black text-ink">{order.orderNumber}</p>
@@ -1442,6 +1462,9 @@ export function InboxModulePage() {
                             ) : null}
                           </div>
                           <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                            <p className="text-xs font-bold leading-5 text-slate-500 sm:col-span-2">
+                              Order Templates are order-specific. They insert text into the reply composer and never auto-send.
+                            </p>
                             <select
                               className={`${inputClassName} h-10 w-full text-xs`}
                               value={orderTemplateById[order.id] ?? "ORDER_CONFIRMATION"}
@@ -1988,7 +2011,9 @@ function getInitialFilters() {
       starred: "ALL" as StarredFilter,
       assignedTo: "ALL",
       contactStatus: "ALL",
-      contactTag: ""
+      contactTag: "",
+      search: "",
+      orderId: ""
     };
   }
 
@@ -2004,7 +2029,9 @@ function getInitialFilters() {
     starred: parseStarredFilter(params.get("starred")),
     assignedTo: params.get("assignedTo")?.trim() || "ALL",
     contactStatus: params.get("contactStatus") ? normalizeContactStatus(params.get("contactStatus")) : "ALL",
-    contactTag: params.get("contactTag")?.trim() || ""
+    contactTag: params.get("contactTag")?.trim() || "",
+    search: params.get("search")?.trim() || "",
+    orderId: params.get("orderId")?.trim() || ""
   };
 }
 

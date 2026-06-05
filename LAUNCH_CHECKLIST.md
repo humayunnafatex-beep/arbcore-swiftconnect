@@ -520,6 +520,9 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Overdue, today, upcoming, and done filters work.
 - [ ] Mark Done, Reopen, and Update Date work without sending customer messages.
 - [ ] Open Inbox and Open Order links route staff back to the related work area.
+- [ ] Order follow-up Open Inbox link pre-filters the customer conversation and highlights the related order when available.
+- [ ] Order Templates insert text into the Inbox composer only; staff must click Send Reply manually.
+- [ ] Saved Replies and Order Templates are shown as separate manual helper workflows.
 - [ ] Follow-up updates appear in Activity Logs as safe summaries.
 
 ## 9D. Mobile Browser QA

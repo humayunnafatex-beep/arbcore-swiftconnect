@@ -156,3 +156,10 @@ Stabilize beta testing with 2-5 controlled users, then proceed to campaign/templ
 - Queue supports overdue, today, upcoming, and completed filters.
 - Staff can mark follow-ups done, reopen them, update dates, and jump to Inbox or Orders.
 - No automatic follow-up sending was added.
+
+## Order Follow-up Messaging
+
+- Follow-up Queue order links can open Inbox with the related customer search and order context.
+- Inbox highlights the related order and shows order status, payment status, product/model, follow-up date, and done state when available.
+- Order Templates insert order-specific text into the reply composer only. Staff must review and send manually.
+- Saved Replies remain separate generic text snippets. No scheduled or automatic follow-up sending was added.

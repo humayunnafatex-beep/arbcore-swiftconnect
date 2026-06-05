@@ -365,3 +365,5 @@ From Inbox, staff can manually send the selected product image for WhatsApp conv
 The Follow-up Queue at `/follow-ups` combines Inbox conversation follow-ups and Order follow-ups. Staff can mark follow-ups done, reopen them, update dates, and jump to Inbox or Orders for the actual customer work.
 
 The queue does not send automatic follow-up messages. If staff expect a customer message to be sent, remind them to open Inbox and send manually using Saved Replies or normal replies.
+
+Order follow-up Inbox links may open the related customer conversation with the order highlighted. In Inbox, Order Templates are separate from Saved Replies: Saved Replies are generic reusable text, while Order Templates are generated from the selected order and insert into the composer only. Staff must review the message and click Send Reply manually.

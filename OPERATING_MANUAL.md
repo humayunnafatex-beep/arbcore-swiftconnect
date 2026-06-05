@@ -466,7 +466,11 @@ Each item shows safe customer context, source type, channel/contact key, follow-
 
 The queue is manual only. It does not send automatic WhatsApp or Messenger messages. Staff should open Inbox and use Saved Replies or manual messages when a customer follow-up needs communication.
 
-Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
+Order follow-up links can open Inbox with the customer search and related order context already applied. Inbox highlights the related order when available and shows safe context such as order status, payment status, product/model, follow-up date, and follow-up done state.
+
+Use Saved Replies for generic reusable answers. Use Order Templates for order-specific customer messages such as confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation notice. Order Templates insert text into the Inbox composer only; staff must review or edit the text and click Send Reply manually.
+
+Phase 1 remains manual. Media saved replies, AI-generated replies, shortcut auto-insert behavior, scheduled sends, and send-on-status-change behavior can be considered later.
 
 ## 13. Support And Maintenance
 
