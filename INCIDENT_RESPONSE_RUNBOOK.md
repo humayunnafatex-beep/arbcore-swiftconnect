@@ -33,8 +33,8 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 ## Messenger Messages Not Sending
 
 - Symptoms: Messenger test send or Inbox reply fails, or PSID sends log `FAILED`.
-- Where to check: `/channels`, `/message-logs?channel=MESSENGER`, Messenger/Page API settings, Vercel logs, Meta Page permissions.
-- Safe first action: Confirm Page Access Token presence and that the recipient is a valid Facebook Page PSID.
+- Where to check: `/channels`, `/message-logs?channel=MESSENGER`, Messenger/Page API settings, `MESSENGER_LIVE_QA_CHECKLIST.md`, Vercel logs, Meta Page permissions.
+- Safe first action: Confirm Page Access Token presence, that the Page ID and Page Access Token came from the same Facebook Page, and that the recipient is a valid Facebook Page PSID.
 - What not to do: Do not use phone numbers for Messenger PSID tests. Do not expose Page Access Token.
 - Escalation: Technical owner checks Meta Page/API status and permissions.
 
@@ -197,8 +197,8 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 ## Messenger Live Page Failure
 
 - Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.
-- Where to check: Meta webhook configuration, `/channels`, `/message-logs`, `/inbox`, `MESSENGER_SETUP_GUIDE.md`, and Vercel runtime logs.
-- Safe first action: Confirm Page ID, Page Access Token presence, Messenger Verify Token, webhook URL, and `messages` subscription. Confirm the recipient value is a PSID, not a phone number.
+- Where to check: Meta webhook configuration, `/channels`, `/message-logs`, `/inbox`, `MESSENGER_SETUP_GUIDE.md`, `MESSENGER_LIVE_QA_CHECKLIST.md`, and Vercel runtime logs.
+- Safe first action: Confirm Page ID, Page Access Token presence, Messenger Verify Token, webhook URL, and `messages` subscription. Confirm the Page ID and Page Access Token came from the same Facebook Page. Confirm the recipient value is a PSID, not a phone number.
 - What not to do: Do not collect Page Access Tokens, Authorization headers, raw Meta payloads, or customer private messages beyond the minimum safe summary.
 - Escalation: Technical owner checks webhook GET verification, Page ID routing, provider error code, and whether Meta app permissions/app review are required.
 

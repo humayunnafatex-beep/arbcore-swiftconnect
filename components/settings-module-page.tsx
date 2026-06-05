@@ -368,8 +368,10 @@ async function createTeamMember() {
         <Panel icon={<Facebook className="h-5 w-5" />} title="Messenger / Page API Settings" action={<button className={secondaryButtonClassName} onClick={() => save("Messenger")} disabled={savingSection !== null}><KeyRound className="h-4 w-4" />{savingSection === "Messenger" ? "Saving..." : "Save"}</button>}>
           <div className="mb-4 rounded-[18px] border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
             <p className="font-black text-royal">Messenger live setup</p>
-            <p className="mt-1">Messenger uses Facebook Page ID and customer PSID, not phone number.</p>
-            <p className="mt-1">Real Messenger receive/reply requires Meta Page webhook setup and a valid Page Access Token.</p>
+            <p className="mt-1">Copy the Facebook Page ID from the Page selected in Meta Developer Dashboard.</p>
+            <p className="mt-1">Paste the Page Access Token generated for that same Page. It is saved only when entered and hidden after refresh.</p>
+            <p className="mt-1">Messenger uses customer PSID for replies and tests, not phone number.</p>
+            <p className="mt-1">Real Messenger receive/reply requires Meta Page webhook setup, matching verify token, and a valid Page Access Token.</p>
             <p className="mt-1">ARBCore does not claim Messenger sending is active until Meta setup is configured and tested.</p>
             <p className="mt-1">Each workspace must use a unique Messenger Page ID. Settings blocks duplicate provider IDs.</p>
             <p className="mt-2 font-black text-royal">Webhook URL: https://arbcore-swiftconnect.vercel.app/api/messenger/webhook</p>
@@ -377,7 +379,7 @@ async function createTeamMember() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Facebook Page ID" value={messenger.pageId} onChange={(value) => setMessenger({ ...messenger, pageId: value })} />
-            <Field label="Page Access Token" value={messenger.pageAccessToken} onChange={(value) => setMessenger({ ...messenger, pageAccessToken: value })} />
+            <Field label="Page Access Token" value={messenger.pageAccessToken} onChange={(value) => setMessenger({ ...messenger, pageAccessToken: value })} type="password" helper="Leave blank to keep the saved token. Token value is not displayed after refresh." />
             <Field label="Messenger Verify Token" value={messenger.verifyToken} onChange={(value) => setMessenger({ ...messenger, verifyToken: value })} />
             <Field label="Messenger Webhook URL" value={messenger.webhookUrl} onChange={(value) => setMessenger({ ...messenger, webhookUrl: value })} />
           </div>
@@ -559,11 +561,12 @@ function normalizeTeamMember(member: Partial<TeamMember>): TeamMember {
   };
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function Field({ label, value, onChange, type = "text", helper }: { label: string; value: string; onChange: (value: string) => void; type?: string; helper?: string }) {
   return (
     <label className="grid gap-1.5 text-xs font-black text-slate-500">
       {label}
-      <input className={inputClassName} value={value} onChange={(event) => onChange(event.target.value)} />
+      <input className={inputClassName} type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+      {helper ? <span className="text-xs font-semibold leading-5 text-slate-500">{helper}</span> : null}
     </label>
   );
 }

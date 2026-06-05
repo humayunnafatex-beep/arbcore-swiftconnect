@@ -48,6 +48,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - `MIGRATION_AUDIT.md`
 - `META_WHATSAPP_SETUP_GUIDE.md`
 - `MESSENGER_SETUP_GUIDE.md`
+- `MESSENGER_LIVE_QA_CHECKLIST.md`
 - `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md`
 - `CLIENT_ONBOARDING_GUIDE.md`
 - `BETA_FEEDBACK_FORM.md`
@@ -257,6 +258,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 
 - Messenger uses Facebook Page ID and customer PSID, not phone number.
 - Confirm Settings has Page ID, Page Access Token presence, Messenger Verify Token, and Messenger Webhook URL.
+- Confirm the Page ID and Page Access Token were generated for the same Facebook Page.
+- Use `MESSENGER_LIVE_QA_CHECKLIST.md` for webhook, inbound, outbound reply, auto-reply, and diagnostics QA.
 - The production callback URL is `https://arbcore-swiftconnect.vercel.app/api/messenger/webhook`.
 - The verify token in Meta must exactly match ARBCore, for example `arbcore_messenger_verify_2026`.
 - Subscribe the Meta Messenger webhook to `messages` or messaging events.

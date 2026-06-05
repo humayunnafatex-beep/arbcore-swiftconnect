@@ -277,7 +277,7 @@ Message log status meanings:
 
 Messenger setup:
 
-Use `MESSENGER_SETUP_GUIDE.md`. The Messenger webhook URL is:
+Use `MESSENGER_SETUP_GUIDE.md` and `MESSENGER_LIVE_QA_CHECKLIST.md`. Page ID and Page Access Token must come from the same Facebook Page in Meta. The Page Access Token is saved only when entered and is not displayed after refresh. The Messenger webhook URL is:
 
 ```text
 https://YOUR_DOMAIN/api/messenger/webhook

@@ -270,7 +270,7 @@ export function ChannelsModulePage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-black text-ink">Messenger Test Send</h2>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">Messenger test-send requires Facebook PSID, not phone number.</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-500">Messenger test-send requires a Facebook Page PSID from a real Page conversation, not a phone number. Results must be verified in Message Logs.</p>
                   </div>
                   <Link href="/message-logs" className={secondaryButtonClassName}>
                     <ClipboardList className="h-4 w-4" />
@@ -281,6 +281,7 @@ export function ChannelsModulePage() {
                   <label className="grid gap-1.5 text-xs font-black text-slate-500">
                     Recipient PSID
                     <input className={inputClassName} value={messengerRecipientPsid} onChange={(event) => setMessengerRecipientPsid(event.target.value)} placeholder="Facebook Page scoped sender ID" />
+                    <span className="text-xs font-semibold leading-5 text-slate-500">Use the sender PSID from an inbound Messenger conversation with the connected Page.</span>
                   </label>
                   <label className="grid gap-1.5 text-xs font-black text-slate-500">
                     Message body

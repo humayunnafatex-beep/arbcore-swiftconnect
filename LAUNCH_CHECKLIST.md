@@ -395,6 +395,7 @@ Connecting Welzz Stride real number `01958474577`:
 ## 9A. Messenger Foundation QA
 
 - [ ] `MESSENGER_SETUP_GUIDE.md` has been reviewed.
+- [ ] `MESSENGER_LIVE_QA_CHECKLIST.md` has been completed before live Page activation.
 - [ ] Messenger / Page API Settings save and persist after refresh.
 - [ ] Saved Page Access Token is not returned or displayed after refresh.
 - [ ] Facebook Page ID is copied from the selected live Page.

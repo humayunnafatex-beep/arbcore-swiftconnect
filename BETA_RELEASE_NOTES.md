@@ -70,6 +70,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - From Inbox, confirm inbound WhatsApp audio shows an audio player and no token or raw Meta media URL is exposed.
 - Confirm unsupported media types and oversized files are rejected safely before provider calls.
 - Configure Messenger live setup with Facebook Page ID, Page Access Token, callback URL, verify token, and `messages` subscription before live Page testing.
+- Use `MESSENGER_LIVE_QA_CHECKLIST.md` before activating Messenger with a live Facebook Page.
 - Confirm Messenger Page messages appear in Message Logs and Inbox, and that Inbox replies log `MESSENGER / OUTBOUND / SENT` only after Meta accepts.
 - Use `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` to verify daily operator pages on mobile browser.
 - Recommend `/inbox`, `/message-logs`, `/contacts`, and `/send-messages` for mobile daily use. Keep Meta setup, token entry, Admin Workspaces, Provider Diagnostics, and Billing setup desktop-preferred.

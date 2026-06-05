@@ -27,6 +27,8 @@ Open ARBCore Settings and use the Messenger / Page API Settings section:
 - Verify Token -> Messenger Verify Token
 - Webhook URL -> Messenger Webhook URL
 
+The Page ID and Page Access Token must come from the same Facebook Page selected in Meta. Leave the Page Access Token field blank unless saving or replacing the token; ARBCore does not display the saved token after refresh.
+
 Recommended verify token example:
 
 ```text
@@ -149,6 +151,8 @@ Provider failure state:
 Duplicate inbound provider message IDs are skipped so the same Messenger message should not trigger repeated auto replies.
 
 Manual Inbox replies use the same provider-backed safety rule as test sends and auto replies: ARBCore does not fake Messenger sending success.
+
+For launch QA, complete `MESSENGER_LIVE_QA_CHECKLIST.md`.
 
 ## 7. Safety
 
