@@ -40,7 +40,7 @@ export async function GET() {
     const companyId = company.id;
     const warnings: DashboardWarning[] = [];
 
-    const channels = await safeMetricGroup("channels", warnings, async () => {
+    const channelsPromise = safeMetricGroup("channels", warnings, async () => {
       const [connectedNumbers] = await Promise.all([
         prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } })
       ]);
@@ -56,7 +56,7 @@ export async function GET() {
       messengerConfigured: Boolean(company.messengerPageAccessToken)
     });
 
-    const messageHealth = await safeMetricGroup("messageHealth", warnings, async () => {
+    const messageHealthPromise = safeMetricGroup("messageHealth", warnings, async () => {
       const [
         messagesSentToday,
         totalMessages,
@@ -113,7 +113,7 @@ export async function GET() {
       outboundMessages: 0
     });
 
-    const inbox = await safeMetricGroup("inbox", warnings, async () => {
+    const inboxPromise = safeMetricGroup("inbox", warnings, async () => {
       const [conversationStates, conversationMessages] = await Promise.all([
         prisma.conversationState.findMany({
           where: { companyId },
@@ -148,7 +148,7 @@ export async function GET() {
       doneFollowUps: 0
     });
 
-    const campaigns = await safeMetricGroup("campaigns", warnings, async () => {
+    const campaignsPromise = safeMetricGroup("campaigns", warnings, async () => {
       const [
         activeCampaigns,
         draftCampaigns,
@@ -182,7 +182,7 @@ export async function GET() {
       totalCampaigns: 0
     });
 
-    const contacts = await safeMetricGroup("contacts", warnings, async () => {
+    const contactsPromise = safeMetricGroup("contacts", warnings, async () => {
       const [
         contactCount,
         hotLeads,
@@ -222,7 +222,7 @@ export async function GET() {
       followUpContacts: 0
     });
 
-    const autoReply = await safeMetricGroup("autoReplyAnalytics", warnings, async () => {
+    const autoReplyPromise = safeMetricGroup("autoReplyAnalytics", warnings, async () => {
       const [activeAutoReplyRules, autoReplyAttempted30d, autoReplySent30d, autoReplyFailed30d] = await Promise.all([
         prisma.autoReplyRule.count({ where: { companyId, isActive: true } }),
         prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo } } }),
@@ -245,7 +245,7 @@ export async function GET() {
       autoReplySuccessRate30d: 0
     });
 
-    const orders = await safeMetricGroup("orders", warnings, async () => {
+    const ordersPromise = safeMetricGroup("orders", warnings, async () => {
       const [
         draftOrders,
         confirmedOrders,
@@ -306,7 +306,7 @@ export async function GET() {
       totalOrderValue: 0
     });
 
-    const products = await safeMetricGroup("products", warnings, async () => {
+    const productsPromise = safeMetricGroup("products", warnings, async () => {
       const [activeProducts, draftProducts, archivedProducts, productsWithStockNote] = await Promise.all([
         prisma.product.count({ where: { companyId, status: "ACTIVE" } }),
         prisma.product.count({ where: { companyId, status: "DRAFT" } }),
@@ -322,7 +322,7 @@ export async function GET() {
       productsWithStockNote: 0
     });
 
-    const billing = await safeMetricGroup("billing", warnings, async () => {
+    const billingPromise = safeMetricGroup("billing", warnings, async () => {
       const [subscription, paymentGroups, lastPayment, monthlyMessagesForPlan] = await Promise.all([
         prisma.subscription.findFirst({ where: { companyId }, orderBy: { createdAt: "desc" } }),
         prisma.paymentRecord.groupBy({
@@ -357,7 +357,7 @@ export async function GET() {
           lastPaymentAmount: lastPayment?.amount ?? null,
           currency: lastPayment?.currency || "BDT",
           usage: {
-            contacts: contacts.contacts,
+            contacts: 0,
             contactsLimit: limits.contacts,
             monthlyMessages: monthlyMessagesForPlan,
             monthlyMessagesLimit: limits.monthlyMessages,
@@ -375,7 +375,7 @@ export async function GET() {
         lastPaymentAmount: null,
         currency: "BDT",
         usage: {
-          contacts: contacts.contacts,
+          contacts: 0,
           contactsLimit: getPlanLimits(normalizePlanName(company.plan)).contacts,
           monthlyMessages: 0,
           monthlyMessagesLimit: getPlanLimits(normalizePlanName(company.plan)).monthlyMessages,
@@ -384,7 +384,7 @@ export async function GET() {
       }
     });
 
-    const workspace = await safeMetricGroup("workspace", warnings, async () => {
+    const workspacePromise = safeMetricGroup("workspace", warnings, async () => {
       const [teamMembers, aiCreditsUsed] = await Promise.all([
         prisma.user.count({ where: { companyId, isActive: true } }),
         prisma.aiGeneration.count({ where: { companyId } })
@@ -396,6 +396,37 @@ export async function GET() {
       aiCreditsUsed: 0
     });
 
+    const [
+      channels,
+      messageHealth,
+      inbox,
+      campaigns,
+      contacts,
+      autoReply,
+      orders,
+      products,
+      billing,
+      workspace
+    ] = await Promise.all([
+      channelsPromise,
+      messageHealthPromise,
+      inboxPromise,
+      campaignsPromise,
+      contactsPromise,
+      autoReplyPromise,
+      ordersPromise,
+      productsPromise,
+      billingPromise,
+      workspacePromise
+    ]);
+    const dashboardBilling = {
+      ...billing.billing,
+      usage: {
+        ...billing.billing.usage,
+        contacts: contacts.contacts
+      }
+    };
+
     return ok({
       ...channels,
       ...messageHealth,
@@ -406,7 +437,7 @@ export async function GET() {
       ...orders,
       ...products,
       ...workspace,
-      ...billing,
+      billing: dashboardBilling,
       warnings,
       apiStatus: warnings.length ? "Degraded" : "Operational"
     });
