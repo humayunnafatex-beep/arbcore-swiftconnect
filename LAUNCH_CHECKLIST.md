@@ -525,6 +525,13 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Saved Replies and Order Templates are shown as separate manual helper workflows.
 - [ ] Follow-up updates appear in Activity Logs as safe summaries.
 
+## 9C-10. Beta Operations Workflow QA
+
+- [ ] `BETA_OPERATIONS_QA_CHECKLIST.md` has been reviewed.
+- [ ] End-to-end flow has been tested from inbound WhatsApp message to follow-up completion.
+- [ ] Product image, Saved Reply, and Order Template helpers remain manual only.
+- [ ] Message Logs and Activity Logs show safe verification context without secrets.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

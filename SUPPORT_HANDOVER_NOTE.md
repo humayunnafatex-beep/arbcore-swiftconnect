@@ -72,6 +72,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `BETA_V1_FEEDBACK_TRIAGE_WORKFLOW.md` as the Beta issue triage workflow for feedback, bugs, access, provider, billing, and security concerns.
 - Run or review `PRODUCTION_DEPLOYMENT_VERIFICATION.md` after a deployment.
 - Use `PRODUCTION_MANUAL_QA_CHECKLIST.md` for manual route and workflow verification.
+- Use `BETA_OPERATIONS_QA_CHECKLIST.md` for the daily beta operations flow from inbound WhatsApp message to follow-up completion.
 - Use `WELZZ_STRIDE_INTERNAL_BETA_RUNBOOK.md` for internal 2-3 day beta operations before paid client onboarding.
 - Use `SUPABASE_PRODUCTION_MIGRATION_CHECKLIST.md` when verifying production migrations.
 - Use `CLIENT_WORKSPACE_ONBOARDING_PLAN.md` and `/admin/workspaces` before creating a separate client workspace.

@@ -480,6 +480,8 @@ Mobile browser support is intended for daily operations such as `/inbox`, `/mess
 
 For beta release readiness, review `BETA_RELEASE_NOTES.md`, `PRODUCTION_QA_REPORT.md`, `SECURITY_QA_REPORT.md`, and `MIGRATION_AUDIT.md`.
 
+For daily beta operations QA, use `BETA_OPERATIONS_QA_CHECKLIST.md`. It walks through the full manual workflow: inbound WhatsApp message, contact update, order creation, product image preview/manual send, Saved Reply or Order Template insertion, manual reply, follow-up queue, Message Logs, Activity Logs, and Dashboard review.
+
 For auth readiness, open `/auth/status` after Supabase login and confirm the mode is `supabase_mapped`. The backing `/api/auth/me` endpoint returns safe status fields only and must not expose tokens, cookies, or raw Supabase sessions.
 
 Before enforcing login, complete `AUTH_ENFORCEMENT_TEST_CHECKLIST.md` in local or staging and confirm public WhatsApp webhook routes still work.

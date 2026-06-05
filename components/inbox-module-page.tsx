@@ -1734,8 +1734,8 @@ export function InboxModulePage() {
                       <h3 className="text-sm font-black text-ink">Reply from Inbox</h3>
                       <p className="mt-1 text-xs font-semibold text-slate-500">
                         {detail.conversation.channel === "WHATSAPP"
-                          ? "WhatsApp replies use the customer phone number from this conversation."
-                          : "Messenger replies use the Facebook PSID from this conversation."}
+                          ? "WhatsApp replies use the customer phone number from this conversation. Review helper text before sending manually."
+                          : "Messenger replies use the Facebook PSID from this conversation. Review helper text before sending manually."}
                       </p>
                     </div>
                     <Link className="text-xs font-black text-royal hover:underline" href="/message-logs">

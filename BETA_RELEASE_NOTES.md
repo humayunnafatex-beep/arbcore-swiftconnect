@@ -48,6 +48,7 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Open Dashboard and confirm metrics render.
 - Open Channel Center and confirm no tokens are displayed.
 - Open Inbox and verify conversation list, detail, reply composer, status, assignment, contact card, internal notes, and follow-up reminders.
+- Use `BETA_OPERATIONS_QA_CHECKLIST.md` to rehearse the full daily workflow from inbound message to follow-up completion.
 - Open Message Logs and test channel/status/direction/search filters.
 - Open Contacts and confirm duplicate phone messages remain friendly.
 - Create or edit a contact with status and tags, then filter by status/tag.

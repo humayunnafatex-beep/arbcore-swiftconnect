@@ -215,7 +215,7 @@ export function OrdersModulePage() {
             <div>
               <p className="text-xs font-black uppercase text-royal">Message Preview</p>
               <h2 className="mt-1 text-lg font-black text-ink">{preview.templateLabel} - {preview.orderNumber}</h2>
-              <p className="mt-1 text-xs font-semibold text-slate-500">Review this generated order message before sending manually from Inbox or the customer channel.</p>
+              <p className="mt-1 text-xs font-semibold text-slate-500">Review this generated order message before using it. Copying or previewing does not send anything to the customer.</p>
             </div>
             <button
               className={secondaryButtonClassName}

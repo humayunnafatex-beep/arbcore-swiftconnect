@@ -128,7 +128,7 @@ export function FollowUpsModulePage() {
                 <p className="text-xs font-black uppercase text-royal">Daily operations</p>
                 <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Follow-up Queue</h1>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                  Review overdue, today, upcoming, and completed conversation/order follow-ups. This queue never sends automatic messages.
+                  Review overdue, today, upcoming, and completed conversation/order follow-ups. Open Inbox to continue the conversation with context. This queue never sends automatic messages.
                 </p>
               </div>
             </div>
@@ -201,8 +201,8 @@ export function FollowUpsModulePage() {
                       <button className={secondaryButtonClassName} type="button" onClick={() => void updateFollowUp(item, { followUpDone: false })} disabled={saving || !item.followUpDone}>
                         Reopen
                       </button>
-                      {item.inboxHref ? <Link className={`${primaryButtonClassName} justify-center sm:col-span-1`} href={item.inboxHref}>Open Inbox</Link> : null}
-                      {item.orderHref ? <Link className={`${secondaryButtonClassName} justify-center sm:col-span-1`} href={item.orderHref}>Open Order</Link> : null}
+                      {item.inboxHref ? <Link className={`${primaryButtonClassName} justify-center sm:col-span-1`} href={item.inboxHref}>Open Inbox Context</Link> : null}
+                      {item.orderHref ? <Link className={`${secondaryButtonClassName} justify-center sm:col-span-1`} href={item.orderHref}>Open Order Record</Link> : null}
                     </div>
                   </div>
                 </article>
