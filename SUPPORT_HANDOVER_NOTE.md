@@ -353,3 +353,9 @@ Team members are managed from Settings by owners/admins. New members are workspa
 ## Role-Based Staff Guidance Support
 
 The UI labels daily operations, review/insight, and admin/system areas so staff understand which modules match their role. This is guidance-only while enforcement flags remain off. If a staff member can still open a page outside their expected role area during beta, treat that as expected unless `PERMISSIONS_ENFORCED=true` has been intentionally enabled and tested.
+
+## Product Image Workflow Support
+
+Product images are URL-based in this phase. Ask staff to use public HTTPS image URLs on the Products page. Invalid or empty image URLs should not block saving a product, but they will not be available for Inbox image sending.
+
+From Inbox, staff can manually send the selected product image for WhatsApp conversations. This does not auto-send on product selection and does not add storage/upload infrastructure. If a product image send fails, check that the URL is public HTTPS and review Message Logs for the safe provider error.

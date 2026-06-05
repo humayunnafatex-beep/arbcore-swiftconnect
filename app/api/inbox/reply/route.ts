@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import {
   getSafeWhatsAppProviderErrorSummary,
   sendWhatsAppMediaMessage,
+  sendWhatsAppMediaUrlMessage,
   sendWhatsAppTextMessage,
   uploadWhatsAppMedia,
   type SafeWhatsAppProviderError,
@@ -20,7 +21,10 @@ export const dynamic = "force-dynamic";
 const replySchema = z.object({
   channel: z.enum(["WHATSAPP", "MESSENGER"]),
   contactKey: z.string().trim().min(3).max(128),
-  body: z.string().trim().max(4000).default("")
+  body: z.string().trim().max(4000).default(""),
+  mediaUrl: z.string().trim().max(1000).optional(),
+  mediaType: z.enum(["image"]).optional(),
+  mediaLabel: z.string().trim().max(160).optional()
 });
 
 const WHATSAPP_REQUIRED_MESSAGE = "WhatsApp Cloud API is required to send real messages.";
@@ -37,6 +41,8 @@ export async function POST(request: Request) {
   let contactKey = "";
   let messageBody = "";
   let attachment: File | null = null;
+  let mediaUrl = "";
+  let mediaLabel = "";
   let mediaType: WhatsAppMediaType | null = null;
   let logBody = "";
 
@@ -58,6 +64,8 @@ export async function POST(request: Request) {
     contactKey = normalizeContactKey(channel, parsed.data.contactKey);
     messageBody = parsed.data.body.trim();
     attachment = parsedPayload.attachment;
+    mediaUrl = parsed.data.mediaUrl?.trim() ?? "";
+    mediaLabel = parsed.data.mediaLabel?.trim() ?? "";
     const attachmentValidation = validateAttachment(attachment);
     if (!attachmentValidation.success) {
       return NextResponse.json(
@@ -66,18 +74,32 @@ export async function POST(request: Request) {
       );
     }
     mediaType = attachmentValidation.mediaType;
-    logBody = buildLogBody(messageBody, attachment, mediaType);
+    logBody = buildLogBody(messageBody, attachment, mediaType, mediaUrl, mediaLabel);
 
-    if (!contactKey || (!messageBody && !attachment)) {
+    if (!contactKey || (!messageBody && !attachment && !mediaUrl)) {
       return NextResponse.json(
         { success: false, status: "validation_failed", error: "Recipient and message body or attachment are required." },
         { status: 400 }
       );
     }
 
-    if (attachment && channel !== "WHATSAPP") {
+    if ((attachment || mediaUrl) && channel !== "WHATSAPP") {
       return NextResponse.json(
         { success: false, status: "validation_failed", error: "Phase 1 media replies support WhatsApp only." },
+        { status: 400 }
+      );
+    }
+
+    if (attachment && mediaUrl) {
+      return NextResponse.json(
+        { success: false, status: "validation_failed", error: "Send either an attachment or a product image URL, not both." },
+        { status: 400 }
+      );
+    }
+
+    if (mediaUrl && !/^https:\/\/\S+$/i.test(mediaUrl)) {
+      return NextResponse.json(
+        { success: false, status: "validation_failed", error: "Product image must use a public HTTPS image URL." },
         { status: 400 }
       );
     }
@@ -139,6 +161,25 @@ export async function POST(request: Request) {
           mediaType,
           caption: messageBody,
           filename: attachment.name
+        });
+
+        return handleProviderResult({
+          companyId: company.id,
+          contactId: contact?.id,
+          channel,
+          body: logBody,
+          providerResult
+        });
+      }
+
+      if (mediaUrl) {
+        const providerResult = await sendWhatsAppMediaUrlMessage({
+          phoneNumberId: company.whatsappPhoneNumberId,
+          accessToken: company.whatsappAccessToken,
+          to: contactKey,
+          mediaUrl,
+          mediaType: "image",
+          caption: messageBody || mediaLabel
         });
 
         return handleProviderResult({
@@ -272,8 +313,12 @@ function validateAttachment(file: File | null):
   return { success: false, error: "Phase 1 supports image and PDF attachments only." };
 }
 
-function buildLogBody(body: string, attachment: File | null, mediaType: WhatsAppMediaType | null) {
+function buildLogBody(body: string, attachment: File | null, mediaType: WhatsAppMediaType | null, mediaUrl = "", mediaLabel = "") {
   const caption = body.trim();
+  if (mediaUrl) {
+    return `[image] ${mediaLabel || "Product image"}${caption ? ` - ${caption}` : ""}`;
+  }
+
   if (!attachment || !mediaType) return caption;
 
   if (mediaType === "image") {

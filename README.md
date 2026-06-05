@@ -18,6 +18,7 @@ Major active modules:
 - Manual order message templates generated from order data for staff review before sending.
 - Order follow-up alerts, filters, and quick status/payment updates for manual order operations.
 - Product Catalog for manual product/model setup and faster Inbox order entry.
+- Product image URL previews and manual WhatsApp product image sending from Inbox.
 - WhatsApp customer profile name capture and Click-to-WhatsApp referral context when Meta includes safe webhook fields.
 - Inbox conversation quality controls for read/unread, starred, priority, and quick labels.
 - Saved Replies / Quick Replies for inserting reusable text into the Inbox composer.
@@ -36,6 +37,8 @@ Staff Activity Logs are internal only. They store safe summaries for manual CRM,
 Team Member records are internal workspace user records unless full auth invite/login is configured. Owners/admins can change roles and deactivate/reactivate members. The last active owner is protected from demotion or deactivation.
 
 Role-based staff guidance is UI/readiness only in this beta pass. Owner/Admin, Manager, and Agent work areas are labeled to reduce confusion, but hard route/action enforcement remains controlled by the existing enforcement flags and stays off by default.
+
+Product images use public HTTPS image URLs in this phase. No upload/storage infrastructure is added. Staff can preview product images and manually send a selected product image from Inbox for WhatsApp conversations only.
 
 Safe production-beta defaults remain:
 

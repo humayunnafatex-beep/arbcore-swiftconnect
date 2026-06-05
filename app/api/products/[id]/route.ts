@@ -41,7 +41,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       entityType: "PRODUCT",
       entityId: product.id,
       entityLabel: safeActivityLabel(product.name, product.sku),
-      summary: formatChangeSummary(existing, product, ["name", "sku", "basePrice", "salePrice", "status", "stockNote", "availableSizes"]),
+      summary: formatChangeSummary(existing, product, ["name", "sku", "price", "status", "stockNote", "availableSizes", "imageUrl"]),
       metadataSummary: `Status: ${product.status}`
     });
 

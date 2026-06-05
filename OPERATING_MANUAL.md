@@ -450,6 +450,14 @@ Role guidance is visible in the sidebar, topbar account menu, and Team Members s
 
 Owner and Admin roles are responsible for full app access, settings, billing, provider setup, workspace controls, and team management. Manager is intended for daily operations such as Inbox, Contacts, Orders, Products, Saved Replies, Auto Reply, and Activity Logs. Agent is intended for customer handling through Inbox, Contacts, Orders, and Saved Replies, without being encouraged toward admin/system controls.
 
+## 12J. Product Image Workflow
+
+Products can store a public HTTPS image URL. The Products page shows an image preview when the URL is valid. Empty or invalid image URLs do not block product save; invalid image URLs are ignored.
+
+In Inbox, selecting a product shows the product image preview when available. Staff can manually click Send Product Image to send that image to the customer in a WhatsApp conversation. Product images are never auto-sent when a product is selected, and Messenger image sending is not included in this phase.
+
+No upload or storage system is included yet. If the business needs local product image uploads later, add a safe storage plan before accepting private files or signed URLs.
+
 Phase 1 is text-only. Media saved replies, AI-generated replies, and shortcut auto-insert behavior can be considered later.
 
 ## 13. Support And Maintenance

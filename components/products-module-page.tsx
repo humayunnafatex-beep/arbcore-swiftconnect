@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Archive, ImageIcon, PackageOpen, RefreshCw, Save, Search } from "lucide-react";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
-import { PRODUCT_STATUSES, type ProductStatus } from "@/lib/product-input";
+import { PRODUCT_STATUSES, isPublicProductImageUrl, type ProductStatus } from "@/lib/product-input";
 import { AppShell } from "./app-shell";
 import { DataState, Toast, formatDate, inputClassName, primaryButtonClassName, secondaryButtonClassName, useApiData, useToast } from "./saas-page-utils";
 
@@ -51,6 +51,8 @@ export function ProductsModulePage() {
   }, [status, search]);
   const products = useApiData<ProductsResponse>(`/api/products?${query}`);
   const items = products.data?.products ?? [];
+  const formImageIsValid = isPublicProductImageUrl(form.imageUrl);
+  const formImageHasValue = Boolean(form.imageUrl.trim());
 
   async function saveProduct() {
     setSaving(true);
@@ -147,8 +149,26 @@ export function ProductsModulePage() {
             </select>
             <input className={inputClassName} value={form.availableSizes} onChange={(event) => setForm((current) => ({ ...current, availableSizes: event.target.value }))} placeholder="Sizes: 40, 41, 42" />
             <input className={inputClassName} value={form.stockNote} onChange={(event) => setForm((current) => ({ ...current, stockNote: event.target.value }))} placeholder="Stock note" />
-            <input className={`${inputClassName} xl:col-span-2`} value={form.imageUrl} onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value }))} placeholder="Image URL https://..." />
+            <div className="xl:col-span-2">
+              <input className={inputClassName} value={form.imageUrl} onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value }))} placeholder="Public image URL https://..." />
+              <p className="mt-1 text-xs font-semibold text-slate-500">Use a public HTTPS image URL. Empty or invalid image URLs are ignored during save.</p>
+            </div>
           </div>
+          {formImageHasValue ? (
+            <div className={`mt-3 rounded-[16px] border p-3 ${formImageIsValid ? "border-blue-100 bg-blue-50" : "border-amber-100 bg-amber-50"}`}>
+              {formImageIsValid ? (
+                <div className="flex items-center gap-3">
+                  <img className="h-20 w-20 rounded-[14px] object-cover ring-1 ring-blue-100" src={form.imageUrl} alt="Product image preview" />
+                  <div>
+                    <p className="text-sm font-black text-ink">Image preview</p>
+                    <p className="mt-1 break-all text-xs font-semibold text-slate-500">{form.imageUrl}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm font-bold text-amber-800">Image URL preview unavailable. Save will continue and this invalid image URL will be ignored.</p>
+              )}
+            </div>
+          ) : null}
           <textarea
             className="mt-3 min-h-20 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
             value={form.notes}

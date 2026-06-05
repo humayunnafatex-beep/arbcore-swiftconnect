@@ -304,6 +304,73 @@ export async function sendWhatsAppMediaMessage({
   }
 }
 
+export async function sendWhatsAppMediaUrlMessage({
+  phoneNumberId,
+  accessToken,
+  to,
+  mediaUrl,
+  mediaType,
+  caption,
+  apiVersion = "v20.0"
+}: {
+  phoneNumberId: string;
+  accessToken: string;
+  to: string;
+  mediaUrl: string;
+  mediaType: Extract<WhatsAppMediaType, "image">;
+  caption?: string;
+  apiVersion?: string;
+}): Promise<WhatsAppSendResult> {
+  const normalizedPhone = normalizePhone(to);
+  const trimmedCaption = caption?.trim();
+
+  if (!phoneNumberId || !accessToken) {
+    return { success: false, error: "WhatsApp Cloud API is not configured." };
+  }
+
+  if (!/^\d{8,16}$/.test(normalizedPhone) || !/^https:\/\/\S+$/i.test(mediaUrl)) {
+    return { success: false, error: "Please check phone number and public image URL." };
+  }
+
+  try {
+    const response = await fetch(`https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: normalizedPhone,
+        type: mediaType,
+        image: {
+          link: mediaUrl,
+          ...(trimmedCaption ? { caption: trimmedCaption } : {})
+        }
+      })
+    });
+
+    const responseBody = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: "WhatsApp provider rejected the message.",
+        providerStatus: response.status,
+        providerError: getSafeMetaError(responseBody)
+      };
+    }
+
+    return {
+      success: true,
+      providerMessageId: getProviderMessageId(responseBody)
+    };
+  } catch {
+    return { success: false, error: "WhatsApp provider rejected the message." };
+  }
+}
+
 export async function sendTemplateMessage(
   to: string,
   templateName: string,

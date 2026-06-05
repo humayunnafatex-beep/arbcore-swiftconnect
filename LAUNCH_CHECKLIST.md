@@ -504,6 +504,15 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Docs clearly state role guidance is UI/readiness only while enforcement flags remain off.
 - [ ] No hard enforcement flags are enabled by this release.
 
+## 9C-8. Product Image Workflow QA
+
+- [ ] Products page shows helper text for public HTTPS image URLs.
+- [ ] Valid image URL shows a product preview.
+- [ ] Empty or invalid image URL does not block product save.
+- [ ] Inbox selected product helper shows image preview when the selected product has an image URL.
+- [ ] Send Product Image is manual only and does not trigger on product selection.
+- [ ] WhatsApp product image send logs SENT only after provider success and FAILED on provider error.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

@@ -9,10 +9,7 @@ const productInputSchema = z.object({
   price: z.coerce.number().int().min(0).max(100000000).optional(),
   availableSizes: z.string().trim().max(500).optional(),
   stockNote: z.string().trim().max(500).optional(),
-  imageUrl: z.string().trim().max(1000).optional().refine(
-    (value) => !value || /^https?:\/\/\S+$/i.test(value),
-    "Image URL must start with http:// or https://."
-  ),
+  imageUrl: z.string().trim().max(1000).optional(),
   status: z.string().trim().optional(),
   notes: z.string().trim().max(2000).optional()
 });
@@ -21,7 +18,7 @@ export type ProductInput = z.infer<typeof productInputSchema>;
 
 export function validateProductInput(input: unknown) {
   const parsed = productInputSchema.parse(input);
-  const imageUrl = parsed.imageUrl ?? "";
+  const imageUrl = normalizeProductImageUrl(parsed.imageUrl);
 
   return {
     name: parsed.name,
@@ -33,6 +30,17 @@ export function validateProductInput(input: unknown) {
     status: normalizeProductStatus(parsed.status),
     notes: parsed.notes ?? ""
   };
+}
+
+export function normalizeProductImageUrl(value: string | null | undefined) {
+  const url = value?.trim() ?? "";
+  if (!url) return "";
+  return isPublicProductImageUrl(url) ? url : "";
+}
+
+export function isPublicProductImageUrl(value: string | null | undefined) {
+  const url = value?.trim() ?? "";
+  return /^https:\/\/\S+$/i.test(url);
 }
 
 export function normalizeProductStatus(value: string | null | undefined): ProductStatus {

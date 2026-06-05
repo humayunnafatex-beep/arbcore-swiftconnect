@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Cable, ClipboardList, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
+import { Cable, ClipboardList, ImageIcon, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
 import { parseTags, stringifyTags } from "@/lib/contact-tags";
@@ -255,6 +255,7 @@ type Product = {
   price: number;
   availableSizes: string;
   stockNote: string;
+  imageUrl: string;
 };
 
 type ProductsResponse = {
@@ -355,6 +356,7 @@ export function InboxModulePage() {
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
+  const [productImageSending, setProductImageSending] = useState(false);
   const [savedReplies, setSavedReplies] = useState<SavedReply[]>([]);
   const [savedReplyLoading, setSavedReplyLoading] = useState(false);
   const [savedReplyError, setSavedReplyError] = useState<string | null>(null);
@@ -705,6 +707,75 @@ export function InboxModulePage() {
       setReplyProviderError(null);
     } finally {
       setReplySending(false);
+    }
+  }
+
+  async function sendSelectedProductImage() {
+    if (!detail || !selectedProduct) return;
+
+    setReplyStatus(null);
+    setReplyError(null);
+    setReplyProviderError(null);
+
+    if (detail.conversation.channel !== "WHATSAPP") {
+      setReplyStatus("validation_failed");
+      setReplyError("Product image sending is available for WhatsApp conversations only in this phase.");
+      return;
+    }
+
+    if (!selectedProduct.imageUrl) {
+      setReplyStatus("validation_failed");
+      setReplyError("Selected product has no image URL.");
+      return;
+    }
+
+    if (!/^https:\/\/\S+$/i.test(selectedProduct.imageUrl)) {
+      setReplyStatus("validation_failed");
+      setReplyError("Selected product image must use a public HTTPS image URL.");
+      return;
+    }
+
+    setProductImageSending(true);
+
+    try {
+      const body = replyBody.trim() || selectedProduct.name;
+      const response = await fetch("/api/inbox/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: detail.conversation.channel,
+          contactKey: detail.conversation.contactKey,
+          body,
+          mediaUrl: selectedProduct.imageUrl,
+          mediaType: "image",
+          mediaLabel: selectedProduct.name
+        })
+      });
+      const result = (await response.json()) as ReplyResponse;
+      setReplyStatus(result.status);
+      setReplyProviderError(formatProviderError(result.providerError));
+
+      if (!response.ok || !result.success || result.status !== "sent_successfully") {
+        setReplyError(result.error || replyStatusText[result.status] || "Product image was not sent.");
+        if (selectedId && result.status !== "validation_failed") {
+          await loadConversationDetail(selectedId).catch(() => undefined);
+          await loadConversations().catch(() => undefined);
+        }
+        return;
+      }
+
+      setReplyBody("");
+      clearReplyAttachment();
+      if (selectedId) {
+        await loadConversationDetail(selectedId);
+        await loadConversations();
+      }
+    } catch (requestError) {
+      setReplyStatus("provider_error");
+      setReplyError(getApiErrorMessage(requestError));
+      setReplyProviderError(null);
+    } finally {
+      setProductImageSending(false);
     }
   }
 
@@ -1406,10 +1477,37 @@ export function InboxModulePage() {
                     </select>
                     {selectedProduct ? (
                       <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-semibold leading-5 text-slate-600 lg:col-span-3">
-                        <p className="font-black text-ink">Selected product helper</p>
-                        <p>Available sizes: {selectedProduct.availableSizes || "N/A"}</p>
-                        <p>Stock note: {selectedProduct.stockNote || "No stock note"}</p>
-                        <p className="mt-1 text-slate-500">Model, size, and price remain editable. Selecting a product does not reserve or reduce inventory.</p>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex min-w-0 gap-3">
+                            {selectedProduct.imageUrl ? (
+                              <img className="h-20 w-20 shrink-0 rounded-[14px] object-cover ring-1 ring-blue-100" src={selectedProduct.imageUrl} alt="Selected product preview" />
+                            ) : (
+                              <span className="grid h-20 w-20 shrink-0 place-items-center rounded-[14px] bg-white text-royal ring-1 ring-blue-100">
+                                <ImageIcon className="h-6 w-6" />
+                              </span>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-black text-ink">Selected product helper</p>
+                              <p>Available sizes: {selectedProduct.availableSizes || "N/A"}</p>
+                              <p>Stock note: {selectedProduct.stockNote || "No stock note"}</p>
+                              <p className="mt-1 text-slate-500">Model, size, and price remain editable. Selecting a product does not reserve or reduce inventory.</p>
+                              {selectedProduct.imageUrl ? (
+                                <p className="mt-1 break-all text-slate-500">Image URL: {selectedProduct.imageUrl}</p>
+                              ) : (
+                                <p className="mt-1 text-amber-700">No product image URL saved.</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            className={`${secondaryButtonClassName} shrink-0 justify-center text-xs`}
+                            type="button"
+                            onClick={() => void sendSelectedProductImage()}
+                            disabled={productImageSending || replySending}
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                            {productImageSending ? "Sending..." : "Send Product Image"}
+                          </button>
+                        </div>
                       </div>
                     ) : null}
                     <input className={`${inputClassName} w-full`} value={orderForm.modelName} onChange={(event) => setOrderForm((current) => ({ ...current, modelName: event.target.value }))} placeholder="Model name" />

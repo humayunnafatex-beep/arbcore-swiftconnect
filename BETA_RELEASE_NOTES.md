@@ -142,3 +142,10 @@ Stabilize beta testing with 2-5 controlled users, then proceed to campaign/templ
 - Added role-oriented UI guidance in the sidebar, account menu, and Team Members settings.
 - Owner/Admin, Manager, and Agent responsibilities are explained without enabling hard enforcement.
 - Enforcement flags remain off by default for beta stability.
+
+## Product Image Workflow
+
+- Products now show clearer public HTTPS image URL guidance and preview.
+- Inbox selected product helper now shows product image preview when available.
+- Staff can manually send a selected product image in WhatsApp conversations. Images are never auto-sent.
+- No upload/storage infrastructure was added; product images remain URL-based.
