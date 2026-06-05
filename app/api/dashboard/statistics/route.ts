@@ -12,22 +12,6 @@ type DashboardWarning = {
   message: string;
 };
 
-type ConversationStateMetric = {
-  channel: string;
-  contactKey: string;
-  status: string;
-  assignedToId: string | null;
-  followUpAt: Date | null;
-  followUpDone: boolean;
-};
-
-type ConversationMessageMetric = {
-  channel: string;
-  providerMessageId: string | null;
-  contact: { phone: string } | null;
-  whatsappAccount: { phoneNumber: string } | null;
-};
-
 const optionalMetricMessage = "Metrics are temporarily unavailable. Production migrations may be pending.";
 
 export async function GET() {
@@ -57,18 +41,7 @@ export async function GET() {
     });
 
     const messageHealthPromise = safeMetricGroup("messageHealth", warnings, async () => {
-      const [
-        messagesSentToday,
-        totalMessages,
-        failedMessages,
-        sentMessages,
-        receivedMessages,
-        attemptedMessages,
-        whatsappMessages,
-        messengerMessages,
-        inboundMessages,
-        outboundMessages
-      ] = await Promise.all([
+      const [messagesSentToday, totalMessages, statusGroups, channelGroups, directionGroups] = await Promise.all([
         prisma.messageLog.count({
           where: {
             companyId,
@@ -78,27 +51,37 @@ export async function GET() {
           }
         }),
         prisma.messageLog.count({ where: { companyId } }),
-        prisma.messageLog.count({ where: { companyId, status: "FAILED" } }),
-        prisma.messageLog.count({ where: { companyId, status: { in: ["SENT", "DELIVERED", "READ"] } } }),
-        prisma.messageLog.count({ where: { companyId, status: "RECEIVED" } }),
-        prisma.messageLog.count({ where: { companyId, status: "QUEUED" } }),
-        prisma.messageLog.count({ where: { companyId, channel: "WHATSAPP" } }),
-        prisma.messageLog.count({ where: { companyId, channel: "MESSENGER" } }),
-        prisma.messageLog.count({ where: { companyId, direction: "INBOUND" } }),
-        prisma.messageLog.count({ where: { companyId, direction: "OUTBOUND" } })
+        prisma.messageLog.groupBy({
+          by: ["status"],
+          where: { companyId },
+          _count: { _all: true }
+        }),
+        prisma.messageLog.groupBy({
+          by: ["channel"],
+          where: { companyId },
+          _count: { _all: true }
+        }),
+        prisma.messageLog.groupBy({
+          by: ["direction"],
+          where: { companyId },
+          _count: { _all: true }
+        })
       ]);
+      const countByStatus = new Map(statusGroups.map((group) => [group.status, group._count._all]));
+      const countByChannel = new Map(channelGroups.map((group) => [group.channel, group._count._all]));
+      const countByDirection = new Map(directionGroups.map((group) => [group.direction, group._count._all]));
 
       return {
         messagesSentToday,
         totalMessages,
-        failedMessages,
-        sentMessages,
-        receivedMessages,
-        attemptedMessages,
-        whatsappMessages,
-        messengerMessages,
-        inboundMessages,
-        outboundMessages
+        failedMessages: countByStatus.get("FAILED") ?? 0,
+        sentMessages: (countByStatus.get("SENT") ?? 0) + (countByStatus.get("DELIVERED") ?? 0) + (countByStatus.get("READ") ?? 0),
+        receivedMessages: countByStatus.get("RECEIVED") ?? 0,
+        attemptedMessages: countByStatus.get("QUEUED") ?? 0,
+        whatsappMessages: countByChannel.get("WHATSAPP") ?? 0,
+        messengerMessages: countByChannel.get("MESSENGER") ?? 0,
+        inboundMessages: countByDirection.get("INBOUND") ?? 0,
+        outboundMessages: countByDirection.get("OUTBOUND") ?? 0
       };
     }, {
       messagesSentToday: 0,
@@ -114,30 +97,34 @@ export async function GET() {
     });
 
     const inboxPromise = safeMetricGroup("inbox", warnings, async () => {
-      const [conversationStates, conversationMessages] = await Promise.all([
-        prisma.conversationState.findMany({
+      const [
+        stateGroups,
+        unassignedConversations,
+        dueFollowUps,
+        upcomingFollowUps,
+        doneFollowUps
+      ] = await Promise.all([
+        prisma.conversationState.groupBy({
+          by: ["status"],
           where: { companyId },
-          select: {
-            channel: true,
-            contactKey: true,
-            status: true,
-            assignedToId: true,
-            followUpAt: true,
-            followUpDone: true
-          }
+          _count: { _all: true }
         }),
-        prisma.messageLog.findMany({
-          where: { companyId, channel: { in: ["WHATSAPP", "MESSENGER"] } },
-          select: {
-            channel: true,
-            providerMessageId: true,
-            contact: { select: { phone: true } },
-            whatsappAccount: { select: { phoneNumber: true } }
-          }
-        })
+        prisma.conversationState.count({ where: { companyId, assignedToId: null } }),
+        prisma.conversationState.count({ where: { companyId, followUpAt: { lte: new Date() }, followUpDone: false } }),
+        prisma.conversationState.count({ where: { companyId, followUpAt: { gt: new Date() }, followUpDone: false } }),
+        prisma.conversationState.count({ where: { companyId, followUpDone: true } })
       ]);
+      const countByStatus = new Map(stateGroups.map((group) => [group.status, group._count._all]));
 
-      return getInboxMetrics(conversationStates, conversationMessages);
+      return {
+        openConversations: countByStatus.get("OPEN") ?? 0,
+        pendingConversations: countByStatus.get("PENDING") ?? 0,
+        closedConversations: countByStatus.get("CLOSED") ?? 0,
+        unassignedConversations,
+        dueFollowUps,
+        upcomingFollowUps,
+        doneFollowUps
+      };
     }, {
       openConversations: 0,
       pendingConversations: 0,
@@ -183,28 +170,28 @@ export async function GET() {
     });
 
     const contactsPromise = safeMetricGroup("contacts", warnings, async () => {
-      const [
-        contactCount,
-        hotLeads,
-        activeContacts,
-        newLeads,
-        interestedLeads,
-        orderedContacts,
-        followUpContacts
-      ] = await Promise.all([
+      const [contactCount, activeContacts, stageGroups] = await Promise.all([
         prisma.contact.count({ where: { companyId } }),
-        prisma.contact.count({ where: { companyId, stage: { in: ["NEW_LEAD", "INTERESTED", "FOLLOW_UP"] } } }),
         prisma.contact.count({ where: { companyId, doNotContact: false, optedIn: true } }),
-        prisma.contact.count({ where: { companyId, stage: "NEW_LEAD" } }),
-        prisma.contact.count({ where: { companyId, stage: "INTERESTED" } }),
-        prisma.contact.count({ where: { companyId, stage: { in: ["ORDERED", "DELIVERED", "WON"] } } }),
-        prisma.contact.count({ where: { companyId, stage: "FOLLOW_UP" } })
+        prisma.contact.groupBy({
+          by: ["stage"],
+          where: { companyId },
+          _count: { _all: true }
+        })
       ]);
+      const countByStage = new Map(stageGroups.map((group) => [group.stage, group._count._all]));
+      const newLeads = countByStage.get("NEW_LEAD") ?? 0;
+      const interestedLeads = countByStage.get("INTERESTED") ?? 0;
+      const followUpContacts = countByStage.get("FOLLOW_UP") ?? 0;
+      const orderedContacts =
+        (countByStage.get("ORDERED") ?? 0) +
+        (countByStage.get("DELIVERED") ?? 0) +
+        (countByStage.get("WON") ?? 0);
 
       return {
         contacts: contactCount,
         totalContacts: contactCount,
-        hotLeads,
+        hotLeads: newLeads + interestedLeads + followUpContacts,
         activeContacts,
         newLeads,
         interestedLeads,
@@ -247,48 +234,46 @@ export async function GET() {
 
     const ordersPromise = safeMetricGroup("orders", warnings, async () => {
       const [
-        draftOrders,
-        confirmedOrders,
-        packedOrders,
-        shippedOrders,
-        deliveredOrders,
-        cancelledOrders,
+        orderStatusGroups,
+        paymentStatusGroups,
         dueOrderFollowUps,
         upcomingOrderFollowUps,
         doneOrderFollowUps,
-        unpaidOrders,
-        codOrders,
         totalOrderValue
       ] = await Promise.all([
-        prisma.order.count({ where: { companyId, orderStatus: "DRAFT" } }),
-        prisma.order.count({ where: { companyId, orderStatus: "CONFIRMED" } }),
-        prisma.order.count({ where: { companyId, orderStatus: "PACKED" } }),
-        prisma.order.count({ where: { companyId, orderStatus: "SHIPPED" } }),
-        prisma.order.count({ where: { companyId, orderStatus: "DELIVERED" } }),
-        prisma.order.count({ where: { companyId, orderStatus: "CANCELLED" } }),
+        prisma.order.groupBy({
+          by: ["orderStatus"],
+          where: { companyId },
+          _count: { _all: true }
+        }),
+        prisma.order.groupBy({
+          by: ["paymentStatus"],
+          where: { companyId },
+          _count: { _all: true }
+        }),
         prisma.order.count({ where: { companyId, followUpAt: { lte: new Date() }, followUpDone: false } }),
         prisma.order.count({ where: { companyId, followUpAt: { gt: new Date() }, followUpDone: false } }),
         prisma.order.count({ where: { companyId, followUpDone: true } }),
-        prisma.order.count({ where: { companyId, paymentStatus: "UNPAID" } }),
-        prisma.order.count({ where: { companyId, paymentStatus: "COD" } }),
         prisma.order.aggregate({
           where: { companyId, orderStatus: { in: ["CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"] } },
           _sum: { totalAmount: true }
         })
       ]);
+      const countByOrderStatus = new Map(orderStatusGroups.map((group) => [group.orderStatus, group._count._all]));
+      const countByPaymentStatus = new Map(paymentStatusGroups.map((group) => [group.paymentStatus, group._count._all]));
 
       return {
-        draftOrders,
-        confirmedOrders,
-        packedOrders,
-        shippedOrders,
-        deliveredOrders,
-        cancelledOrders,
+        draftOrders: countByOrderStatus.get("DRAFT") ?? 0,
+        confirmedOrders: countByOrderStatus.get("CONFIRMED") ?? 0,
+        packedOrders: countByOrderStatus.get("PACKED") ?? 0,
+        shippedOrders: countByOrderStatus.get("SHIPPED") ?? 0,
+        deliveredOrders: countByOrderStatus.get("DELIVERED") ?? 0,
+        cancelledOrders: countByOrderStatus.get("CANCELLED") ?? 0,
         dueOrderFollowUps,
         upcomingOrderFollowUps,
         doneOrderFollowUps,
-        unpaidOrders,
-        codOrders,
+        unpaidOrders: countByPaymentStatus.get("UNPAID") ?? 0,
+        codOrders: countByPaymentStatus.get("COD") ?? 0,
         totalOrderValue: totalOrderValue._sum.totalAmount ?? 0
       };
     }, {
@@ -462,32 +447,6 @@ async function safeMetricGroup<T>(
     });
     return fallback;
   }
-}
-
-function getInboxMetrics(
-  conversationStates: ConversationStateMetric[],
-  conversationMessages: ConversationMessageMetric[]
-) {
-  const stateByConversation = new Map(conversationStates.map((state) => [`${state.channel}:${state.contactKey}`, state]));
-  const conversationKeys = new Set<string>();
-
-  for (const message of conversationMessages) {
-    const channel = message.channel === "MESSENGER" ? "MESSENGER" : "WHATSAPP";
-    const contactKey = message.contact?.phone ?? message.whatsappAccount?.phoneNumber ?? message.providerMessageId ?? "unknown";
-    conversationKeys.add(`${channel}:${contactKey}`);
-  }
-
-  const defaultOpenConversations = Array.from(conversationKeys).filter((key) => !stateByConversation.has(key)).length;
-
-  return {
-    openConversations: conversationStates.filter((state) => state.status === "OPEN").length + defaultOpenConversations,
-    pendingConversations: conversationStates.filter((state) => state.status === "PENDING").length,
-    closedConversations: conversationStates.filter((state) => state.status === "CLOSED").length,
-    unassignedConversations: conversationStates.filter((state) => !state.assignedToId).length + defaultOpenConversations,
-    dueFollowUps: conversationStates.filter((state) => state.followUpAt && !state.followUpDone && state.followUpAt.getTime() <= Date.now()).length,
-    upcomingFollowUps: conversationStates.filter((state) => state.followUpAt && !state.followUpDone && state.followUpAt.getTime() > Date.now()).length,
-    doneFollowUps: conversationStates.filter((state) => state.followUpDone).length
-  };
 }
 
 function audienceCriteriaWhere() {
