@@ -394,16 +394,22 @@ export async function GET() {
     });
 
     const workspacePromise = safeMetricGroup("workspace", warnings, async () => {
-      const [teamMembers, aiCreditsUsed, activeSavedReplies] = await Promise.all([
+      const [teamMembers, aiCreditsUsed] = await Promise.all([
         prisma.user.count({ where: { companyId, isActive: true } }),
-        prisma.aiGeneration.count({ where: { companyId } }),
-        prisma.savedReply.count({ where: { companyId, status: "ACTIVE" } })
+        prisma.aiGeneration.count({ where: { companyId } })
       ]);
 
-      return { teamMembers, aiCreditsUsed, activeSavedReplies };
+      return { teamMembers, aiCreditsUsed };
     }, {
       teamMembers: 0,
-      aiCreditsUsed: 0,
+      aiCreditsUsed: 0
+    });
+
+    const savedRepliesPromise = safeMetricGroup("savedReplies", warnings, async () => {
+      const activeSavedReplies = await prisma.savedReply.count({ where: { companyId, status: "ACTIVE" } });
+
+      return { activeSavedReplies };
+    }, {
       activeSavedReplies: 0
     });
 
@@ -417,7 +423,8 @@ export async function GET() {
       orders,
       products,
       billing,
-      workspace
+      workspace,
+      savedReplies
     ] = await Promise.all([
       channelsPromise,
       messageHealthPromise,
@@ -428,7 +435,8 @@ export async function GET() {
       ordersPromise,
       productsPromise,
       billingPromise,
-      workspacePromise
+      workspacePromise,
+      savedRepliesPromise
     ]);
     const dashboardBilling = {
       ...billing.billing,
@@ -448,6 +456,7 @@ export async function GET() {
       ...orders,
       ...products,
       ...workspace,
+      ...savedReplies,
       billing: dashboardBilling,
       warnings,
       apiStatus: warnings.length ? "Degraded" : "Operational"
@@ -464,7 +473,7 @@ async function safeMetricGroup<T>(
   fallback: T
 ) {
   try {
-    return await load();
+    return await withMetricTimeout(load(), module);
   } catch (error) {
     console.error(`Dashboard ${module} metrics failed:`, sanitizeLogMetadata(error));
     warnings.push({
@@ -473,6 +482,15 @@ async function safeMetricGroup<T>(
     });
     return fallback;
   }
+}
+
+function withMetricTimeout<T>(promise: Promise<T>, module: string) {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(`${module} metrics timed out`)), 5000);
+    })
+  ]);
 }
 
 function audienceCriteriaWhere() {
