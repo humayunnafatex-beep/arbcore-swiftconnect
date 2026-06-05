@@ -14,6 +14,7 @@ Major active modules:
 - Unified Inbox CRM, Contacts, Auto Reply, Message Logs, Campaign Drafts, Billing, License, Settings, and workspace readiness tools.
 - Auto Reply Analytics for rule trigger attempts, sent replies, failed replies, and safe failure previews.
 - Customer lead statuses and tags for Contacts and Inbox CRM follow-up.
+- Manual Order Tracking linked to Contacts and Inbox conversations.
 
 Safe production-beta defaults remain:
 
@@ -281,7 +282,7 @@ Keep SQLite for local development only. Production deployments should use Postgr
 - `PRODUCTION_MONITORING_CHECKLIST.md`: daily, weekly, post-deployment, Meta-change, migration, and paid-client monitoring checklist.
 - `DATA_EXPORT_READINESS_PLAN.md`: company-scoped CSV export scope and safety rules for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
 - `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md`: mobile browser QA checklist for Inbox, Message Logs, Contacts, Settings, Auto Reply, and Send Messages.
-- `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, and Auto Reply Analytics.
+- `/exports`: CSV export page for approved workspace data exports, including Contacts, Message Logs, Billing Records, Orders, and Auto Reply Analytics.
 - Contacts exports include lead status and tags. Recommended tags include `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, and `repeat-customer`.
 
 Read-only production verification script:

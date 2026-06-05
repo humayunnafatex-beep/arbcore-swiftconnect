@@ -142,6 +142,32 @@ type ContactResponse = {
   error?: string;
 };
 
+type Order = {
+  id: string;
+  orderNumber: string;
+  modelName: string;
+  size: string;
+  quantity: number;
+  unitPrice: number;
+  deliveryCharge: number;
+  totalAmount: number;
+  customerName: string;
+  customerPhone: string;
+  deliveryAddress: string;
+  paymentStatus: string;
+  orderStatus: string;
+  notes: string;
+  updatedAt: string;
+};
+
+type OrdersResponse = {
+  success: boolean;
+  data?: {
+    orders: Order[];
+  };
+  error?: string;
+};
+
 type ContactForm = {
   name: string;
   email: string;
@@ -154,6 +180,20 @@ const emptyContactForm: ContactForm = {
   email: "",
   status: "NEW_LEAD",
   tags: ""
+};
+
+const emptyOrderForm = {
+  modelName: "",
+  size: "",
+  quantity: "1",
+  unitPrice: "0",
+  deliveryCharge: "0",
+  customerName: "",
+  customerPhone: "",
+  deliveryAddress: "",
+  paymentStatus: "UNPAID",
+  orderStatus: "DRAFT",
+  notes: ""
 };
 
 const contactStages = getContactStatusOptions();
@@ -206,6 +246,10 @@ export function InboxModulePage() {
   const [contactForm, setContactForm] = useState<ContactForm>(emptyContactForm);
   const [contactSaving, setContactSaving] = useState(false);
   const [contactMessage, setContactMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [orderForm, setOrderForm] = useState(emptyOrderForm);
+  const [orderSaving, setOrderSaving] = useState(false);
+  const [orderMessage, setOrderMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const replyFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedConversation = useMemo(
@@ -346,6 +390,25 @@ export function InboxModulePage() {
       followUpAt: toDateTimeLocalValue(detail.conversation.followUpAt),
       followUpDone: detail.conversation.followUpDone
     });
+  }, [detail]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setOrders([]);
+      setOrderForm(emptyOrderForm);
+      return;
+    }
+
+    void loadConversationOrders(selectedId);
+  }, [selectedId]);
+
+  useEffect(() => {
+    const contact = detail?.conversation.contact;
+    setOrderForm((current) => ({
+      ...current,
+      customerName: current.customerName || contact?.name || detail?.conversation.displayName || "",
+      customerPhone: current.customerPhone || contact?.phone || detail?.conversation.contactKey || ""
+    }));
   }, [detail]);
 
   async function sendReply() {
@@ -537,6 +600,47 @@ export function InboxModulePage() {
       setContactMessage({ tone: "error", text: getApiErrorMessage(requestError) });
     } finally {
       setContactSaving(false);
+    }
+  }
+
+  async function loadConversationOrders(conversationId: string) {
+    try {
+      const response = await fetch(`/api/inbox/conversations/${encodeURIComponent(conversationId)}/orders`);
+      const result = (await response.json()) as OrdersResponse;
+      if (!response.ok || !result.success) throw new Error(result.error || "Failed to load conversation orders.");
+      setOrders(result.data?.orders ?? []);
+    } catch {
+      setOrders([]);
+    }
+  }
+
+  async function saveOrderFromConversation() {
+    if (!selectedId) return;
+
+    setOrderSaving(true);
+    setOrderMessage(null);
+
+    try {
+      const response = await fetch(`/api/inbox/conversations/${encodeURIComponent(selectedId)}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...orderForm,
+          quantity: Number(orderForm.quantity),
+          unitPrice: Number(orderForm.unitPrice),
+          deliveryCharge: Number(orderForm.deliveryCharge)
+        })
+      });
+      const result = (await response.json()) as { success: boolean; error?: string };
+      if (!response.ok || !result.success) throw new Error(result.error || "Failed to save order.");
+      setOrderMessage({ tone: "success", text: "Order saved." });
+      setOrderForm(emptyOrderForm);
+      await loadConversationOrders(selectedId);
+      await loadConversations();
+    } catch (error) {
+      setOrderMessage({ tone: "error", text: getApiErrorMessage(error) });
+    } finally {
+      setOrderSaving(false);
     }
   }
 
@@ -769,6 +873,77 @@ export function InboxModulePage() {
                   {(detail.conversation.channel === "WHATSAPP" || detail.conversation.contact) ? (
                     <p className="mt-2 text-xs font-semibold text-slate-500">Tags example: size-42, solm8, facebook, priority</p>
                   ) : null}
+                </div>
+
+                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-black text-ink">Orders</h3>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">Manual order records only. Saving an order does not send a customer message.</p>
+                    </div>
+                    <Link className="text-xs font-black text-royal hover:underline" href="/orders">
+                      Open Orders
+                    </Link>
+                  </div>
+                  {orders.length ? (
+                    <div className="mt-4 grid gap-2 lg:grid-cols-2">
+                      {orders.slice(0, 4).map((order) => (
+                        <article key={order.id} className="rounded-[14px] border border-blue-100 bg-blue-50 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-black text-ink">{order.orderNumber}</p>
+                              <p className="mt-1 text-xs font-semibold text-slate-600">{order.modelName || "No model"} {order.size ? `- ${order.size}` : ""} x {order.quantity}</p>
+                            </div>
+                            <p className="text-sm font-black text-royal">BDT {order.totalAmount.toLocaleString()}</p>
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <StatusPill label={order.paymentStatus} tone={order.paymentStatus === "PAID" ? "green" : order.paymentStatus === "COD" ? "blue" : "gray"} />
+                            <StatusPill label={order.orderStatus} tone={order.orderStatus === "CANCELLED" ? "red" : order.orderStatus === "DELIVERED" ? "green" : "blue"} />
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-4 rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-sm font-semibold text-slate-500">No orders linked to this conversation yet.</p>
+                  )}
+                  <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                    <input className={`${inputClassName} w-full`} value={orderForm.modelName} onChange={(event) => setOrderForm((current) => ({ ...current, modelName: event.target.value }))} placeholder="Model name" />
+                    <input className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))} placeholder="Size" />
+                    <input className={`${inputClassName} w-full`} type="number" min="1" value={orderForm.quantity} onChange={(event) => setOrderForm((current) => ({ ...current, quantity: event.target.value }))} placeholder="Quantity" />
+                    <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.unitPrice} onChange={(event) => setOrderForm((current) => ({ ...current, unitPrice: event.target.value }))} placeholder="Unit price" />
+                    <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.deliveryCharge} onChange={(event) => setOrderForm((current) => ({ ...current, deliveryCharge: event.target.value }))} placeholder="Delivery charge" />
+                    <input className={`${inputClassName} w-full`} value={orderForm.customerName} onChange={(event) => setOrderForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Customer name" />
+                    <input className={`${inputClassName} w-full`} value={orderForm.customerPhone} onChange={(event) => setOrderForm((current) => ({ ...current, customerPhone: event.target.value }))} placeholder="Customer phone" />
+                    <select className={`${inputClassName} w-full`} value={orderForm.paymentStatus} onChange={(event) => setOrderForm((current) => ({ ...current, paymentStatus: event.target.value }))}>
+                      {["UNPAID", "PARTIAL", "PAID", "COD"].map((status) => <option key={status} value={status}>{status}</option>)}
+                    </select>
+                    <select className={`${inputClassName} w-full`} value={orderForm.orderStatus} onChange={(event) => setOrderForm((current) => ({ ...current, orderStatus: event.target.value }))}>
+                      {["DRAFT", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"].map((status) => <option key={status} value={status}>{status}</option>)}
+                    </select>
+                  </div>
+                  <textarea
+                    className="mt-3 min-h-20 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
+                    value={orderForm.deliveryAddress}
+                    onChange={(event) => setOrderForm((current) => ({ ...current, deliveryAddress: event.target.value }))}
+                    placeholder="Delivery address"
+                  />
+                  <textarea
+                    className="mt-3 min-h-20 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
+                    value={orderForm.notes}
+                    onChange={(event) => setOrderForm((current) => ({ ...current, notes: event.target.value }))}
+                    placeholder="Order notes"
+                  />
+                  {orderMessage ? (
+                    <div className={cn("mt-3 rounded-[14px] border p-3 text-sm font-bold", orderMessage.tone === "success" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-rose-100 bg-rose-50 text-rose-700")}>
+                      {orderMessage.text}
+                    </div>
+                  ) : null}
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs font-semibold text-slate-500">Total is calculated server-side as quantity x unit price + delivery charge.</p>
+                    <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => void saveOrderFromConversation()} disabled={orderSaving}>
+                      {orderSaving ? "Saving..." : "Save Order"}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">

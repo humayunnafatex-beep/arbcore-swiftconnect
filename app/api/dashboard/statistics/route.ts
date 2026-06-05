@@ -51,7 +51,15 @@ export async function GET() {
       monthlyMessagesForPlan,
       autoReplyAttempted30d,
       autoReplySent30d,
-      autoReplyFailed30d
+      autoReplyFailed30d,
+      draftOrders,
+      confirmedOrders,
+      shippedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      unpaidOrders,
+      codOrders,
+      totalOrderValue
     ] = await Promise.all([
       prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } }),
       prisma.messageLog.count({
@@ -146,7 +154,18 @@ export async function GET() {
       }),
       prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo } } }),
       prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "SENT" } }),
-      prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "FAILED" } })
+      prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "FAILED" } }),
+      prisma.order.count({ where: { companyId, orderStatus: "DRAFT" } }),
+      prisma.order.count({ where: { companyId, orderStatus: "CONFIRMED" } }),
+      prisma.order.count({ where: { companyId, orderStatus: "SHIPPED" } }),
+      prisma.order.count({ where: { companyId, orderStatus: "DELIVERED" } }),
+      prisma.order.count({ where: { companyId, orderStatus: "CANCELLED" } }),
+      prisma.order.count({ where: { companyId, paymentStatus: "UNPAID" } }),
+      prisma.order.count({ where: { companyId, paymentStatus: "COD" } }),
+      prisma.order.aggregate({
+        where: { companyId, orderStatus: { in: ["CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"] } },
+        _sum: { totalAmount: true }
+      })
     ]);
     const stateByConversation = new Map(conversationStates.map((state) => [`${state.channel}:${state.contactKey}`, state]));
     const conversationKeys = new Set<string>();
@@ -211,6 +230,14 @@ export async function GET() {
       autoReplySent30d,
       autoReplyFailed30d,
       autoReplySuccessRate30d: autoReplyAttempted30d ? Math.round((autoReplySent30d / autoReplyAttempted30d) * 100) : 0,
+      draftOrders,
+      confirmedOrders,
+      shippedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      unpaidOrders,
+      codOrders,
+      totalOrderValue: totalOrderValue._sum.totalAmount ?? 0,
       teamMembers,
       aiCreditsUsed,
       whatsappConfigured: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),

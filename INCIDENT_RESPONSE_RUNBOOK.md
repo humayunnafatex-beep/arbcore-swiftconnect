@@ -102,6 +102,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not mark payment `CONFIRMED` without admin approval. Do not store card data.
 - Escalation: Business/admin owner decides correction.
 
+## Manual Order Record Issue
+
+- Symptoms: Order status, payment status, customer details, delivery address, or total amount looks wrong.
+- Where to check: `/orders`, selected Inbox conversation Orders section, Contacts order count, and Orders CSV export if approved.
+- Safe first action: Confirm the order was manually entered and compare against the customer conversation.
+- What not to do: Do not claim payment, courier, inventory, or customer notification automation. Do not send automatic order messages in Phase 1.
+- Escalation: Business/admin owner decides correction; technical owner checks API/build issues.
+
 ## Data Export Request
 
 - Symptoms: Support, QA, or a beta stakeholder requests CSV evidence for Contacts, Message Logs, Billing Records, or Auto Reply Analytics.

@@ -101,6 +101,8 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Confirm saved access tokens remain hidden after refresh.
 - Use Inbox assignment and follow-up reminders to confirm who owns a conversation.
 - Use Contacts or the Inbox contact card to update lead status and tags during customer follow-up.
+- Use Inbox or Orders to create and update manual order records for customer conversations.
+- Order Tracking Phase 1 does not include payment gateway, courier integration, inventory automation, or automatic customer messages.
 - Recommended tags: `size-40`, `size-41`, `size-42`, `solm8`, `facebook`, `whatsapp`, `priority`, `cod`, `repeat-customer`.
 
 ## Common Issues And Fixes

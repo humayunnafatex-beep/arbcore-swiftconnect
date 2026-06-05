@@ -21,6 +21,8 @@ export type Permission =
   | "team.manage"
   | "license.view"
   | "billing.manage"
+  | "orders.view"
+  | "orders.manage"
   | "whatsapp.manage"
   | "messenger.manage";
 
@@ -42,6 +44,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "team.manage",
     "license.view",
     "billing.manage",
+    "orders.view",
+    "orders.manage",
     "whatsapp.manage",
     "messenger.manage"
   ],
@@ -62,6 +66,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "team.manage",
     "license.view",
     "billing.manage",
+    "orders.view",
+    "orders.manage",
     "whatsapp.manage",
     "messenger.manage"
   ],
@@ -76,6 +82,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "autoReply.manage",
     "campaign.view",
     "campaign.manage",
+    "orders.view",
+    "orders.manage",
     "license.view"
   ],
   AGENT: [
@@ -87,6 +95,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "messages.viewLogs",
     "autoReply.view",
     "campaign.view",
+    "orders.view",
+    "orders.manage",
     "license.view"
   ],
   VIEWER: [
@@ -95,6 +105,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     "messages.viewLogs",
     "autoReply.view",
     "campaign.view",
+    "orders.view",
     "license.view"
   ]
 };

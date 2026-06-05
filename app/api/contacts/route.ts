@@ -37,7 +37,13 @@ export async function GET(request: Request) {
     };
 
     const [items, total] = await Promise.all([
-      prisma.contact.findMany({ where, skip, take: tag ? Math.max(take, 500) : take, orderBy: { createdAt: "desc" } }),
+      prisma.contact.findMany({
+        where,
+        skip,
+        take: tag ? Math.max(take, 500) : take,
+        orderBy: { createdAt: "desc" },
+        include: { _count: { select: { orders: true } } }
+      }),
       prisma.contact.count({ where })
     ]);
 

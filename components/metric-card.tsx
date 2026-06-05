@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Bot, CheckCircle2, Clock, CreditCard, FileText, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, CreditCard, FileText, Inbox, Link as LinkIcon, MessageCircle, MessageSquareText, Send, ShoppingBag, TrendingUp, Users } from "lucide-react";
 import { kpis } from "@/data/dashboard";
 import { apiRequest, getApiErrorMessage } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,14 @@ type DashboardStatistics = {
   autoReplySent30d: number;
   autoReplyFailed30d: number;
   autoReplySuccessRate30d: number;
+  draftOrders: number;
+  confirmedOrders: number;
+  shippedOrders: number;
+  deliveredOrders: number;
+  cancelledOrders: number;
+  unpaidOrders: number;
+  codOrders: number;
+  totalOrderValue: number;
   teamMembers: number;
   aiCreditsUsed: number;
   whatsappConfigured: boolean;
@@ -223,6 +231,14 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
     autoReplySent30d: 0,
     autoReplyFailed30d: 0,
     autoReplySuccessRate30d: 0,
+    draftOrders: 0,
+    confirmedOrders: 0,
+    shippedOrders: 0,
+    deliveredOrders: 0,
+    cancelledOrders: 0,
+    unpaidOrders: 0,
+    codOrders: 0,
+    totalOrderValue: 0,
     whatsappConfigured: false,
     messengerConfigured: false,
     billing: {
@@ -287,6 +303,19 @@ function DashboardSections({ stats, loading }: { stats: DashboardStatistics | nu
           { label: "Inbound", value: data.inboundMessages, href: "/message-logs?direction=INBOUND", icon: Inbox, tone: "blue" },
           { label: "Outbound", value: data.outboundMessages, href: "/message-logs?direction=OUTBOUND", icon: Send, tone: "purple" },
           { label: "Channel Center", value: data.whatsappConfigured || data.messengerConfigured ? 1 : 0, href: "/channels", icon: LinkIcon, tone: "blue", displayValue: "Open" }
+        ]}
+        loading={loading}
+      />
+      <MetricSection
+        title="Order Snapshot"
+        helper={data.unpaidOrders ? "Unpaid orders need payment follow-up." : "No unpaid order follow-up needed."}
+        items={[
+          { label: "Draft", value: data.draftOrders, href: "/orders?status=DRAFT", icon: ShoppingBag, tone: "gray" },
+          { label: "Confirmed", value: data.confirmedOrders, href: "/orders?status=CONFIRMED", icon: CheckCircle2, tone: "green" },
+          { label: "Shipped", value: data.shippedOrders, href: "/orders?status=SHIPPED", icon: Send, tone: "blue" },
+          { label: "Delivered", value: data.deliveredOrders, href: "/orders?status=DELIVERED", icon: CheckCircle2, tone: "green" },
+          { label: "COD", value: data.codOrders, href: "/orders?paymentStatus=COD", icon: CreditCard, tone: "purple" },
+          { label: "Value", value: data.totalOrderValue, href: "/orders", icon: CreditCard, tone: "blue", displayValue: `BDT ${data.totalOrderValue.toLocaleString()}` }
         ]}
         loading={loading}
       />

@@ -1,6 +1,6 @@
 # ARBCore SwiftConnect Operating Manual
 
-ARBCore SwiftConnect is a WhatsApp business workspace for managing contacts, campaigns, message drafts, auto replies, CRM follow-up, and account settings.
+ARBCore SwiftConnect is a WhatsApp business workspace for managing contacts, manual order tracking, campaigns, message drafts, auto replies, CRM follow-up, and account settings.
 
 ## Beta Status
 
@@ -67,7 +67,23 @@ Basic Contacts workflow:
 7. Use the edit button to update details.
 8. Use delete only for test or unwanted contacts.
 
-## 3. Campaigns
+## 3. Orders
+
+Orders tracks simple manual customer order records linked to a Contact or Inbox conversation. It stores product/model name, size, quantity, BDT amount fields, customer delivery details, payment status, order status, and internal notes.
+
+Order statuses are `DRAFT`, `CONFIRMED`, `PACKED`, `SHIPPED`, `DELIVERED`, and `CANCELLED`. Payment statuses are `UNPAID`, `PARTIAL`, `PAID`, and `COD`.
+
+Phase 1 is manual tracking only. There is no payment gateway, courier integration, inventory automation, or automatic customer notification when an order is saved.
+
+Basic order workflow:
+
+1. Open Inbox and select a customer conversation.
+2. In the Orders section, enter model, size, quantity, price, delivery charge, customer details, delivery address, payment status, order status, and notes.
+3. Click Save Order.
+4. Open Orders at `/orders` to filter and update order/payment status.
+5. Use Data Exports to download Orders CSV when approved.
+
+## 4. Campaigns
 
 Campaigns is for planning WhatsApp or Messenger outreach drafts. A campaign stores the campaign name, channel, draft status, audience note, message body, optional template name, optional schedule date, and internal notes.
 
@@ -75,7 +91,7 @@ Campaigns Phase 1 is draft planning only. There is no bulk sending, no broadcast
 
 Campaign audience preview uses Contacts to estimate matching recipients from saved criteria such as contact status, tags, search text, channel preference, and limit. Preview is planning-only and does not send messages.
 
-## 4. Send Messages
+## 5. Send Messages
 
 Send Messages is the message desk. It lets the team select or enter a phone number, write a message, preview the text, and record the send attempt.
 
@@ -99,7 +115,7 @@ WhatsApp test sending stays in Send Messages. Messenger test sending is availabl
 
 After messages are received or sent, open Inbox at `/inbox` for a customer conversation view. Selected conversations include a contact card, reply composer, status dropdown, assignee dropdown, internal note, and follow-up reminder. WhatsApp conversations can create or link a contact from the customer phone number. The Inbox contact card can update customer name, email, lead status, and tags directly from the conversation. Messenger conversations use PSID, so full Messenger identity linking may require a future Messenger PSID contact field. WhatsApp replies require WhatsApp Cloud API configuration, and Messenger replies require a Page Access Token plus a Facebook PSID conversation. Use Message Logs when you need technical provider IDs, webhook summaries, or debug filtering.
 
-## 5. Auto Reply
+## 6. Auto Reply
 
 Auto Reply manages keyword-based replies. A rule contains a trigger keyword, reply message, match mode, priority, and active/inactive status.
 
@@ -134,13 +150,13 @@ Live Auto Reply test workflow:
 
 The app does not fake auto-reply success. It logs `SENT` only after Meta returns success.
 
-## 6. CRM
+## 7. CRM
 
 CRM tracks sales opportunities and customer follow-up. Deals can be organized by lead stage, owner, value, next action, and due date.
 
 Use CRM to move customers from new lead to interested, follow-up, won, or lost so the business team knows what action comes next.
 
-## 7. Settings
+## 8. Settings
 
 Settings controls workspace configuration. Business Profile saves company name, workspace name, WhatsApp number, website, and timezone. WhatsApp/API Settings stores phone number ID, access token, verify token, and webhook URL. Messenger / Page API Settings stores Facebook Page ID, Page Access Token, Messenger Verify Token, and Messenger Webhook URL. Notification and language preferences also save here.
 
@@ -177,7 +193,7 @@ Use `WELZZ_STRIDE_NUMBER_CONNECTION_CHECKLIST.md` as the step-by-step operationa
 10. Check `/whatsapp-logs` for `INBOUND - RECEIVED`.
 11. Create an Auto Reply rule and test a live reply.
 
-## 8. Message Logs
+## 9. Message Logs
 
 Message Logs is the admin-facing test view for recent WhatsApp and Messenger activity. The existing route remains `/whatsapp-logs`, and `/message-logs` is also available as an alias. It shows recent message logs and webhook event summaries without exposing access tokens or secrets.
 
@@ -217,7 +233,7 @@ Use the diagnostics section in Channel Center to see outbound readiness, webhook
 
 The logs page supports filters by channel, direction, status, result limit, and search. Search can be used for phone number, Messenger PSID, message preview, or provider message ID.
 
-## 8A. Data Exports
+## 9A. Data Exports
 
 Data Exports at `/exports` lets approved operators download workspace-scoped CSV files for Contacts, Message Logs, Billing records, and Auto Reply Analytics.
 
@@ -229,6 +245,7 @@ Current export routes:
 2. `/api/exports/message-logs`: Message Logs CSV with optional channel, direction, and status filters.
 3. `/api/exports/billing`: Billing/payment records CSV.
 4. `/api/exports/auto-reply-analytics`: Auto Reply Analytics CSV with optional channel and day-range filters.
+5. `/api/exports/orders`: Orders CSV.
 
 Exports may contain customer or business data such as phone numbers, Messenger PSIDs, message previews, payment notes, and auto-reply previews. Exports do not include access tokens, database URLs, cookies, raw sessions, raw webhook payloads, or provider access tokens. Do not share exported CSV files through public links.
 

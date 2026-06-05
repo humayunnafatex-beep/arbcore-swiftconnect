@@ -19,6 +19,7 @@ import {
   Megaphone,
   Send,
   Settings,
+  ShoppingBag,
   ShieldCheck,
   Sparkles
 } from "lucide-react";
@@ -31,6 +32,7 @@ const navigation = [
   { label: "Channel Center", icon: Cable, href: "/channels" },
   { label: "Inbox", icon: Inbox, href: "/inbox" },
   { label: "Contacts", icon: ContactRound, href: "/contacts" },
+  { label: "Orders", icon: ShoppingBag, href: "/orders" },
   { label: "Campaigns", icon: Send, href: "/campaigns" },
   { label: "Send Messages", icon: MessagesSquare, href: "/send-messages" },
   { label: "Message Logs", icon: ClipboardList, href: "/message-logs" },

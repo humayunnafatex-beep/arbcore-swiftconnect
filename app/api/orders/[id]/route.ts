@@ -1,0 +1,91 @@
+import { Prisma } from "@prisma/client";
+import { ApiError, handleApiError, ok } from "@/lib/api";
+import { requirePermission } from "@/lib/api-guard";
+import { orderInputSchema } from "@/lib/order-input";
+import { calculateOrderTotal, normalizeOrderStatus, normalizePaymentStatus } from "@/lib/order-status";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+type Context = {
+  params: { id: string };
+};
+
+export async function GET(_request: Request, { params }: Context) {
+  try {
+    const { context } = await requirePermission("orders.view");
+    const order = await prisma.order.findFirst({
+      where: { id: params.id, companyId: context.company.id },
+      include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
+    });
+
+    if (!order) throw new ApiError(404, "ORDER_NOT_FOUND", "Order was not found.");
+
+    return ok({ order });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function PATCH(request: Request, { params }: Context) {
+  try {
+    const { context } = await requirePermission("orders.manage");
+    const existing = await prisma.order.findFirst({ where: { id: params.id, companyId: context.company.id } });
+
+    if (!existing) throw new ApiError(404, "ORDER_NOT_FOUND", "Order was not found.");
+
+    const input = orderInputSchema.partial().parse(await request.json().catch(() => null));
+    const contact = input.contactId ? await prisma.contact.findFirstOrThrow({ where: { id: input.contactId, companyId: context.company.id } }) : null;
+    const quantity = input.quantity ?? existing.quantity;
+    const unitPrice = input.unitPrice ?? existing.unitPrice;
+    const deliveryCharge = input.deliveryCharge ?? existing.deliveryCharge;
+    const data: Prisma.OrderUpdateInput = {
+      ...(input.contactId !== undefined ? { contact: contact ? { connect: { id: contact.id } } : { disconnect: true } } : {}),
+      ...(input.channel !== undefined ? { channel: input.channel } : {}),
+      ...(input.customerKey !== undefined ? { customerKey: input.customerKey } : {}),
+      ...(input.orderNumber !== undefined ? { orderNumber: input.orderNumber || existing.orderNumber } : {}),
+      ...(input.modelName !== undefined ? { modelName: input.modelName } : {}),
+      ...(input.size !== undefined ? { size: input.size } : {}),
+      quantity,
+      unitPrice,
+      deliveryCharge,
+      totalAmount: calculateOrderTotal({ quantity, unitPrice, deliveryCharge }),
+      ...(input.customerName !== undefined ? { customerName: input.customerName } : {}),
+      ...(input.customerPhone !== undefined ? { customerPhone: input.customerPhone } : {}),
+      ...(input.deliveryAddress !== undefined ? { deliveryAddress: input.deliveryAddress } : {}),
+      ...(input.paymentStatus !== undefined ? { paymentStatus: normalizePaymentStatus(input.paymentStatus) } : {}),
+      ...(input.orderStatus !== undefined ? { orderStatus: normalizeOrderStatus(input.orderStatus) } : {}),
+      ...(input.notes !== undefined ? { notes: input.notes } : {})
+    };
+
+    const order = await prisma.order.update({
+      where: { id: params.id },
+      data,
+      include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
+    });
+
+    return ok({ order });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function DELETE(_request: Request, { params }: Context) {
+  try {
+    const { context } = await requirePermission("orders.manage");
+    const existing = await prisma.order.findFirst({ where: { id: params.id, companyId: context.company.id } });
+
+    if (!existing) throw new ApiError(404, "ORDER_NOT_FOUND", "Order was not found.");
+
+    const order = await prisma.order.update({
+      where: { id: params.id },
+      data: { orderStatus: "CANCELLED" },
+      include: { contact: { select: { id: true, name: true, phone: true, email: true, stage: true, tags: true } } }
+    });
+
+    return ok({ order, cancelled: true });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}

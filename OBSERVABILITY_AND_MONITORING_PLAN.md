@@ -16,6 +16,7 @@ Current production readiness signals include:
 - `WebhookEvent` summaries for inbound provider activity.
 - Auto Reply Analytics for matched rule attempts, sent replies, failed replies, and safe failure previews.
 - Company-scoped CSV exports for approved support review when screenshots are not enough.
+- Manual order records for customer order workflow checks.
 - `npm.cmd run verify:production` route and environment readiness checks.
 - Channel Center diagnostics at `/channels`.
 - Provider diagnostics at `/admin/provider-diagnostics`.
@@ -62,6 +63,7 @@ Current production readiness signals include:
 - ARBCore Message Logs for channel send/receive status.
 - Auto Reply Analytics for rule-level trigger/send performance.
 - Data Exports at `/exports` for approved CSV exports of Contacts, Message Logs, Billing Records, and Auto Reply Analytics.
+- Orders at `/orders` for manual order status and payment status review.
 - Channel Center for provider setup readiness.
 - Provider Diagnostics for duplicate or missing provider IDs.
 - Optional Sentry later for grouped application exceptions.

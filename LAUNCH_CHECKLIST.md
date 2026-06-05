@@ -100,7 +100,7 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Incident response owner has reviewed `INCIDENT_RESPONSE_RUNBOOK.md`.
 - [ ] `/exports` loads and CSV export access is limited to approved operators.
 - [ ] Exported CSV files are not shared through public links.
-- [ ] Contacts, Message Logs, Billing Records, and Auto Reply Analytics CSV downloads are available from `/exports`.
+- [ ] Contacts, Message Logs, Billing Records, Orders, and Auto Reply Analytics CSV downloads are available from `/exports`.
 - [ ] CSV exports are company-scoped and do not include tokens, raw webhook payloads, cookies, sessions, database URLs, or provider secrets.
 
 ## 2A. Beta Client Onboarding Docs
@@ -293,6 +293,18 @@ For limited local/staging permission enforcement tests, review `AUTH_IMPLEMENTAT
 - [ ] Dashboard shows Channel Activity metrics.
 - [ ] Dashboard shows Auto Reply Performance metrics for the last 30 days.
 - [ ] Dashboard shows Lead Status Snapshot metrics.
+- [ ] Dashboard shows Order Snapshot metrics.
+
+## 5A. Orders QA
+
+- [ ] Orders opens at `/orders`.
+- [ ] Create order from Inbox conversation works.
+- [ ] Order appears in `/orders`.
+- [ ] Order status can update to Draft, Confirmed, Packed, Shipped, Delivered, and Cancelled.
+- [ ] Payment status can update to Unpaid, Partial, Paid, and COD.
+- [ ] Orders CSV export downloads manual order records only.
+- [ ] Saving an order does not send an automatic WhatsApp or Messenger message.
+- [ ] No payment gateway, courier, or inventory automation is presented as active.
 - [ ] Dashboard quick links open filtered Inbox and Message Logs views.
 - [ ] Due follow-up link opens `/inbox?followUp=DUE`.
 - [ ] Failed messages link opens `/message-logs?status=FAILED`.

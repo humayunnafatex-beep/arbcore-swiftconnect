@@ -112,6 +112,7 @@ model Company {
   users           User[]
   whatsappAccounts WhatsAppAccount[]
   contacts        Contact[]
+  orders          Order[]
   campaigns       Campaign[]
   conversations   Conversation[]
   messageLogs     MessageLog[]
@@ -204,6 +205,45 @@ model Contact {
   conversations Conversation[]
   crmDeals      CrmDeal[]
   messageLogs   MessageLog[]
+  orders        Order[]
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  contactId       String?
+  contact         Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  channel         String   @default("WHATSAPP")
+  customerKey     String   @default("")
+
+  orderNumber     String   @default("")
+  modelName       String   @default("")
+  size            String   @default("")
+  quantity        Int      @default(1)
+  unitPrice       Int      @default(0)
+  deliveryCharge  Int      @default(0)
+  totalAmount     Int      @default(0)
+
+  customerName    String   @default("")
+  customerPhone   String   @default("")
+  deliveryAddress String   @default("")
+
+  paymentStatus   String   @default("UNPAID")
+  orderStatus     String   @default("DRAFT")
+
+  notes           String   @default("")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([companyId, createdAt])
+  @@index([companyId, orderStatus])
+  @@index([companyId, paymentStatus])
+  @@index([contactId])
+  @@index([companyId, channel, customerKey])
 }
 
 model Campaign {

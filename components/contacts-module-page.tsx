@@ -28,6 +28,7 @@ type Contact = {
   optedIn: boolean;
   createdAt: string;
   updatedAt: string;
+  _count?: { orders: number };
 };
 
 type ContactStage = ContactStatusValue;
@@ -399,6 +400,7 @@ export function ContactsModulePage() {
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-semibold text-slate-500">
                   <span>Source: {contact.segment ?? "Direct"}</span>
+                  <span>Orders: {contact._count?.orders ?? 0}</span>
                   <span>Updated: {formatDate(contact.updatedAt)}</span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
@@ -418,7 +420,7 @@ export function ContactsModulePage() {
             <table className="min-w-[1120px] w-full text-left">
               <thead className="bg-blue-50/70 text-xs font-black uppercase text-slate-500">
                 <tr>
-                  {["Name", "Phone", "Email", "Source", "Tags", "Status", "Last Contacted", "Created At", "Actions"].map((heading) => (
+                  {["Name", "Phone", "Email", "Source", "Tags", "Status", "Orders", "Last Contacted", "Created At", "Actions"].map((heading) => (
                     <th key={heading} className="px-4 py-3">
                       {heading}
                     </th>
@@ -444,6 +446,7 @@ export function ContactsModulePage() {
                     <td className="px-4 py-4">
                       <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{getContactStatusLabel(contact.stage)}</span>
                     </td>
+                    <td className="px-4 py-4">{contact._count?.orders ?? 0}</td>
                     <td className="px-4 py-4">{formatDate(contact.updatedAt)}</td>
                     <td className="px-4 py-4">{formatDate(contact.createdAt)}</td>
                     <td className="px-4 py-4">

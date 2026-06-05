@@ -17,6 +17,12 @@ const exportCards = [
     description: "Manual payment records for the current workspace. Card data and gateway secrets are not stored or exported.",
     href: "/api/exports/billing",
     button: "Download Billing Records"
+  },
+  {
+    title: "Orders CSV",
+    description: "Manual order records for the current workspace. No payment gateway, courier, or inventory data is exported.",
+    href: "/api/exports/orders",
+    button: "Download Orders"
   }
 ];
 

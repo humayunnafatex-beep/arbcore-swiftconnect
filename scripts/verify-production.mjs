@@ -14,6 +14,7 @@ const checks = [
   "/inbox",
   "/message-logs",
   "/campaigns",
+  "/orders",
   "/billing",
   "/exports",
   "/settings",
@@ -30,6 +31,7 @@ const checks = [
 
 const pendingDeploymentPaths = new Set([
   "/exports",
+  "/orders",
 ]);
 
 const timeoutMs = 15000;
