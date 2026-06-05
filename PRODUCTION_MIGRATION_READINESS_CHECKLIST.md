@@ -44,6 +44,8 @@ npm.cmd run verify:production
 
 The production verifier is read-only. It checks route health and reports environment readiness without printing secrets or database URLs.
 
+If `/api/dashboard/statistics` returns `warnings`, treat them as non-blocking signals that optional metric tables or fields may still need production migration review. Do not reset production. Confirm expected migrations and apply them safely with the approved deploy flow.
+
 ## Migration Application Guidance
 
 - Use the safe Prisma deploy flow for production migrations.
@@ -75,6 +77,7 @@ Then manually check:
 - [ ] Billing loads.
 - [ ] Campaigns loads.
 - [ ] `/api/dashboard/statistics` returns safe JSON.
+- [ ] Dashboard metric warnings, if present, are reviewed against pending production migrations.
 - [ ] `/api/channels/status` returns token presence booleans only.
 - [ ] `/api/auth/me` returns safe auth mapping status only.
 - [ ] No access tokens, database URLs, cookies, or raw sessions are exposed.

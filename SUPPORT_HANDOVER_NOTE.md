@@ -89,6 +89,7 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Use `/exports` to download approved workspace-scoped CSV exports.
 - Check Message Logs for `SENT`, `FAILED`, `RECEIVED`, or `ATTEMPTED`.
 - Check Billing for manual subscription status and payment records when supporting paid beta clients.
+- If Dashboard shows metric warnings, review production migrations before treating it as a user workflow bug.
 - Check Admin Workspaces for workspace summary counts when preparing an external beta client.
 - Use Billing Summary to review confirmed totals, pending totals, last payment, and period status.
 - Use Plan Usage to review report-only limits for contacts, team members, auto replies, monthly messages, inbox conversations, and channels.

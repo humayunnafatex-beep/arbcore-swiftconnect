@@ -24,6 +24,7 @@ Current production readiness signals include:
 - Permission status at `/auth/permissions`.
 - Tenant access status at `/auth/tenant-access`.
 - Dashboard CRM/support metrics.
+- Dashboard metric warnings for optional metric groups that may depend on pending production migrations.
 
 ## What To Monitor
 

@@ -17,6 +17,10 @@ const toneClasses = {
 };
 
 type DashboardStatistics = {
+  warnings?: Array<{
+    module: string;
+    message: string;
+  }>;
   connectedNumbers: number;
   messagesSentToday: number;
   totalMessages: number;
@@ -163,6 +167,12 @@ export function MetricGrid() {
       {error ? (
         <div className="mb-4 rounded-[18px] border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
           Dashboard API error: {error}
+        </div>
+      ) : null}
+      {stats?.warnings?.length ? (
+        <div className="mb-4 rounded-[18px] border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          <p className="font-black">Some metrics are temporarily unavailable.</p>
+          <p className="mt-1">Check production migrations. Dashboard remains available with safe fallback values.</p>
         </div>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-5">

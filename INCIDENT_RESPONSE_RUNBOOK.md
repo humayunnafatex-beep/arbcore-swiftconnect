@@ -78,6 +78,13 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not run `prisma migrate reset`. Do not delete migration rows manually.
 - Escalation: Technical owner decides forward-fix migration or controlled restore.
 
+## Dashboard Metric Warning
+
+- Symptoms: Dashboard loads but shows that some metrics are temporarily unavailable, or `/api/dashboard/statistics` includes a `warnings` array.
+- Where to check: `PRODUCTION_MIGRATION_READINESS_CHECKLIST.md`, recent Prisma migrations, Vercel logs, and Supabase migration status.
+- Safe first action: Identify which optional metric module is warning and confirm whether related production migrations are pending.
+- What not to do: Do not reset production, expose raw Prisma errors, paste database URLs, or hide repeated warnings without migration review.
+
 ## Vercel Deployment Failure
 
 - Symptoms: Build fails, deployment is not Ready, or pages return 500/404 unexpectedly.
