@@ -275,6 +275,12 @@ Temporary Meta tokens expire. Use a fresh temporary token for testing or set up 
 
 Outside the 24-hour customer service window, WhatsApp may require an approved message template. Free-form text messages may be rejected until the customer has recently messaged the business.
 
+### Unsupported Or System Message Type
+
+Meta may deliver system, security, verification, interactive, button, reaction, contact, location, order, sticker, or unknown WhatsApp events that do not contain a normal readable customer text body. ARBCore logs these as safe diagnostics such as `[unsupported: system]`, with message type and short metadata summary only.
+
+Do not rely on WhatsApp Cloud API to read every Meta verification/security code. If a code is not visible as a normal text message, request it through SMS, phone call, email, or an authenticator option. Never share or screenshot access tokens, Authorization headers, raw webhook payloads, or provider secrets.
+
 ## 9A. Media Reply Test From Inbox
 
 WhatsApp Media Send Phase 1 supports media replies from the Inbox after the customer conversation exists.

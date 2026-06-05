@@ -440,6 +440,15 @@ Connecting Welzz Stride real number `01958474577`:
 - [ ] Text messages, WhatsApp text replies, and WhatsApp image/PDF outbound replies still work.
 - [ ] Other inbound media playback/download remains out of scope for this phase.
 
+## 9C-1. Unsupported WhatsApp Message Diagnostics QA
+
+- [ ] Send or wait for a non-text Meta/WhatsApp event if available.
+- [ ] Message Logs show safe body preview such as `[unsupported: system]` when Meta provides a type.
+- [ ] Message Logs show provider message type and safe metadata summary only.
+- [ ] Inbox shows "Unsupported WhatsApp message" as an informational note, not a crash or scary error.
+- [ ] Support confirms Meta verification/security codes should be requested by SMS, phone call, email, or authenticator if WhatsApp Cloud API does not expose readable text.
+- [ ] No raw webhook payload, access token, Authorization header, or provider secret is displayed.
+
 ## 9D. Mobile Browser QA
 
 - [ ] `MOBILE_RESPONSIVENESS_QA_CHECKLIST.md` has been reviewed.

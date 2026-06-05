@@ -162,6 +162,14 @@ Do not expose secrets while collecting evidence. Do not reset production data.
 - What not to do: Do not expose access tokens, Authorization headers, raw Meta media URLs, raw webhook payloads, or downloaded audio files in public tickets.
 - Escalation: Technical owner checks Meta media lookup/download response safely server-side and confirms whether the temporary media is still available.
 
+## Unsupported WhatsApp Message Diagnostic
+
+- Symptoms: Inbox or Message Logs show `[unsupported: TYPE]`, or a Meta/system/security/verification event does not display readable text.
+- Where to check: `/message-logs`, selected Inbox conversation, provider message type, safe metadata summary, Meta app notifications, and the available verification delivery options.
+- Safe first action: Confirm whether the message type is system, interactive, button, reaction, contact, location, order, sticker, or unknown. Use the safe summary only.
+- What not to do: Do not request raw webhook payloads, access tokens, Authorization headers, provider secrets, or screenshots containing tokens. Do not attempt to bypass Meta OTP/security flow or promise that verification codes can be read through WhatsApp Cloud API.
+- Escalation: Technical owner checks whether the parser should support the message type in a future phase. Business/admin owner requests verification codes through SMS, phone call, email, or authenticator when available.
+
 ## Messenger Live Page Failure
 
 - Symptoms: Facebook Page messages do not appear in Inbox or Messenger replies/test-send log `FAILED`.

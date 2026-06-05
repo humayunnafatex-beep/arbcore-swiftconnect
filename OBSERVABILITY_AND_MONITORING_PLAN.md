@@ -126,6 +126,8 @@ For WhatsApp media replies, Message Logs should show a safe body summary such as
 
 For inbound WhatsApp audio playback, evidence should include the Message Logs inbound media badge, safe media type/MIME type, timestamp, and whether `/api/whatsapp/media/[mediaId]` returns a safe error. Never collect or share the access token, Authorization header, raw Meta media URL, raw webhook payload, or downloaded audio file in routine monitoring notes.
 
+For unsupported WhatsApp messages, evidence should include only the safe body preview, provider message type, safe metadata summary, timestamp, and whether the operator expected a normal text message. Meta system/security/verification messages may not expose readable codes through WhatsApp Cloud API. Never collect raw webhook payloads, provider secrets, access tokens, Authorization headers, or screenshots containing tokens.
+
 For Messenger live setup, monitor Message Logs for `MESSENGER / INBOUND / RECEIVED`, `MESSENGER / OUTBOUND / SENT`, and `FAILED` patterns. Evidence should include Page ID presence, PSID used, safe provider error text, and webhook event time only. Never collect Page Access Tokens or Authorization headers.
 
 For Auto Reply Analytics, evidence should include rule name, channel, status, safe preview, timestamp, and safe error summary only. Never collect full webhook payloads, provider Authorization headers, or access tokens.

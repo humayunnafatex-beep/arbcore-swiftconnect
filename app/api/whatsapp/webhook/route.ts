@@ -98,6 +98,8 @@ export async function POST(request: Request) {
           direction: "INBOUND",
           status: "RECEIVED",
           providerMessageId: message.id,
+          providerMessageType: message.type,
+          providerMetadataSummary: getProviderMetadataSummary(message),
           mediaId: message.media?.id ?? "",
           mediaType: message.media?.type ?? "",
           mediaMimeType: message.media?.mimeType ?? "",
@@ -231,8 +233,38 @@ function getInboundMessageBody(message: { text?: string; type: string; media?: {
     case "video":
       return "[video] Video message";
     default:
-      return `[${message.type} message]`;
+      return `[unsupported: ${message.type || "unknown"}]`;
   }
+}
+
+function getProviderMetadataSummary(message: {
+  type: string;
+  hasContext?: boolean;
+  errors?: Array<{
+    code?: string | number;
+    title?: string;
+    message?: string;
+  }>;
+}) {
+  const parts = [
+    `type=${message.type || "unknown"}`,
+    `has_context=${Boolean(message.hasContext)}`,
+    `has_errors=${Boolean(message.errors?.length)}`
+  ];
+
+  for (const error of message.errors ?? []) {
+    const errorParts = [
+      error.code !== undefined ? `code=${error.code}` : null,
+      error.title ? `title=${previewText(error.title, 80)}` : null,
+      error.message ? `message=${previewText(error.message, 120)}` : null
+    ].filter(Boolean);
+
+    if (errorParts.length) {
+      parts.push(`error(${errorParts.join(", ")})`);
+    }
+  }
+
+  return previewText(parts.join("; "), 360);
 }
 
 async function findOrCreateWebhookContact({

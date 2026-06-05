@@ -75,6 +75,8 @@ For Beta outcome evaluation, use `BETA_V1_SUCCESS_CRITERIA_AND_EXIT_PLAN.md`.
 - Auto Reply now includes a text-only Template Library. Users can select a template, review the pre-filled rule, then save it as active.
 - Recommended first template rules are `price`, `size`, `order`, `delivery`, `cod`, and `support`.
 - Failed auto replies should be reviewed from Auto Reply Analytics and cross-checked in Message Logs.
+- Unsupported WhatsApp system/security/verification/interactive message types are logged with safe diagnostics such as `[unsupported: system]`, provider message type, and short metadata summary only.
+- Meta verification codes may not be readable through WhatsApp Cloud API. Request codes by SMS, phone call, email, or authenticator when available.
 - Open Billing and confirm manual subscription/payment tracking works without gateway automation.
 - Confirm Billing Summary separates `CONFIRMED` and `PENDING` payment totals.
 - Confirm Plan Usage shows limits without blocking over-limit usage.

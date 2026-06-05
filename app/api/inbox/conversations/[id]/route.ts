@@ -77,6 +77,8 @@ export async function GET(
           body: previewText(message.body, 1000),
           bodyPreview: previewText(message.body),
           providerMessageId: message.providerMessageId,
+          providerMessageType: message.providerMessageType,
+          providerMetadataSummary: message.providerMetadataSummary,
           errorMessage: message.errorMessage,
           mediaId: message.mediaId,
           mediaType: message.mediaType,

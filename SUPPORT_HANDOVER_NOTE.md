@@ -283,6 +283,13 @@ The product uses provider-backed sending for Meta channels. It does not fake Wha
 - Failed auto replies should be reviewed in Auto Reply Analytics first, then cross-checked in Message Logs for channel/provider status.
 - Analytics stores previews only. Do not request access tokens, Authorization headers, raw webhook payloads, or full customer message exports for routine support.
 
+### Unsupported WhatsApp Messages
+
+- Meta may send system, security, verification, interactive, button, reaction, contact, location, order, sticker, or unknown WhatsApp message types that do not include a normal customer text body.
+- ARBCore logs these as safe diagnostics such as `[unsupported: system]` and shows the provider message type plus a short safe summary in Message Logs and Inbox.
+- Do not request raw webhook payloads, access tokens, Authorization headers, or screenshots that show provider secrets.
+- Do not promise that Meta verification/security codes can be read through WhatsApp Cloud API. Ask the user to request the code by SMS, phone call, email, or authenticator when available.
+
 ## Safety Rules
 
 - Do not share access tokens.

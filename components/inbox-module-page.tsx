@@ -72,6 +72,8 @@ type InboxMessage = {
   body: string;
   bodyPreview: string;
   providerMessageId: string | null;
+  providerMessageType: string;
+  providerMetadataSummary: string;
   errorMessage: string | null;
   mediaId: string;
   mediaType: string;
@@ -1226,6 +1228,22 @@ export function InboxModulePage() {
                           )}
                         >
                           <p className="whitespace-pre-wrap leading-6">{message.body || message.bodyPreview}</p>
+                          {isUnsupportedWhatsAppMessage(message) ? (
+                            <div className="mt-3 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-amber-900">
+                              <p className="text-xs font-black uppercase">Unsupported WhatsApp message</p>
+                              <p className="mt-1 text-xs font-bold">
+                                Type: {message.providerMessageType || "unknown"}
+                              </p>
+                              {message.providerMetadataSummary ? (
+                                <p className="mt-1 text-xs font-semibold">
+                                  Safe provider summary: {message.providerMetadataSummary}
+                                </p>
+                              ) : null}
+                              <p className="mt-2 text-xs font-semibold leading-5">
+                                Some Meta verification or security messages may not be readable through WhatsApp Cloud API. Use SMS, phone call, email, or an authenticator for verification codes.
+                              </p>
+                            </div>
+                          ) : null}
                           {message.direction === "INBOUND" && message.mediaType === "audio" && message.mediaId ? (
                             <div className="mt-3 rounded-[14px] bg-blue-50 p-3">
                               <p className="mb-2 text-xs font-black uppercase text-royal">Audio message</p>
@@ -1343,6 +1361,10 @@ export function InboxModulePage() {
       </section>
     </AppShell>
   );
+}
+
+function isUnsupportedWhatsAppMessage(message: InboxMessage) {
+  return message.direction === "INBOUND" && message.body.startsWith("[unsupported:");
 }
 
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {

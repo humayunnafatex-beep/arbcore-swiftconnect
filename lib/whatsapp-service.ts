@@ -12,6 +12,12 @@ export type ParsedWhatsAppEvent = {
     timestamp?: string;
     type: string;
     text?: string;
+    hasContext?: boolean;
+    errors?: Array<{
+      code?: string | number;
+      title?: string;
+      message?: string;
+    }>;
     media?: {
       id?: string;
       type?: string;
@@ -339,6 +345,8 @@ export function parseWebhookEvent(payload: unknown): ParsedWhatsAppEvent {
             timestamp: typeof message.timestamp === "string" ? message.timestamp : undefined,
             type: messageType,
             text,
+            hasContext: isRecord(message.context),
+            errors: getInboundMessageErrors(message),
             media: getInboundMediaMetadata(message, messageType)
           });
         }
@@ -442,6 +450,24 @@ function getInboundMediaMetadata(message: Record<string, unknown>, type: string)
   };
 }
 
+function getInboundMessageErrors(message: Record<string, unknown>) {
+  if (!Array.isArray(message.errors)) {
+    return undefined;
+  }
+
+  const errors = message.errors
+    .filter(isRecord)
+    .slice(0, 3)
+    .map((error) => ({
+      code: getStringOrNumber(error.code),
+      title: limitText(getString(error.title), 120),
+      message: limitText(getString(error.message), 180)
+    }))
+    .filter((error) => error.code !== undefined || error.title || error.message);
+
+  return errors.length ? errors : undefined;
+}
+
 export function getSafeWhatsAppProviderErrorSummary(providerError?: SafeWhatsAppProviderError) {
   if (!providerError) {
     return "WhatsApp provider rejected the message.";
@@ -479,6 +505,12 @@ function getString(value: unknown) {
 
 function getStringOrNumber(value: unknown) {
   return typeof value === "string" || typeof value === "number" ? value : undefined;
+}
+
+function limitText(value: string | undefined, maxLength: number) {
+  if (!value) return undefined;
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 3)}...` : normalized;
 }
 
 function safeCompare(a: string, b: string) {

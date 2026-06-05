@@ -402,6 +402,12 @@ Inbound WhatsApp audio playback is supported in Inbox for received audio/voice m
 
 Audio playback is proxied through `/api/whatsapp/media/[mediaId]`. Other inbound media types may store safe metadata, but playback/download for image, document, and video can remain a later phase.
 
+## 12C. Unsupported WhatsApp Message Diagnostics
+
+Some Meta system, security, verification, interactive, button, reaction, contact, location, order, sticker, or unknown WhatsApp events may arrive through the webhook but not contain a normal customer text body. ARBCore records these as safe unsupported message diagnostics such as `[unsupported: system]` with the Meta message type and a short non-sensitive summary.
+
+These diagnostics are for support visibility only. ARBCore does not expose raw webhook payloads, Authorization headers, access tokens, or provider secrets. Meta verification/security codes may not be readable through WhatsApp Cloud API; request codes through SMS, phone call, email, or an authenticator when available.
+
 ## 13. Support And Maintenance
 
 Before each release, run the launch checklist in `LAUNCH_CHECKLIST.md`, confirm Vercel deployment readiness, and verify the critical flows in production.

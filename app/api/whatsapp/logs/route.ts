@@ -61,6 +61,8 @@ export async function GET(request: Request) {
           bodyPreview: previewText(message.body),
           status: message.status,
           providerMessageId: message.providerMessageId,
+          providerMessageType: message.providerMessageType,
+          providerMetadataSummary: message.providerMetadataSummary,
           providerStatus: message.status,
           errorMessage: message.errorMessage,
           mediaId: message.mediaId,
@@ -119,6 +121,8 @@ function buildMessageWhere({
           OR: [
             { body: { contains: search, mode: "insensitive" } },
             { providerMessageId: { contains: search, mode: "insensitive" } },
+            { providerMessageType: { contains: search, mode: "insensitive" } },
+            { providerMetadataSummary: { contains: search, mode: "insensitive" } },
             { contact: { phone: { contains: search, mode: "insensitive" } } },
             { whatsappAccount: { phoneNumber: { contains: search, mode: "insensitive" } } }
           ]
@@ -181,13 +185,42 @@ function summarizeWebhookPayload(payload: unknown) {
   const messageCount = changes.reduce((total, change) => total + (change.value?.messages?.length ?? 0), 0);
   const statusCount = changes.reduce((total, change) => total + (change.value?.statuses?.length ?? 0), 0);
   const contactCount = changes.reduce((total, change) => total + (change.value?.contacts?.length ?? 0), 0);
+  const messageTypes = changes
+    .flatMap((change) => change.value?.messages ?? [])
+    .map((message) => getWebhookMessageType(message))
+    .filter(Boolean);
+  const unsupportedCount = messageTypes.filter((type) => isUnsupportedWhatsAppType(type)).length;
+  const typeSummary = summarizeMessageTypes(messageTypes);
   const fields = [...new Set(changes.map((change) => change.field).filter(Boolean))].join(", ");
   const parts = [
     fields ? `fields: ${fields}` : null,
     messageCount ? `${messageCount} message event${messageCount === 1 ? "" : "s"}` : null,
+    typeSummary ? `types: ${typeSummary}` : null,
+    unsupportedCount ? `${unsupportedCount} unsupported message${unsupportedCount === 1 ? "" : "s"}` : null,
     statusCount ? `${statusCount} status event${statusCount === 1 ? "" : "s"}` : null,
     contactCount ? `${contactCount} contact${contactCount === 1 ? "" : "s"}` : null
   ].filter(Boolean);
 
   return parts.length ? parts.join("; ") : "Webhook event received.";
+}
+
+function getWebhookMessageType(message: unknown) {
+  return message && typeof message === "object" && "type" in message && typeof message.type === "string"
+    ? message.type
+    : "";
+}
+
+function summarizeMessageTypes(types: string[]) {
+  const counts = new Map<string, number>();
+  for (const type of types) {
+    counts.set(type, (counts.get(type) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([type, count]) => `${type}=${count}`)
+    .join(", ");
+}
+
+function isUnsupportedWhatsAppType(type: string) {
+  return !["text", "audio", "image", "document", "video"].includes(type);
 }

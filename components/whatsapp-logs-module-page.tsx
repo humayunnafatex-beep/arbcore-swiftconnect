@@ -23,6 +23,8 @@ type WhatsAppLogMessage = {
   bodyPreview: string;
   status: string;
   providerMessageId: string | null;
+  providerMessageType: string;
+  providerMetadataSummary: string;
   providerStatus: string | null;
   errorMessage: string | null;
   mediaId: string;
@@ -199,6 +201,11 @@ export function WhatsAppLogsModulePage() {
                             Inbound media: {message.mediaType}
                           </span>
                         ) : null}
+                        {isUnsupportedMessage(message) ? (
+                          <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase text-amber-700 ring-1 ring-amber-100">
+                            Unsupported
+                          </span>
+                        ) : null}
                         <span className="text-xs font-bold text-slate-400">{formatDate(message.createdAt)}</span>
                       </div>
                       <p className="mt-3 text-sm font-black text-ink">{message.phone || "No phone recorded"}</p>
@@ -207,9 +214,17 @@ export function WhatsAppLogsModulePage() {
                     <div className="min-w-0 rounded-[16px] bg-blue-50 p-3 text-xs font-semibold text-slate-600 lg:w-72">
                       <p><span className="font-black text-royal">Channel:</span> {message.channel}</p>
                       <p className="mt-1 break-all"><span className="font-black text-royal">Provider ID:</span> {message.providerMessageId || "-"}</p>
+                      {message.providerMessageType ? (
+                        <p className="mt-1"><span className="font-black text-royal">Message Type:</span> {message.providerMessageType}</p>
+                      ) : null}
                       <p className="mt-1"><span className="font-black text-royal">Provider Status:</span> {message.providerStatus || "-"}</p>
                       {message.mediaType ? (
                         <p className="mt-1"><span className="font-black text-royal">Media:</span> {message.mediaType}{message.mediaMimeType ? ` (${message.mediaMimeType})` : ""}</p>
+                      ) : null}
+                      {message.providerMetadataSummary ? (
+                        <p className="mt-2 rounded-[12px] bg-amber-50 p-2 text-amber-800">
+                          <span className="font-black">Safe summary:</span> {message.providerMetadataSummary}
+                        </p>
                       ) : null}
                       {message.errorMessage ? (
                         <p className="mt-2 flex gap-2 rounded-[12px] bg-rose-50 p-2 text-rose-700">
@@ -254,6 +269,10 @@ export function WhatsAppLogsModulePage() {
       {toast ? <Toast {...toast} /> : null}
     </AppShell>
   );
+}
+
+function isUnsupportedMessage(message: WhatsAppLogMessage) {
+  return message.channel === "WHATSAPP" && message.bodyPreview.startsWith("[unsupported:");
 }
 
 function FilterSelect({

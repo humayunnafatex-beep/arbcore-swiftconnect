@@ -362,6 +362,8 @@ model MessageLog {
   mediaSha256       String           @default("")
   mediaFilename     String           @default("")
   providerMessageId String?
+  providerMessageType String         @default("")
+  providerMetadataSummary String     @default("")
   errorMessage      String?
   sentAt            DateTime?
   deliveredAt       DateTime?
