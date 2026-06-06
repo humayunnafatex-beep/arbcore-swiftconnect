@@ -92,7 +92,6 @@ export async function ensureDefaultWorkspace() {
     where: { email: DEMO_EMAIL },
     update: {
       id: DEFAULT_USER_ID,
-      name: "Rasel Ahmed",
       role: "OWNER",
       isActive: true,
       companyId: company.id
@@ -169,6 +168,7 @@ export async function getSafeAuthStatus() {
       prismaUser: {
         exists: true,
         id: mappedUser.id,
+        name: mappedUser.name,
         email: mappedUser.email,
         role: mappedUser.role,
         companyId: mappedUser.companyId,
@@ -212,6 +212,7 @@ export async function getSafeAuthStatus() {
       prismaUser: {
         exists: true,
         id: user.id,
+        name: user.name,
         email: user.email,
         role: user.role,
         companyId: user.companyId,

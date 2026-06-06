@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserCheck, UserMinus, Users } from "lucide-react";
+import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserCheck, UserMinus, UserRound, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
 import { ApiClientError, apiRequest, getApiErrorMessage } from "@/lib/api-client";
@@ -41,6 +41,19 @@ type CompanySettingsResponse = {
   messengerPageAccessToken?: string | null;
   messengerVerifyToken?: string | null;
   messengerWebhookUrl?: string | null;
+};
+
+type ProfileResponse = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  company?: {
+    id: string;
+    name: string;
+    plan: string;
+  };
 };
 type WhatsAppSettings = {
   phoneNumberId: string;
@@ -88,6 +101,26 @@ export function SettingsModulePage() {
   const [teamActionLoading, setTeamActionLoading] = useState<string | null>(null);
   const [savingSection, setSavingSection] = useState<string | null>(null);
   const [creatingMember, setCreatingMember] = useState(false);
+  const [accountProfile, setAccountProfile] = useState<ProfileResponse | null>(null);
+  const [accountName, setAccountName] = useState("");
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState("");
+
+  async function loadAccountProfile() {
+    setAccountLoading(true);
+    setAccountError("");
+
+    try {
+      const response = await apiRequest<ProfileResponse>("/api/account/profile");
+      setAccountProfile(response);
+      setAccountName(response.name ?? "");
+    } catch (error) {
+      setAccountError(getApiErrorMessage(error));
+    } finally {
+      setAccountLoading(false);
+    }
+  }
 
   async function loadTeam() {
     setTeamLoading(true);
@@ -152,6 +185,7 @@ async function loadCompanySettings() {
   }
 }
 useEffect(() => {
+  loadAccountProfile();
   loadCompanySettings();
   loadTeam();
 }, []);
@@ -238,9 +272,34 @@ async function save(section: string) {
   } finally {
     setSavingSection(null);
   }
-}
-  
-async function createTeamMember() {
+  }
+
+  async function saveAccountProfile() {
+    const name = accountName.trim();
+    if (!name) {
+      showToast("Display name is required.", "error");
+      return;
+    }
+
+    setAccountSaving(true);
+    try {
+      const updated = await apiRequest<ProfileResponse>("/api/account/profile", {
+        method: "PATCH",
+        body: JSON.stringify({ name })
+      });
+      setAccountProfile(updated);
+      setAccountName(updated.name ?? "");
+      window.dispatchEvent(new Event("arbcore:profile-updated"));
+      await loadTeam();
+      showToast("Profile display name updated.");
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setAccountSaving(false);
+    }
+  }
+
+  async function createTeamMember() {
   try {
     const name = newMember.name.trim();
     const email = newMember.email.trim().toLowerCase();
@@ -322,6 +381,20 @@ async function createTeamMember() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
+        <div id="account-profile" className="scroll-mt-28 xl:col-span-2">
+        <Panel icon={<UserRound className="h-5 w-5" />} title="Account / Profile" action={<button className={primaryButtonClassName} onClick={saveAccountProfile} disabled={accountSaving || accountLoading}><Save className="h-4 w-4" />{accountSaving ? "Saving..." : "Save Profile"}</button>}>
+          <p className="mb-3 rounded-[16px] bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
+            Update the display name shown in the topbar, profile dropdown, and Team Members list. Email is shown for reference and is not casually editable in beta.
+          </p>
+          {accountError ? <p className="mb-3 rounded-[14px] bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">{accountError}</p> : null}
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr_160px]">
+            <Field label="Display name" value={accountName} onChange={setAccountName} />
+            <Info label="Email" value={accountProfile?.email ?? "Loading..."} />
+            <Info label="Current role" value={accountProfile?.role ?? "OWNER"} />
+          </div>
+        </Panel>
+        </div>
+
         <Panel icon={<Building2 className="h-5 w-5" />} title="Business Profile" action={<button className={primaryButtonClassName} onClick={() => save("Business profile")} disabled={savingSection !== null}><Save className="h-4 w-4" />{savingSection === "Business profile" ? "Saving..." : "Save"}</button>}>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Business name" value={profile.businessName} onChange={(value) => setProfile({ ...profile, businessName: value })} />
@@ -433,7 +506,7 @@ async function createTeamMember() {
             Role-based UI guidance is visible now, but hard permission enforcement remains OFF until `PERMISSIONS_ENFORCED=true` is intentionally enabled and tested.
           </p>
           <p className="mb-3 rounded-[16px] border border-blue-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-600">
-            To update a role, choose the new role and tap Save Role. Deactivate/Reactivate controls change team status only; the last active owner and self-deactivation protections remain enforced.
+            To update a role, choose the new role and tap Save Role. Deactivate / Remove Access changes team status only and does not delete audit history; the last active owner and self-deactivation protections remain enforced.
           </p>
           <div className="grid gap-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4 lg:grid-cols-[1fr_1fr_160px_auto]">
             <Field label="Name" value={newMember.name} onChange={(value) => setNewMember({ ...newMember, name: value })} />
@@ -510,7 +583,7 @@ async function createTeamMember() {
                             disabled={statusActionLoading || isLastActiveOwner}
                           >
                             <UserMinus className="h-4 w-4" />
-                            {statusActionLoading ? "Saving..." : "Deactivate"}
+                            {statusActionLoading ? "Saving..." : "Deactivate / Remove Access"}
                           </button>
                         ) : (
                           <button
@@ -590,7 +663,7 @@ async function createTeamMember() {
                           disabled={statusActionLoading || isLastActiveOwner}
                         >
                           <UserMinus className="h-4 w-4" />
-                          {statusActionLoading ? "Saving..." : "Deactivate"}
+                          {statusActionLoading ? "Saving..." : "Deactivate / Remove Access"}
                         </button>
                       ) : (
                         <button

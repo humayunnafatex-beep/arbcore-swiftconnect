@@ -452,7 +452,7 @@ Role guidance is visible in the sidebar, topbar account menu, and Team Members s
 
 Owner and Admin roles are responsible for full app access, settings, billing, provider setup, workspace controls, and team management. Manager is intended for daily operations such as Inbox, Contacts, Orders, Products, Saved Replies, Auto Reply, and Activity Logs. Agent is intended for customer handling through Inbox, Contacts, Orders, and Saved Replies, without being encouraged toward admin/system controls.
 
-The topbar shows the current role as a visible badge. Open the profile menu for Account/Profile, Manage Team Members, Role & Access guidance, and Logout. Role changes are managed from Settings -> Team Members; choose a role and use Save Role. Owner guidance is informational while beta permission enforcement remains off.
+The topbar shows the current role as a visible badge. Open the profile menu for Account/Profile, Manage Team Members, Role & Access guidance, and Logout. Account/Profile opens the Settings profile section where the current display name can be edited; email remains reference-only in beta. Role changes are managed from Settings -> Team Members; choose a role and use Save Role. Deactivate / Remove Access deactivates the user and preserves audit history. The last active owner cannot be demoted or deactivated, and self-deactivation remains blocked.
 
 ## 12J. Product Image Workflow
 

@@ -39,7 +39,7 @@ Team Member records are internal workspace user records unless full auth invite/
 
 Role-based staff guidance is UI/readiness only in this beta pass. Owner/Admin, Manager, and Agent work areas are labeled to reduce confusion, but hard route/action enforcement remains controlled by the existing enforcement flags and stays off by default.
 
-Topbar role badges and the profile menu help staff find Account/Profile, Team Members, Role & Access guidance, Help, and Logout. Team role changes are managed in Settings -> Team Members.
+Topbar role badges and the profile menu help staff find Account/Profile, Team Members, Role & Access guidance, Help, and Logout. Account/Profile edits the current display name. Team role changes are managed in Settings -> Team Members, and Remove Access deactivates a user instead of hard-deleting audit history.
 
 Product images use public HTTPS image URLs in this phase. No upload/storage infrastructure is added. Staff can preview product images and manually send a selected product image from Inbox for WhatsApp conversations only.
 

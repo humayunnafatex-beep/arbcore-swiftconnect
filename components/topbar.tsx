@@ -32,6 +32,7 @@ type AuthMe = {
     plan: string;
   };
   prismaUser?: {
+    name?: string | null;
     email: string | null;
     role: string | null;
   };
@@ -69,6 +70,26 @@ export function Topbar() {
   useEffect(() => {
     let active = true;
 
+    async function loadAuth() {
+      try {
+        const data = await apiRequest<AuthMe>("/api/auth/me");
+        if (active) setAuth(data);
+      } catch {
+        if (active) setAuth(null);
+      }
+    }
+
+    window.addEventListener("arbcore:profile-updated", loadAuth);
+
+    return () => {
+      active = false;
+      window.removeEventListener("arbcore:profile-updated", loadAuth);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
     async function loadStats() {
       try {
         const data = await apiRequest<DashboardStats>("/api/dashboard/statistics");
@@ -88,7 +109,7 @@ export function Topbar() {
   }, []);
 
   const initials = useMemo(() => {
-    const name = auth?.user?.name ?? auth?.prismaUser?.email ?? "Admin User";
+    const name = auth?.user?.name ?? auth?.prismaUser?.name ?? auth?.prismaUser?.email ?? "Admin User";
     return name
       .split(" ")
       .filter(Boolean)
@@ -96,7 +117,7 @@ export function Topbar() {
       .map((part) => part[0])
       .join("")
       .toUpperCase();
-  }, [auth?.prismaUser?.email, auth?.user?.name]);
+  }, [auth?.prismaUser?.email, auth?.prismaUser?.name, auth?.user?.name]);
 
   const role = auth?.user?.role ?? auth?.prismaUser?.role ?? "OWNER";
   const roleCode = role.toUpperCase();
@@ -169,7 +190,7 @@ export function Topbar() {
                 <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
               </span>
               <span className="hidden min-w-0 text-left lg:block">
-                <span className="block truncate text-sm font-bold text-ink">{auth?.user?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}</span>
+                <span className="block truncate text-sm font-bold text-ink">{auth?.user?.name ?? auth?.prismaUser?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}</span>
                 <span className="mt-1 inline-flex rounded-full bg-royal px-2.5 py-1 text-[10px] font-black uppercase text-white ring-1 ring-blue-100">{roleCode}</span>
               </span>
               <span className="rounded-full bg-royal px-2 py-1 text-[10px] font-black uppercase text-white lg:hidden">{roleCode}</span>
@@ -181,7 +202,7 @@ export function Topbar() {
                 <div className="rounded-[16px] bg-blue-50 p-3">
                   <p className="flex items-center gap-2 text-sm font-black text-ink">
                     <UserRound className="h-4 w-4 text-royal" />
-                    {auth?.user?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}
+                    {auth?.user?.name ?? auth?.prismaUser?.name ?? auth?.prismaUser?.email ?? "Rasel Ahmed"}
                   </p>
                   <p className="mt-1 truncate text-xs font-semibold text-slate-500">{auth?.user?.email ?? auth?.prismaUser?.email ?? "admin@arbcore.ai"}</p>
                   <p className="mt-2 text-xs font-bold text-royal">{auth?.company?.name ?? "ARBCore AI"}</p>
@@ -195,7 +216,7 @@ export function Topbar() {
                   </div>
                 </div>
                 <div className="mt-2 grid gap-1">
-                  <MenuLink href="/settings" icon={<Settings className="h-4 w-4" />} label="Account / Profile" onClick={() => setMenuOpen(false)} />
+                  <MenuLink href="/settings#account-profile" icon={<Settings className="h-4 w-4" />} label="Account / Profile" onClick={() => setMenuOpen(false)} />
                   <MenuLink href="/settings#team-members" icon={<Users className="h-4 w-4" />} label="Manage Team Members" onClick={() => setMenuOpen(false)} />
                   <MenuLink href="/settings#team-members" icon={<ShieldCheck className="h-4 w-4" />} label="Role & Access / Team Roles" onClick={() => setMenuOpen(false)} />
                 </div>
