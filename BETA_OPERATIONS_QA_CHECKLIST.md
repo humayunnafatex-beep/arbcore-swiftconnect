@@ -45,12 +45,16 @@ This checklist verifies the day-to-day beta workflow without adding automation o
 ### Inbox
 
 - [ ] New inbound WhatsApp conversations are visible.
+- [ ] Mobile width: Inbox opens with the conversation list visible.
+- [ ] Mobile width: tapping a conversation opens message history, reply composer, and Send Reply.
+- [ ] Mobile width: Back to conversations returns to the list.
 - [ ] Contact create/link/edit works from the selected conversation.
 - [ ] Conversation priority, read/unread, starred, labels, assignment, notes, and follow-up controls are clear.
 - [ ] Product selection previews product image when available.
 - [ ] Send Product Image is manual only and does not trigger when a product is selected.
 - [ ] Saved Replies insert generic text only.
 - [ ] Order Templates insert order-specific text only.
+- [ ] Mobile width: Saved Reply insert, Order Template insert, and Send Product Image remain reachable when available.
 - [ ] Staff must click Send Reply manually.
 
 ### Follow-up Queue

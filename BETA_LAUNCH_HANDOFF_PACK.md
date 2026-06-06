@@ -215,6 +215,7 @@ Activity Logs:
 - [ ] Dashboard loads.
 - [ ] Channel Center shows WhatsApp configured.
 - [ ] WhatsApp inbound message appears in Inbox.
+- [ ] Mobile Inbox shows the conversation list first, opens the selected thread/composer after tap, and returns with Back to conversations.
 - [ ] Contact create/link works.
 - [ ] Contact status, tags, priority, and assignment can be updated.
 - [ ] Manual outbound WhatsApp reply logs `OUTBOUND / SENT`.
@@ -224,6 +225,7 @@ Activity Logs:
 - [ ] Product image can be sent manually when appropriate.
 - [ ] Saved Reply inserts into composer only.
 - [ ] Order Template inserts into composer only.
+- [ ] Mobile Inbox Saved Reply, Order Template, and Product Image actions remain reachable when available.
 - [ ] Staff manually clicks Send Reply after review.
 - [ ] Follow-up date can be set.
 - [ ] Follow-up appears in `/follow-ups`.

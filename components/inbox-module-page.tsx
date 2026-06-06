@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Cable, ClipboardList, ImageIcon, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
+import { ArrowLeft, Cable, ClipboardList, ImageIcon, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
 import { parseTags, stringifyTags } from "@/lib/contact-tags";
@@ -345,6 +345,7 @@ export function InboxModulePage() {
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [detail, setDetail] = useState<ConversationDetailResponse["data"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -469,6 +470,7 @@ export function InboxModulePage() {
       setError(getApiErrorMessage(requestError));
       setConversations([]);
       setSelectedId(null);
+      setMobileDetailOpen(false);
     } finally {
       setLoading(false);
     }
@@ -849,6 +851,7 @@ export function InboxModulePage() {
     setContactStatusFilter("ALL");
     setContactTagFilter("");
     setSearch("");
+    setMobileDetailOpen(false);
   }
 
   async function saveConversationState(options?: {
@@ -1161,7 +1164,7 @@ export function InboxModulePage() {
       </section>
 
       <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
-        <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
+        <section className={cn("rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel", mobileDetailOpen ? "hidden xl:block" : "block")}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-black text-ink">Conversations</h2>
@@ -1177,7 +1180,10 @@ export function InboxModulePage() {
               {conversations.map((conversation) => (
                 <button
                   key={conversation.id}
-                  onClick={() => setSelectedId(conversation.id)}
+                  onClick={() => {
+                    setSelectedId(conversation.id);
+                    setMobileDetailOpen(true);
+                  }}
                   className={cn(
                     "w-full rounded-[18px] border p-3 text-left transition",
                     selectedId === conversation.id ? "border-royal bg-blue-50 shadow-sm" : "border-blue-100 bg-white hover:bg-blue-50",
@@ -1226,10 +1232,18 @@ export function InboxModulePage() {
           </DataState>
         </section>
 
-        <section className="rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel">
+        <section className={cn("rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel", mobileDetailOpen ? "block" : "hidden xl:block")}>
           <DataState loading={detailLoading} error={detailError} empty={!selectedId || !detail} emptyText="Select a conversation to view recent messages.">
             {detail ? (
               <div className="flex min-h-0 flex-col xl:min-h-[680px]">
+                <button
+                  className={`${secondaryButtonClassName} mb-4 w-full justify-center xl:hidden`}
+                  type="button"
+                  onClick={() => setMobileDetailOpen(false)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to conversations
+                </button>
                 <div className="mb-4 flex flex-col gap-3 rounded-[18px] bg-blue-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-xs font-black uppercase text-royal">{detail.conversation.channel}</p>
@@ -1661,7 +1675,7 @@ export function InboxModulePage() {
                   </p>
                 </div>
 
-                <div className="soft-scrollbar flex-1 space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 sm:p-4">
+                <div className="soft-scrollbar max-h-[52vh] space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 sm:p-4 xl:max-h-none xl:flex-1">
                   {detail.messages.length ? (
                     detail.messages.map((message) => (
                       <div key={message.id} className={cn("flex", message.direction === "OUTBOUND" ? "justify-end" : "justify-start")}>

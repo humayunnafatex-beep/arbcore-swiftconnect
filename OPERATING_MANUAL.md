@@ -217,6 +217,8 @@ Message Logs is the admin-facing test view for recent WhatsApp and Messenger act
 
 Inbox at `/inbox` is the business conversation view. It groups existing message logs by WhatsApp phone number or Messenger PSID and shows the latest customer thread. The selected conversation includes linked contact profile details, contact creation for WhatsApp conversations, quick contact edits, a reply composer, status management, assignment, internal notes, and follow-up reminders.
 
+On mobile, Inbox shows the conversation list first. Tap a conversation to open the thread, message history, reply composer, Saved Replies, order helpers, and product image actions. Use Back to conversations to return to the list.
+
 Inbox status meanings:
 
 1. `OPEN`: needs attention.
