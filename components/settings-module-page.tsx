@@ -416,6 +416,7 @@ async function createTeamMember() {
           <Info label="2FA" value="Recommended before production" />
         </Panel>
 
+        <div id="team-members" className="scroll-mt-28">
         <Panel icon={<Users className="h-5 w-5" />} title="Team Members" action={<button className={secondaryButtonClassName} onClick={loadTeam}><RefreshCw className="h-4 w-4" />Refresh</button>}>
           <p className="mb-3 rounded-[16px] bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
             Creating a team member creates a workspace record. Auth invite/login setup may require admin follow-up. At least one active owner must remain in the workspace.
@@ -430,6 +431,9 @@ async function createTeamMember() {
           </div>
           <p className="mb-3 rounded-[16px] border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-bold leading-5 text-amber-800">
             Role-based UI guidance is visible now, but hard permission enforcement remains OFF until `PERMISSIONS_ENFORCED=true` is intentionally enabled and tested.
+          </p>
+          <p className="mb-3 rounded-[16px] border border-blue-100 bg-white px-4 py-3 text-xs font-bold leading-5 text-slate-600">
+            To update a role, choose the new role and tap Save Role. Deactivate/Reactivate controls change team status only; the last active owner and self-deactivation protections remain enforced.
           </p>
           <div className="grid gap-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4 lg:grid-cols-[1fr_1fr_160px_auto]">
             <Field label="Name" value={newMember.name} onChange={(value) => setNewMember({ ...newMember, name: value })} />
@@ -448,7 +452,85 @@ async function createTeamMember() {
             </button>
           </div>
 
-          <div className="mt-4 overflow-x-auto rounded-[18px] border border-blue-100">
+          <div className="mt-4 grid gap-3 md:hidden">
+            {teamLoading ? (
+              <div className="rounded-[18px] border border-blue-100 bg-blue-50 px-4 py-8 text-center text-sm font-bold text-slate-500">Loading team members...</div>
+            ) : teamError ? (
+              <div className="rounded-[18px] border border-rose-100 bg-rose-50 px-4 py-8 text-center text-sm font-bold text-red-600">{teamError}</div>
+            ) : team.length === 0 ? (
+              <div className="rounded-[18px] border border-blue-100 bg-blue-50 px-4 py-8 text-center text-sm font-bold text-slate-500">No team members yet.</div>
+            ) : (
+              team.map((member) => {
+                const activeOwners = team.filter((item) => item.role === "OWNER" && item.isActive).length;
+                const isLastActiveOwner = member.role === "OWNER" && member.isActive && activeOwners <= 1;
+                const draftRole = roleDrafts[member.id] ?? member.role;
+                const roleChanged = draftRole !== member.role;
+                const roleActionLoading = teamActionLoading === `role:${member.id}`;
+                const statusActionLoading = teamActionLoading === `status:${member.id}`;
+
+                return (
+                  <article key={member.id} className="rounded-[18px] border border-blue-100 bg-white p-4 shadow-sm">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="break-words text-sm font-black text-ink">{member.name || "Unnamed user"}</p>
+                          <p className="mt-1 break-all text-xs font-semibold text-slate-500">{member.email || "No email"}</p>
+                        </div>
+                        <span className={`w-fit rounded-full px-3 py-1 text-xs font-black ${member.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                          {member.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                      {isLastActiveOwner ? <p className="rounded-[12px] bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Last active owner protected</p> : null}
+                      <label className="grid gap-1.5 text-xs font-black text-slate-500">
+                        Role
+                        <select
+                          className={`${inputClassName} h-11 w-full`}
+                          value={draftRole}
+                          onChange={(event) => setRoleDrafts((current) => ({ ...current, [member.id]: event.target.value as UserRole }))}
+                          disabled={!member.isActive || roleActionLoading}
+                        >
+                          {["OWNER", "ADMIN", "MANAGER", "AGENT"].map((role) => (
+                            <option key={role}>{role}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <button
+                          className={`${secondaryButtonClassName} h-11 justify-center px-3`}
+                          onClick={() => saveTeamMemberRole(member)}
+                          disabled={!member.isActive || !roleChanged || roleActionLoading || (isLastActiveOwner && draftRole !== "OWNER")}
+                        >
+                          <Save className="h-4 w-4" />
+                          {roleActionLoading ? "Saving..." : "Save Role"}
+                        </button>
+                        {member.isActive ? (
+                          <button
+                            className={`${secondaryButtonClassName} h-11 justify-center px-3`}
+                            onClick={() => setMemberActive(member, false)}
+                            disabled={statusActionLoading || isLastActiveOwner}
+                          >
+                            <UserMinus className="h-4 w-4" />
+                            {statusActionLoading ? "Saving..." : "Deactivate"}
+                          </button>
+                        ) : (
+                          <button
+                            className={`${secondaryButtonClassName} h-11 justify-center px-3`}
+                            onClick={() => setMemberActive(member, true)}
+                            disabled={statusActionLoading}
+                          >
+                            <UserCheck className="h-4 w-4" />
+                            {statusActionLoading ? "Saving..." : "Reactivate"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </div>
+
+          <div className="mt-4 hidden overflow-x-auto rounded-[18px] border border-blue-100 md:block">
             <div className="min-w-[720px]">
               <div className="grid grid-cols-[1.2fr_1.4fr_150px_110px_240px] bg-slate-50 px-4 py-3 text-xs font-black uppercase text-slate-500">
                 <span>Name</span>
@@ -528,6 +610,7 @@ async function createTeamMember() {
             </div>
           </div>
         </Panel>
+        </div>
       </section>
       {toast ? <Toast {...toast} /> : null}
     </AppShell>

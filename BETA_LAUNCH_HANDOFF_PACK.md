@@ -53,6 +53,8 @@ Do not share or screenshot WhatsApp access tokens. Tokens are saved only when en
 
 Role guidance is UI/readiness only in beta. Hard auth, permission, tenant membership, and strict provider routing enforcement remain off unless a future staging approval is completed.
 
+The topbar shows the current role as a visible badge. Use the profile menu to open Account/Profile, Manage Team Members, Role & Access / Team Roles, or Logout. Role changes are actionable in Settings -> Team Members.
+
 ## WhatsApp Messaging Rules
 
 - ARBCore does not fake WhatsApp sending success.
@@ -213,6 +215,8 @@ Activity Logs:
 ## Beta Launch Day Checklist
 
 - [ ] Dashboard loads.
+- [ ] Topbar role badge, notification/message badges, Help, and profile menu are clear on mobile and desktop.
+- [ ] Settings -> Team Members role controls show Save Role, Deactivate, and Reactivate clearly.
 - [ ] Channel Center shows WhatsApp configured.
 - [ ] WhatsApp inbound message appears in Inbox.
 - [ ] Mobile Inbox shows the conversation list first, opens the selected thread/composer after tap, and returns with Back to conversations.

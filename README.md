@@ -39,6 +39,8 @@ Team Member records are internal workspace user records unless full auth invite/
 
 Role-based staff guidance is UI/readiness only in this beta pass. Owner/Admin, Manager, and Agent work areas are labeled to reduce confusion, but hard route/action enforcement remains controlled by the existing enforcement flags and stays off by default.
 
+Topbar role badges and the profile menu help staff find Account/Profile, Team Members, Role & Access guidance, Help, and Logout. Team role changes are managed in Settings -> Team Members.
+
 Product images use public HTTPS image URLs in this phase. No upload/storage infrastructure is added. Staff can preview product images and manually send a selected product image from Inbox for WhatsApp conversations only.
 
 Follow-up Queue is manual only. It helps staff review conversation and order follow-ups, mark them done, update dates, and jump back to Inbox or Orders. It does not send automatic follow-up messages.
