@@ -95,16 +95,25 @@ export function Topbar() {
         const data = await apiRequest<DashboardStats>("/api/dashboard/statistics");
         if (active) setStats(data);
       } catch {
-        if (active) setStats({});
+        // Keep the last known badge counts if a background refresh fails.
       }
     }
 
     void loadStats();
-    const interval = window.setInterval(loadStats, 60000);
+    const interval = window.setInterval(loadStats, 300000);
+
+    function refreshWhenVisible() {
+      if (document.visibilityState === "visible") {
+        void loadStats();
+      }
+    }
+
+    document.addEventListener("visibilitychange", refreshWhenVisible);
 
     return () => {
       active = false;
       window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
     };
   }, []);
 
@@ -124,6 +133,16 @@ export function Topbar() {
   const guidance = getRoleGuidance(role);
   const notificationCount = (stats.overdueFollowUps ?? 0) + (stats.todayFollowUps ?? 0);
   const messageCount = (stats.unreadConversations ?? 0) + (stats.failedMessages ?? 0);
+  const notificationHref = (stats.overdueFollowUps ?? 0) > 0
+    ? "/follow-ups?status=OVERDUE"
+    : (stats.todayFollowUps ?? 0) > 0
+      ? "/follow-ups?status=TODAY"
+      : "/follow-ups";
+  const messageHref = (stats.unreadConversations ?? 0) > 0
+    ? "/inbox"
+    : (stats.failedMessages ?? 0) > 0
+      ? "/message-logs?status=FAILED"
+      : "/inbox";
 
   async function logout() {
     await apiRequest("/api/auth/logout", { method: "POST" });
@@ -169,10 +188,10 @@ export function Topbar() {
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
           <RobotAvatar size="md" className="hidden sm:grid" />
-          <IconButton count={notificationCount} label="Notifications" title="Notifications: due follow-ups and alerts">
+          <IconButton count={notificationCount} label="Open follow-up notifications" title="Follow-ups needing attention" href={notificationHref}>
             <Bell className="h-5 w-5" />
           </IconButton>
-          <IconButton count={messageCount} label="Messages" title="Messages: unread conversations and failed sends">
+          <IconButton count={messageCount} label="Open inbox messages" title="Unread conversations / failed messages" href={messageHref}>
             <MessageSquareText className="h-5 w-5" />
           </IconButton>
           <IconButton label="Help & Guide" title="Help & Guide" href="/license">

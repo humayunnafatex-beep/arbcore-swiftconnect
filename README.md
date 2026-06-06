@@ -41,6 +41,8 @@ Role-based staff guidance is UI/readiness only in this beta pass. Owner/Admin, M
 
 Topbar role badges and the profile menu help staff find Account/Profile, Team Members, Role & Access guidance, Help, and Logout. Account/Profile edits the current display name. Team role changes are managed in Settings -> Team Members, and Remove Access deactivates a user instead of hard-deleting audit history.
 
+Topbar attention badges refresh safely every 5 minutes without reloading the full app. The bell opens Follow-up Queue for overdue/today follow-ups, and the message icon opens Inbox or filtered Message Logs for unread conversations and failed sends. These are attention indicators only; they do not send automatic replies.
+
 Product images use public HTTPS image URLs in this phase. No upload/storage infrastructure is added. Staff can preview product images and manually send a selected product image from Inbox for WhatsApp conversations only.
 
 Follow-up Queue is manual only. It helps staff review conversation and order follow-ups, mark them done, update dates, and jump back to Inbox or Orders. It does not send automatic follow-up messages.

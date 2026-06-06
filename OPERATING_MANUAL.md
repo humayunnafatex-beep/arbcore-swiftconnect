@@ -46,6 +46,8 @@ Use it at the start of the day to check whether the workspace is healthy, whethe
 
 Dashboard CRM/support metrics show Inbox status counts, due follow-ups, message health, channel activity, and the 30-day Auto Reply performance snapshot. Use the quick links to jump directly to filtered Inbox views, Message Logs, Channel Center, and Auto Reply. Failed messages should be reviewed in Message Logs, failed auto replies should be checked in Auto Reply Analytics, and due follow-ups should be handled from Inbox.
 
+The topbar attention icons refresh their counts every 5 minutes without reloading the page. The bell icon opens Follow-up Queue for overdue or today follow-ups, and the message icon opens Inbox for unread conversations or Message Logs for failed sends. These counts are staff attention indicators only; they do not trigger customer messages.
+
 ## 2. Contacts
 
 Contacts is the customer list. Each contact can store a name, WhatsApp phone number, email, source or segment, tags, status, and opt-in preference.

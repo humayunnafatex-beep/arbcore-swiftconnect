@@ -55,6 +55,8 @@ Role guidance is UI/readiness only in beta. Hard auth, permission, tenant member
 
 The topbar shows the current role as a visible badge. Use the profile menu to open Account/Profile, Manage Team Members, Role & Access / Team Roles, or Logout. Account/Profile edits the current display name. Role changes are actionable in Settings -> Team Members. Deactivate / Remove Access is not a hard delete; it preserves activity history.
 
+The topbar bell and message icons are daily attention shortcuts. Counts refresh safely every 5 minutes without a full app reload. Bell opens Follow-up Queue for overdue/today follow-ups; the message icon opens Inbox for unread conversations or Message Logs for failed sends. These indicators do not send automatic messages.
+
 ## WhatsApp Messaging Rules
 
 - ARBCore does not fake WhatsApp sending success.
