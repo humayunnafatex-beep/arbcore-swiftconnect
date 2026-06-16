@@ -40,6 +40,8 @@ Unified Inbox at `/inbox` gives the team a business-friendly conversation view a
 
 AI Reply Assistant v1 appears in the Inbox reply workspace when AI configuration is available. It uses the latest customer message, conversation context, and saved replies to prepare a short Bangla + English draft. The draft is inserted into the composer only; staff must review, edit if needed, and click Send Reply manually.
 
+Business Knowledge Base in Settings lets admins maintain active business facts for AI reply grounding, such as delivery policy, COD policy, exchange policy, refund policy, support hours, product sizing notes, and brand tone instructions. Active facts are included in AI prompts; inactive facts are saved but ignored.
+
 ## 1. Dashboard
 
 The Dashboard is the main business overview. It shows live workspace activity such as connected WhatsApp numbers, messages sent, open conversations, active campaigns, contacts, auto-reply rules, and team members where the app has database data available.
@@ -439,6 +441,8 @@ Saved Replies let operators manage reusable text answers for common customer que
 In Inbox, active saved replies can be inserted into the reply composer for the selected WhatsApp or Messenger conversation. If the composer already has text, the operator can append or replace. Saved Replies never auto-send; staff must review the text and click Send manually.
 
 AI Suggest Reply is also manual-send safe. If `OPENAI_API_KEY` is missing, Inbox shows the assistant as unavailable and manual replies continue to work. AI suggestions do not send messages, do not schedule follow-ups, and do not use WhatsApp templates.
+
+To improve AI draft accuracy, open Settings -> Business Knowledge Base and add concise facts for delivery, COD, exchange/refund, support hours, sizing, and tone. Keep facts customer-safe because they may guide customer-facing draft text.
 
 ## 12G. Staff Activity Logs
 

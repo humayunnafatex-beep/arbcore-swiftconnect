@@ -129,6 +129,26 @@ model Company {
   conversationStates ConversationState[]
   subscriptions    Subscription[]
   paymentRecords   PaymentRecord[]
+  businessKnowledgeFacts BusinessKnowledgeFact[]
+}
+
+model BusinessKnowledgeFact {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  category  String
+  title     String
+  content   String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([companyId, isActive])
+  @@index([companyId, category])
 }
 
 model User {

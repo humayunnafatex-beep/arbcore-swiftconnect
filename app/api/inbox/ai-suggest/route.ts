@@ -49,7 +49,16 @@ export async function POST(request: Request) {
     }
 
     const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
-    const prompt = buildPrompt(payload.data);
+    const knowledgeFacts = await prisma.businessKnowledgeFact.findMany({
+      where: { companyId: context.company.id, isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
+      take: 12
+    });
+    const prompt = buildPrompt(payload.data, knowledgeFacts.map((fact) => ({
+      category: fact.category,
+      title: fact.title,
+      content: fact.content
+    })));
     const suggestion = await generateSuggestion({
       apiKey: process.env.OPENAI_API_KEY,
       model,
@@ -79,9 +88,12 @@ export async function POST(request: Request) {
   }
 }
 
-function buildPrompt(input: z.infer<typeof suggestSchema>) {
+function buildPrompt(input: z.infer<typeof suggestSchema>, knowledgeFacts: Array<{ category: string; title: string; content: string }>) {
   const savedReplyText = (input.savedReplies ?? [])
     .map((reply, index) => `${index + 1}. ${reply.title}${reply.shortcut ? ` /${reply.shortcut}` : ""}: ${reply.body}`)
+    .join("\n");
+  const knowledgeText = knowledgeFacts
+    .map((fact, index) => `${index + 1}. [${fact.category}] ${fact.title}: ${fact.content}`)
     .join("\n");
 
   return [
@@ -98,6 +110,7 @@ function buildPrompt(input: z.infer<typeof suggestSchema>) {
     `Customer key: ${input.contactKey}`,
     `Latest customer message: ${input.latestCustomerMessage}`,
     input.conversationContext ? `Conversation context: ${input.conversationContext}` : "",
+    knowledgeText ? `Active business knowledge base facts:\n${knowledgeText}` : "Active business knowledge base facts: none configured",
     savedReplyText ? `Relevant saved replies:\n${savedReplyText}` : "Relevant saved replies: none"
   ].filter(Boolean).join("\n");
 }

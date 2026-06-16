@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserCheck, UserMinus, UserRound, Users } from "lucide-react";
+import { Bell, BookOpenText, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserCheck, UserMinus, UserRound, Users } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
 import { ApiClientError, apiRequest, getApiErrorMessage } from "@/lib/api-client";
@@ -69,6 +69,34 @@ type MessengerSettings = {
   webhookUrl: string;
 };
 
+type KnowledgeFact = {
+  id: string;
+  category: string;
+  title: string;
+  content: string;
+  isActive: boolean;
+  sortOrder: number;
+  updatedAt: string;
+};
+
+const knowledgeCategories = [
+  "Delivery policy",
+  "COD policy",
+  "Exchange policy",
+  "Refund policy",
+  "Support hours",
+  "Product sizing notes",
+  "Brand tone instructions"
+];
+
+const emptyKnowledgeForm = {
+  category: "Delivery policy",
+  title: "",
+  content: "",
+  isActive: true,
+  sortOrder: 0
+};
+
 export function SettingsModulePage() {
   const { toast, showToast } = useToast();
   const [profile, setProfile] = useState({
@@ -106,6 +134,10 @@ export function SettingsModulePage() {
   const [accountLoading, setAccountLoading] = useState(true);
   const [accountSaving, setAccountSaving] = useState(false);
   const [accountError, setAccountError] = useState("");
+  const [knowledgeFacts, setKnowledgeFacts] = useState<KnowledgeFact[]>([]);
+  const [knowledgeLoading, setKnowledgeLoading] = useState(true);
+  const [knowledgeSaving, setKnowledgeSaving] = useState<string | null>(null);
+  const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledgeForm);
 
   async function loadAccountProfile() {
     setAccountLoading(true);
@@ -119,6 +151,25 @@ export function SettingsModulePage() {
       setAccountError(getApiErrorMessage(error));
     } finally {
       setAccountLoading(false);
+    }
+  }
+
+  async function loadKnowledgeBase() {
+    setKnowledgeLoading(true);
+    try {
+      const response = await fetch("/api/settings/knowledge-base", { cache: "no-store" });
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Unable to load knowledge base.");
+      }
+
+      setKnowledgeFacts(result.data.facts ?? []);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Unable to load knowledge base.", "error");
+      setKnowledgeFacts([]);
+    } finally {
+      setKnowledgeLoading(false);
     }
   }
 
@@ -185,10 +236,70 @@ async function loadCompanySettings() {
   }
 }
 useEffect(() => {
-  loadAccountProfile();
-  loadCompanySettings();
-  loadTeam();
-}, []);
+    loadAccountProfile();
+    loadKnowledgeBase();
+    loadCompanySettings();
+    loadTeam();
+  }, []);
+
+  async function createKnowledgeFact() {
+    if (!knowledgeForm.title.trim() || !knowledgeForm.content.trim()) {
+      showToast("Knowledge title and content are required.", "error");
+      return;
+    }
+
+    setKnowledgeSaving("new");
+    try {
+      const response = await fetch("/api/settings/knowledge-base", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(knowledgeForm)
+      });
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Unable to save knowledge fact.");
+      }
+
+      setKnowledgeForm(emptyKnowledgeForm);
+      await loadKnowledgeBase();
+      showToast("Knowledge base fact saved.");
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setKnowledgeSaving(null);
+    }
+  }
+
+  async function updateKnowledgeFact(fact: KnowledgeFact, patch: Partial<KnowledgeFact>) {
+    setKnowledgeSaving(fact.id);
+    try {
+      const response = await fetch(`/api/settings/knowledge-base/${fact.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: fact.category,
+          title: fact.title,
+          content: fact.content,
+          isActive: fact.isActive,
+          sortOrder: fact.sortOrder,
+          ...patch
+        })
+      });
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Unable to update knowledge fact.");
+      }
+
+      await loadKnowledgeBase();
+      showToast("Knowledge base fact updated.");
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+    } finally {
+      setKnowledgeSaving(null);
+    }
+  }
 async function save(section: string) {
   try {
     const normalizedSection = section.toLowerCase();
@@ -405,6 +516,73 @@ async function save(section: string) {
           </div>
           <div className="mt-4 rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
             This business profile number is customer-facing copy only. ARBCore receives customer messages only on the WhatsApp number connected to the saved Meta Phone Number ID.
+          </div>
+        </Panel>
+
+        <Panel icon={<BookOpenText className="h-5 w-5" />} title="Business Knowledge Base" action={<button className={secondaryButtonClassName} onClick={loadKnowledgeBase} disabled={knowledgeLoading}><RefreshCw className="h-4 w-4" />Refresh</button>}>
+          <p className="mb-3 rounded-[16px] bg-blue-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
+            Store active business facts for AI Reply Assistant draft suggestions. These facts help replies stay aligned with delivery, COD, exchange, refund, support hours, sizing, and brand tone guidance. AI still only fills the composer as draft text.
+          </p>
+          <div className="grid gap-3">
+            <div className="grid gap-3 rounded-[18px] border border-blue-100 bg-white p-4">
+              <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+                <select className={inputClassName} value={knowledgeForm.category} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, category: event.target.value })}>
+                  {knowledgeCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                </select>
+                <input className={inputClassName} value={knowledgeForm.title} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, title: event.target.value })} placeholder="Short title, for example Delivery inside Dhaka" />
+              </div>
+              <textarea className="min-h-24 rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100" value={knowledgeForm.content} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, content: event.target.value })} placeholder="Business fact or policy. Example: Delivery inside Dhaka usually takes 1-2 business days after order confirmation." />
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                  <input type="checkbox" checked={knowledgeForm.isActive} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, isActive: event.target.checked })} />
+                  Active for AI suggestions
+                </label>
+                <button className={primaryButtonClassName} onClick={createKnowledgeFact} disabled={knowledgeSaving === "new"}>
+                  <Plus className="h-4 w-4" />
+                  {knowledgeSaving === "new" ? "Saving..." : "Add Fact"}
+                </button>
+              </div>
+            </div>
+
+            {knowledgeLoading ? (
+              <p className="rounded-[16px] bg-blue-50 px-4 py-3 text-sm font-bold text-royal">Loading knowledge base...</p>
+            ) : knowledgeFacts.length ? (
+              <div className="grid gap-3">
+                {knowledgeFacts.map((fact) => (
+                  <article key={fact.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
+                    <div className="flex flex-col gap-3">
+                      <div className="grid gap-3 sm:grid-cols-[180px_1fr_auto]">
+                        <select className={inputClassName} value={fact.category} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, category: event.target.value } : item))}>
+                          {knowledgeCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                        </select>
+                        <input className={inputClassName} value={fact.title} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, title: event.target.value } : item))} />
+                        <label className="flex h-11 items-center gap-2 rounded-[14px] border border-blue-100 bg-blue-50 px-3 text-sm font-bold text-slate-600">
+                          <input type="checkbox" checked={fact.isActive} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, isActive: event.target.checked } : item))} />
+                          Active
+                        </label>
+                      </div>
+                      <textarea className="min-h-20 rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-royal focus:ring-4 focus:ring-blue-100" value={fact.content} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, content: event.target.value } : item))} />
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-xs font-semibold text-slate-500">Inactive facts stay saved but are not included in AI prompts.</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button className={secondaryButtonClassName} onClick={() => void updateKnowledgeFact(fact, { isActive: false })} disabled={knowledgeSaving === fact.id || !fact.isActive}>
+                            Deactivate
+                          </button>
+                          <button className={primaryButtonClassName} onClick={() => void updateKnowledgeFact(fact, {})} disabled={knowledgeSaving === fact.id}>
+                            <Save className="h-4 w-4" />
+                            {knowledgeSaving === fact.id ? "Saving..." : "Save Fact"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[18px] border border-dashed border-blue-200 bg-blue-50 p-4 text-sm font-semibold leading-6 text-slate-600">
+                No business knowledge facts are configured yet. Add delivery policy, COD policy, exchange/refund terms, support hours, sizing notes, and brand tone instructions so AI suggestions can use accurate business context.
+              </div>
+            )}
           </div>
         </Panel>
 
