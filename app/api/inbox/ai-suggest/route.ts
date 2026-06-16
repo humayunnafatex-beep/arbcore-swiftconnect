@@ -19,6 +19,17 @@ const suggestSchema = z.object({
   })).max(6).optional()
 });
 
+class OpenAIRequestError extends Error {
+  status: number;
+  uiMessage: string;
+
+  constructor(status: number, uiMessage: string, logMessage: string) {
+    super(logMessage);
+    this.status = status;
+    this.uiMessage = uiMessage;
+  }
+}
+
 export async function GET() {
   await requirePermission("messages.send");
 
@@ -45,15 +56,40 @@ export async function POST(request: Request) {
     const payload = suggestSchema.safeParse(await request.json().catch(() => null));
 
     if (!payload.success) {
-      return NextResponse.json({ success: false, error: "AI reply context is invalid." }, { status: 400 });
+      const hasLatestMessageIssue = payload.error.issues.some((issue) => issue.path.join(".") === "latestCustomerMessage");
+      return NextResponse.json(
+        {
+          success: false,
+          error: hasLatestMessageIssue
+            ? "AI suggestion needs a latest inbound customer message."
+            : "AI reply context is invalid."
+        },
+        { status: 400 }
+      );
     }
 
     const model = process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
-    const knowledgeFacts = await prisma.businessKnowledgeFact.findMany({
-      where: { companyId: context.company.id, isActive: true },
-      orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
-      take: 12
-    });
+    let knowledgeFacts: Array<{ category: string; title: string; content: string }> = [];
+
+    try {
+      const facts = await prisma.businessKnowledgeFact.findMany({
+        where: { companyId: context.company.id, isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { updatedAt: "desc" }],
+        take: 12
+      });
+      knowledgeFacts = facts.map((fact) => ({
+        category: fact.category,
+        title: fact.title,
+        content: fact.content
+      }));
+    } catch (error) {
+      console.error("Inbox AI knowledge base fetch failed:", error instanceof Error ? error.message : "Unknown database error");
+      return NextResponse.json(
+        { success: false, error: "Business knowledge base could not be loaded. Please try again before generating an AI draft." },
+        { status: 500 }
+      );
+    }
+
     const prompt = buildPrompt(payload.data, knowledgeFacts.map((fact) => ({
       category: fact.category,
       title: fact.title,
@@ -83,6 +119,10 @@ export async function POST(request: Request) {
       }
     });
   } catch (error) {
+    if (error instanceof OpenAIRequestError) {
+      return NextResponse.json({ success: false, error: error.uiMessage }, { status: error.status });
+    }
+
     console.error("Inbox AI suggestion failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ success: false, error: "AI reply suggestion failed. Please try again." }, { status: 500 });
   }
@@ -90,10 +130,10 @@ export async function POST(request: Request) {
 
 function buildPrompt(input: z.infer<typeof suggestSchema>, knowledgeFacts: Array<{ category: string; title: string; content: string }>) {
   const savedReplyText = (input.savedReplies ?? [])
-    .map((reply, index) => `${index + 1}. ${reply.title}${reply.shortcut ? ` /${reply.shortcut}` : ""}: ${reply.body}`)
+    .map((reply, index) => `${index + 1}. ${safeText(reply.title)}${reply.shortcut ? ` /${safeText(reply.shortcut)}` : ""}: ${safeText(reply.body)}`)
     .join("\n");
   const knowledgeText = knowledgeFacts
-    .map((fact, index) => `${index + 1}. [${fact.category}] ${fact.title}: ${fact.content}`)
+    .map((fact, index) => `${index + 1}. [${safeText(fact.category)}] ${safeText(fact.title)}: ${safeText(fact.content)}`)
     .join("\n");
 
   return [
@@ -106,16 +146,17 @@ function buildPrompt(input: z.infer<typeof suggestSchema>, knowledgeFacts: Array
     "- If order/payment/delivery details are missing, ask for the missing detail.",
     "- Return only the reply text, no JSON, no title.",
     "",
-    `Channel: ${input.channel}`,
-    `Customer key: ${input.contactKey}`,
-    `Latest customer message: ${input.latestCustomerMessage}`,
-    input.conversationContext ? `Conversation context: ${input.conversationContext}` : "",
+    `Channel: ${safeText(input.channel)}`,
+    `Customer key: ${safeText(input.contactKey)}`,
+    `Latest customer message: ${safeText(input.latestCustomerMessage)}`,
+    input.conversationContext ? `Conversation context: ${safeText(input.conversationContext)}` : "",
     knowledgeText ? `Active business knowledge base facts:\n${knowledgeText}` : "Active business knowledge base facts: none configured",
     savedReplyText ? `Relevant saved replies:\n${savedReplyText}` : "Relevant saved replies: none"
   ].filter(Boolean).join("\n");
 }
 
 async function generateSuggestion({ apiKey, model, prompt }: { apiKey: string; model: string; prompt: string }) {
+  const instructions = "You generate safe draft-only customer replies for a business Inbox. Return only customer-facing reply text.";
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -123,25 +164,15 @@ async function generateSuggestion({ apiKey, model, prompt }: { apiKey: string; m
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model,
-      input: [
-        {
-          role: "system",
-          content: [{
-            type: "input_text",
-            text: "You generate safe draft-only customer replies for a business Inbox. Return only customer-facing reply text."
-          }]
-        },
-        {
-          role: "user",
-          content: [{ type: "input_text", text: prompt }]
-        }
-      ]
+      model: safeText(model) || "gpt-4o-mini",
+      instructions,
+      input: safeText(prompt)
     })
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API returned ${response.status}`);
+    const errorBody = await response.text().catch(() => "");
+    throw buildOpenAIError(response.status, errorBody);
   }
 
   const payload = (await response.json()) as {
@@ -156,4 +187,71 @@ async function generateSuggestion({ apiKey, model, prompt }: { apiKey: string; m
   }
 
   return normalized.slice(0, 1200);
+}
+
+function buildOpenAIError(status: number, errorBody: string) {
+  const parsed = parseOpenAIError(errorBody);
+  const safeDetails = {
+    status,
+    type: parsed.type,
+    code: parsed.code,
+    message: parsed.message,
+    bodyPreview: safeText(errorBody).slice(0, 700)
+  };
+  console.error("Inbox AI OpenAI request failed:", safeDetails);
+
+  if (status === 400) {
+    return new OpenAIRequestError(
+      502,
+      "AI provider rejected the request. Check OPENAI_MODEL and request compatibility, then try again.",
+      `OpenAI invalid request: ${parsed.message || status}`
+    );
+  }
+
+  if (status === 401 || status === 403) {
+    return new OpenAIRequestError(
+      503,
+      "AI provider authentication failed. Check OPENAI_API_KEY configuration.",
+      `OpenAI auth error: ${status}`
+    );
+  }
+
+  if (status === 402 || status === 429) {
+    return new OpenAIRequestError(
+      503,
+      "AI provider quota or billing limit was reached. Manual replies still work.",
+      `OpenAI quota/billing error: ${status}`
+    );
+  }
+
+  return new OpenAIRequestError(
+    502,
+    "AI provider request failed. Please try again later.",
+    `OpenAI request failed: ${status}`
+  );
+}
+
+function parseOpenAIError(errorBody: string) {
+  try {
+    const parsed = JSON.parse(errorBody) as {
+      error?: {
+        message?: unknown;
+        type?: unknown;
+        code?: unknown;
+      };
+    };
+
+    return {
+      message: typeof parsed.error?.message === "string" ? parsed.error.message : "",
+      type: typeof parsed.error?.type === "string" ? parsed.error.type : "",
+      code: typeof parsed.error?.code === "string" ? parsed.error.code : ""
+    };
+  } catch {
+    return { message: safeText(errorBody).slice(0, 240), type: "", code: "" };
+  }
+}
+
+function safeText(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.replace(/\s+/g, " ").trim();
 }

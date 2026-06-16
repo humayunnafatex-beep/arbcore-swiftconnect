@@ -756,7 +756,9 @@ export function InboxModulePage() {
 
     setAiSuggestionError(null);
 
-    if (!latestInboundMessage) {
+    const latestCustomerText = (latestInboundMessage?.body || latestInboundMessage?.bodyPreview || "").trim();
+
+    if (!latestCustomerText) {
       setAiSuggestionError("No latest customer message is available for AI suggestion.");
       return;
     }
@@ -777,11 +779,11 @@ export function InboxModulePage() {
 
       const response = await fetch("/api/inbox/ai-suggest", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channel: detail.conversation.channel,
-          contactKey: detail.conversation.contactKey,
-          latestCustomerMessage: latestInboundMessage.body || latestInboundMessage.bodyPreview,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            channel: detail.conversation.channel,
+            contactKey: detail.conversation.contactKey,
+          latestCustomerMessage: latestCustomerText,
           conversationContext: contextParts,
           savedReplies: filteredSavedReplies.slice(0, 6).map((reply) => ({
             title: reply.title,
@@ -1890,6 +1892,11 @@ export function InboxModulePage() {
                   {aiAvailable === false ? (
                     <div className="mt-3 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-bold text-amber-800">
                       AI Reply Assistant is unavailable because `OPENAI_API_KEY` is not configured. Manual replies and Saved Replies still work.
+                    </div>
+                  ) : null}
+                  {aiAvailable === true && !latestInboundMessage ? (
+                    <div className="mt-3 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-bold text-amber-800">
+                      AI suggestion needs a latest inbound customer message. Manual replies still work.
                     </div>
                   ) : null}
                   {aiSuggestionError ? (
