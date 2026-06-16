@@ -26,6 +26,7 @@ Major active modules:
 - Staff Activity Logs for internal-only audit summaries of manual operator actions.
 - Team Member Management for clear create, role update, deactivate/reactivate, and last-owner protection.
 - Role-based staff guidance in navigation, account menu, and Settings while hard enforcement remains off.
+- Inbox selected conversations now put the latest customer message and manual reply workspace directly under the conversation header for faster agent response.
 
 WhatsApp Cloud API can provide customer profile name in webhook contact data, but it generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and lets operators edit the customer name manually.
 

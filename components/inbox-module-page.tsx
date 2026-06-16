@@ -412,6 +412,9 @@ export function InboxModulePage() {
     () => parseAvailableSizes(selectedProduct?.availableSizes),
     [selectedProduct?.availableSizes]
   );
+  const latestInboundMessage = useMemo(() => {
+    return [...(detail?.messages ?? [])].reverse().find((message) => message.direction === "INBOUND") ?? null;
+  }, [detail?.messages]);
   const focusedOrder = useMemo(
     () => orders.find((order) => order.id === focusOrderId) ?? null,
     [focusOrderId, orders]
@@ -1244,7 +1247,7 @@ export function InboxModulePage() {
                   <ArrowLeft className="h-4 w-4" />
                   Back to conversations
                 </button>
-                <div className="mb-4 flex flex-col gap-3 rounded-[18px] bg-blue-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="order-1 mb-4 flex flex-col gap-3 rounded-[18px] bg-blue-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-xs font-black uppercase text-royal">{detail.conversation.channel}</p>
                     <h2 className="mt-1 truncate text-lg font-black text-ink">{detail.conversation.displayName ?? detail.conversation.contactKey}</h2>
@@ -1265,7 +1268,7 @@ export function InboxModulePage() {
                   ) : null}
                 </div>
 
-                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[60] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
                     <button
                       className={secondaryButtonClassName}
@@ -1307,7 +1310,7 @@ export function InboxModulePage() {
                   <p className="mt-3 text-xs font-semibold text-slate-500">Read/unread, star, priority, and quick labels are internal CRM states only. They do not send customer messages.</p>
                 </div>
 
-                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[30] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex gap-3">
                       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-royal to-electric text-sm font-black text-white">
@@ -1379,7 +1382,7 @@ export function InboxModulePage() {
                   ) : null}
                 </div>
 
-                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[50] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Ad / Source Context</h3>
@@ -1416,7 +1419,7 @@ export function InboxModulePage() {
                   )}
                 </div>
 
-                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[40] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Orders</h3>
@@ -1593,7 +1596,7 @@ export function InboxModulePage() {
                   </div>
                 </div>
 
-                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[70] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="grid gap-3 lg:grid-cols-[180px_1fr_auto]">
                     <label className="grid gap-1">
                       <span className="text-xs font-black uppercase text-slate-500">Status</span>
@@ -1626,7 +1629,7 @@ export function InboxModulePage() {
                   ) : null}
                 </div>
 
-                <div className="mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[80] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Internal CRM</h3>
@@ -1675,7 +1678,35 @@ export function InboxModulePage() {
                   </p>
                 </div>
 
-                <div className="soft-scrollbar max-h-[52vh] space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 sm:p-4 xl:max-h-none xl:flex-1">
+                <div className="order-2 mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase text-royal">Latest customer message</p>
+                      <h3 className="mt-1 text-sm font-black text-ink">Reply workspace</h3>
+                    </div>
+                    {latestInboundMessage ? (
+                      <span className="text-xs font-bold text-slate-400">{formatDate(latestInboundMessage.createdAt)}</span>
+                    ) : null}
+                  </div>
+                  {latestInboundMessage ? (
+                    <div className="mt-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4">
+                      <p className="whitespace-pre-wrap text-sm font-bold leading-6 text-slate-700">
+                        {latestInboundMessage.body || latestInboundMessage.bodyPreview || "No readable message body."}
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-black uppercase text-royal">
+                        <span>{latestInboundMessage.direction}</span>
+                        <span>{latestInboundMessage.status}</span>
+                        {latestInboundMessage.mediaType ? <span>{latestInboundMessage.mediaType}</span> : null}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-3 rounded-[18px] border border-dashed border-blue-200 bg-blue-50/60 p-4 text-sm font-bold text-slate-500">
+                      No inbound customer message was found yet. You can still review the thread below.
+                    </div>
+                  )}
+                </div>
+
+                <div className="soft-scrollbar order-4 mb-4 max-h-[38vh] space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 sm:p-4 xl:max-h-[420px]">
                   {detail.messages.length ? (
                     detail.messages.map((message) => (
                       <div key={message.id} className={cn("flex", message.direction === "OUTBOUND" ? "justify-end" : "justify-start")}>
@@ -1742,7 +1773,7 @@ export function InboxModulePage() {
                   )}
                 </div>
 
-                <div className="mt-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-3 mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Reply from Inbox</h3>
