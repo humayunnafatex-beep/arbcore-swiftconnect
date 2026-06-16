@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Cable, ClipboardList, ImageIcon, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
+import { ArrowLeft, Bot, Cable, ClipboardList, ImageIcon, Inbox, MessageCircle, Paperclip, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { getContactStatusLabel, getContactStatusOptions, normalizeContactStatus, type ContactStatusValue } from "@/lib/contact-status";
 import { parseTags, stringifyTags } from "@/lib/contact-tags";
@@ -186,6 +186,14 @@ type SavedRepliesResponse =
   | { success: true; data: { replies: SavedReply[] } }
   | { success: false; error: string };
 
+type AiSuggestResponse =
+  | { success: true; data: { suggestion: string; draftOnly: boolean } }
+  | { success: false; error: string };
+
+type AiAvailabilityResponse =
+  | { success: true; data: { available: boolean; model: string } }
+  | { success: false; error: string };
+
 type AssigneesResponse = {
   success: boolean;
   data: {
@@ -357,6 +365,9 @@ export function InboxModulePage() {
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+  const [aiSuggesting, setAiSuggesting] = useState(false);
+  const [aiSuggestionError, setAiSuggestionError] = useState<string | null>(null);
   const [productImageSending, setProductImageSending] = useState(false);
   const [savedReplies, setSavedReplies] = useState<SavedReply[]>([]);
   const [savedReplyLoading, setSavedReplyLoading] = useState(false);
@@ -482,6 +493,26 @@ export function InboxModulePage() {
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/inbox/ai-suggest", { cache: "no-store" })
+      .then(async (response) => {
+        const result = (await response.json()) as AiAvailabilityResponse;
+        if (!response.ok || !result.success) {
+          throw new Error(result.success ? "AI availability check failed." : result.error);
+        }
+        if (active) setAiAvailable(result.data.available);
+      })
+      .catch(() => {
+        if (active) setAiAvailable(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -717,6 +748,63 @@ export function InboxModulePage() {
       setReplyProviderError(null);
     } finally {
       setReplySending(false);
+    }
+  }
+
+  async function suggestAiReply() {
+    if (!detail) return;
+
+    setAiSuggestionError(null);
+
+    if (!latestInboundMessage) {
+      setAiSuggestionError("No latest customer message is available for AI suggestion.");
+      return;
+    }
+
+    setAiSuggesting(true);
+
+    try {
+      const contextParts = [
+        `Customer display name: ${detail.conversation.displayName ?? detail.conversation.contactKey}`,
+        `Conversation status: ${selectedConversation?.status ?? "OPEN"}`,
+        `Priority: ${selectedConversation?.priority ?? "NORMAL"}`,
+        `Follow-up: ${detail.conversation.followUpStatus}`,
+        detail.conversation.contact?.status ? `Contact status: ${formatContactStage(detail.conversation.contact.status)}` : "",
+        detail.conversation.contact?.tags ? `Contact tags: ${detail.conversation.contact.tags}` : "",
+        focusedOrder ? `Focused order: ${focusedOrder.orderNumber || focusedOrder.id}; ${focusedOrder.modelName || "No model"}; ${focusedOrder.orderStatus}; ${focusedOrder.paymentStatus}` : "",
+        replyBody.trim() ? `Current draft text to improve: ${replyBody.trim()}` : ""
+      ].filter(Boolean).join("\n");
+
+      const response = await fetch("/api/inbox/ai-suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: detail.conversation.channel,
+          contactKey: detail.conversation.contactKey,
+          latestCustomerMessage: latestInboundMessage.body || latestInboundMessage.bodyPreview,
+          conversationContext: contextParts,
+          savedReplies: filteredSavedReplies.slice(0, 6).map((reply) => ({
+            title: reply.title,
+            category: reply.category,
+            shortcut: reply.shortcut,
+            body: reply.body
+          }))
+        })
+      });
+      const result = (await response.json()) as AiSuggestResponse;
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.success ? "AI reply suggestion failed." : result.error);
+      }
+
+      setReplyBody(result.data.suggestion);
+      setReplyStatus(null);
+      setReplyError(null);
+      setReplyProviderError(null);
+    } catch (error) {
+      setAiSuggestionError(getApiErrorMessage(error));
+    } finally {
+      setAiSuggesting(false);
     }
   }
 
@@ -1783,10 +1871,35 @@ export function InboxModulePage() {
                           : "Messenger replies use the Facebook PSID from this conversation. Review helper text before sending manually."}
                       </p>
                     </div>
-                    <Link className="text-xs font-black text-royal hover:underline" href="/message-logs">
-                      Verify in Message Logs
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        className={secondaryButtonClassName}
+                        type="button"
+                        onClick={() => void suggestAiReply()}
+                        disabled={aiSuggesting || aiAvailable !== true || !latestInboundMessage}
+                        title={aiAvailable === false ? "AI Reply Assistant is unavailable because OPENAI_API_KEY is not configured." : "Generate a draft reply suggestion"}
+                      >
+                        <Bot className="h-4 w-4" />
+                        {aiSuggesting ? "Suggesting..." : "AI Suggest Reply"}
+                      </button>
+                      <Link className="text-xs font-black text-royal hover:underline" href="/message-logs">
+                        Verify in Message Logs
+                      </Link>
+                    </div>
                   </div>
+                  {aiAvailable === false ? (
+                    <div className="mt-3 rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-bold text-amber-800">
+                      AI Reply Assistant is unavailable because `OPENAI_API_KEY` is not configured. Manual replies and Saved Replies still work.
+                    </div>
+                  ) : null}
+                  {aiSuggestionError ? (
+                    <div className="mt-3 rounded-[14px] border border-rose-100 bg-rose-50 p-3 text-xs font-bold text-rose-700">
+                      {aiSuggestionError}
+                    </div>
+                  ) : null}
+                  <p className="mt-3 text-xs font-semibold text-slate-500">
+                    AI suggestions are draft-only. Review or edit the composer text, then click Send Reply manually.
+                  </p>
                   <div className="mt-4 rounded-[16px] border border-blue-100 bg-blue-50 p-3">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                       <div>

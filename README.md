@@ -27,12 +27,15 @@ Major active modules:
 - Team Member Management for clear create, role update, deactivate/reactivate, and last-owner protection.
 - Role-based staff guidance in navigation, account menu, and Settings while hard enforcement remains off.
 - Inbox selected conversations now put the latest customer message and manual reply workspace directly under the conversation header for faster agent response.
+- AI Reply Assistant v1 can suggest Inbox reply drafts when `OPENAI_API_KEY` is configured. Suggestions fill the composer only; staff must review and click Send Reply manually.
 
 WhatsApp Cloud API can provide customer profile name in webhook contact data, but it generally does not provide customer profile photos. ARBCore uses initials/avatar fallback and lets operators edit the customer name manually.
 
 Conversation quality controls are internal CRM states only. They do not send messages or change WhatsApp/Messenger provider behavior.
 
 Saved Replies are text-only in Phase 1. They insert into the composer only; staff must review and click Send manually.
+
+AI reply suggestions are also draft-only. They do not auto-send, do not schedule messages, and do not change WhatsApp or Messenger provider behavior.
 
 Staff Activity Logs are internal only. They store safe summaries for manual CRM, order, product, saved reply, auto-reply, and inbox state changes. Logging never stores access tokens, cookies, raw webhook payloads, provider secrets, or full raw request bodies, and logging failure should not block the main business action.
 
