@@ -66,8 +66,8 @@ export function ContactsModulePage() {
   const contacts = useApiData<ListResponse<Contact>>("/api/contacts?pageSize=500");
   const { toast, showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [search, setSearch] = useState("");
   const initialFilters = getInitialContactFilters();
+  const [search, setSearch] = useState(initialFilters.search);
   const [statusFilter, setStatusFilter] = useState(initialFilters.status);
   const [tagFilter, setTagFilter] = useState(initialFilters.tag);
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -584,16 +584,18 @@ function normalizePhone(phone: string) {
 
 function getInitialContactFilters() {
   if (typeof window === "undefined") {
-    return { status: "all", tag: "all" };
+    return { status: "all", tag: "all", search: "" };
   }
 
   const params = new URLSearchParams(window.location.search);
   const status = params.get("status");
   const tag = params.get("tag");
+  const search = params.get("search");
 
   return {
     status: status ? normalizeContactStatus(status) : "all",
-    tag: tag?.trim() || "all"
+    tag: tag?.trim() || "all",
+    search: search?.trim() || ""
   };
 }
 

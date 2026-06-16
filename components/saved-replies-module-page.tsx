@@ -131,7 +131,7 @@ export function SavedRepliesModulePage() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<SavedReplyForm>(emptyForm);
-  const [filters, setFilters] = useState({ category: "ALL", channel: "ALL", status: "ACTIVE", search: "" });
+  const [filters, setFilters] = useState(getInitialSavedReplyFilters());
 
   const editingReply = useMemo(() => replies.find((reply) => reply.id === editingId) ?? null, [editingId, replies]);
 
@@ -366,6 +366,20 @@ export function SavedRepliesModulePage() {
       {toast ? <Toast {...toast} /> : null}
     </AppShell>
   );
+}
+
+function getInitialSavedReplyFilters() {
+  if (typeof window === "undefined") {
+    return { category: "ALL", channel: "ALL", status: "ACTIVE", search: "" };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return {
+    category: params.get("category")?.trim().toUpperCase() || "ALL",
+    channel: params.get("channel")?.trim().toUpperCase() || "ALL",
+    status: params.get("status")?.trim().toUpperCase() || "ACTIVE",
+    search: params.get("search")?.trim() || ""
+  };
 }
 
 function Badge({ text, muted }: { text: string; muted?: boolean }) {

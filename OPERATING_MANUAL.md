@@ -48,6 +48,8 @@ Dashboard CRM/support metrics show Inbox status counts, due follow-ups, message 
 
 The topbar attention icons refresh their counts every 5 minutes without reloading the page. The bell icon opens Follow-up Queue for overdue or today follow-ups, and the message icon opens Inbox for unread conversations or Message Logs for failed sends. These counts are staff attention indicators only; they do not trigger customer messages.
 
+Use the topbar search box to open `/search` and find matching records across existing daily-use modules. Search results are quick links into Inbox, Contacts, Orders, Products, Campaigns, Saved Replies, and Message Logs, using safe previews from existing read-only APIs.
+
 ## 2. Contacts
 
 Contacts is the customer list. Each contact can store a name, WhatsApp phone number, email, source or segment, tags, status, and opt-in preference.

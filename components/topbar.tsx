@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -50,6 +50,7 @@ export function Topbar() {
   const [auth, setAuth] = useState<AuthMe | null>(null);
   const [stats, setStats] = useState<DashboardStats>({});
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -151,6 +152,13 @@ export function Topbar() {
     router.refresh();
   }
 
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+    router.push(`/search?q=${encodeURIComponent(query)}`);
+  }
+
   return (
     <header className="sticky top-0 z-20 border-b border-blue-100/80 bg-white/84 backdrop-blur-xl">
       <div className="flex min-h-[76px] items-center gap-3 px-3 py-3 sm:min-h-[100px] sm:gap-4 sm:px-6 sm:py-4 xl:px-8">
@@ -175,16 +183,19 @@ export function Topbar() {
           <ChevronDown className="h-4 w-4 shrink-0 text-slate-500" />
         </button>
 
-        <div className="relative hidden max-w-2xl flex-1 xl:block">
+        <form className="relative hidden max-w-2xl flex-1 xl:block" onSubmit={submitSearch}>
           <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
           <input
             className="h-14 w-full rounded-[18px] border border-blue-100 bg-white px-14 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
-            placeholder="Search contacts, campaigns, messages..."
+            placeholder="Search inbox, contacts, orders, products..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            aria-label="Search workspace"
           />
           <span className="absolute right-4 top-1/2 flex h-8 -translate-y-1/2 items-center gap-1 rounded-lg border border-blue-100 bg-slate-50 px-2 text-xs font-bold text-slate-500">
-            <Command className="h-3.5 w-3.5" /> K
+            <Command className="h-3.5 w-3.5" /> Enter
           </span>
-        </div>
+        </form>
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
           <RobotAvatar size="md" className="hidden sm:grid" />
@@ -255,13 +266,16 @@ export function Topbar() {
         </div>
       </div>
       <div className="hidden px-3 pb-3 sm:block sm:px-6 sm:pb-4 xl:hidden">
-        <div className="relative">
+        <form className="relative" onSubmit={submitSearch}>
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
           <input
             className="h-12 w-full rounded-[16px] border border-blue-100 bg-white px-12 text-sm font-medium outline-none focus:border-royal focus:ring-4 focus:ring-blue-100"
-            placeholder="Search contacts, campaigns, messages..."
+            placeholder="Search inbox, contacts, orders, products..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            aria-label="Search workspace"
           />
-        </div>
+        </form>
       </div>
     </header>
   );

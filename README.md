@@ -43,6 +43,8 @@ Topbar role badges and the profile menu help staff find Account/Profile, Team Me
 
 Topbar attention badges refresh safely every 5 minutes without reloading the full app. The bell opens Follow-up Queue for overdue/today follow-ups, and the message icon opens Inbox or filtered Message Logs for unread conversations and failed sends. These are attention indicators only; they do not send automatic replies.
 
+Topbar search opens `/search`, a safe workspace search view backed by existing read-only module APIs. It returns quick links for Inbox, Contacts, Orders, Products, Campaigns, Saved Replies, and Message Logs without exposing provider secrets or raw webhook payloads.
+
 Product images use public HTTPS image URLs in this phase. No upload/storage infrastructure is added. Staff can preview product images and manually send a selected product image from Inbox for WhatsApp conversations only.
 
 Follow-up Queue is manual only. It helps staff review conversation and order follow-ups, mark them done, update dates, and jump back to Inbox or Orders. It does not send automatic follow-up messages.

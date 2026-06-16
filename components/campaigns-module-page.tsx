@@ -121,9 +121,10 @@ function campaignToForm(campaign: Campaign): CampaignForm {
 }
 
 export function CampaignsModulePage() {
+  const initialFilters = getInitialCampaignFilters();
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [channelFilter, setChannelFilter] = useState("ALL");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialFilters.search);
   const campaignsPath = `/api/campaigns?pageSize=100&status=${encodeURIComponent(statusFilter)}&channel=${encodeURIComponent(channelFilter)}&search=${encodeURIComponent(search)}`;
   const campaigns = useApiData<ListResponse<Campaign>>(campaignsPath);
   const { toast, showToast } = useToast();
@@ -363,6 +364,15 @@ export function CampaignsModulePage() {
       {toast ? <Toast {...toast} /> : null}
     </AppShell>
   );
+}
+
+function getInitialCampaignFilters() {
+  if (typeof window === "undefined") {
+    return { search: "" };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return { search: params.get("search")?.trim() || "" };
 }
 
 function CampaignList({ campaigns, loading, error, onEdit, onArchive, submitting }: { campaigns: Campaign[]; loading: boolean; error: string | null; onEdit: (campaign: Campaign) => void; onArchive: (campaign: Campaign) => Promise<void>; submitting: boolean }) {

@@ -67,13 +67,7 @@ export function WhatsAppLogsModulePage() {
   const [webhookEvents, setWebhookEvents] = useState<WhatsAppWebhookEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
-    channel: "ALL",
-    direction: "ALL",
-    status: "ALL",
-    search: "",
-    limit: "50"
-  });
+  const [filters, setFilters] = useState(getInitialLogFilters());
 
   async function loadLogs() {
     setLoading(true);
@@ -298,6 +292,21 @@ function isUnsupportedMessage(message: WhatsAppLogMessage) {
 
 function hasReferral(message: WhatsAppLogMessage) {
   return Boolean(message.referralSourceType || message.referralSourceId || message.referralHeadline || message.referralCtwaClid);
+}
+
+function getInitialLogFilters() {
+  if (typeof window === "undefined") {
+    return { channel: "ALL", direction: "ALL", status: "ALL", search: "", limit: "50" };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return {
+    channel: params.get("channel")?.trim().toUpperCase() || "ALL",
+    direction: params.get("direction")?.trim().toUpperCase() || "ALL",
+    status: params.get("status")?.trim().toUpperCase() || "ALL",
+    search: params.get("search")?.trim() || "",
+    limit: params.get("limit")?.trim() || "50"
+  };
 }
 
 function FilterSelect({
