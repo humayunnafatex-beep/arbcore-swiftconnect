@@ -1643,6 +1643,39 @@ export function InboxModulePage() {
                             <OrderFollowUpBadge order={order} />
                           </div>
                           <div className="mt-3 rounded-[14px] border border-blue-100 bg-white p-3">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <p className="text-xs font-black uppercase text-royal">Order Summary</p>
+                                <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">Review before confirming with the customer. Using the reply only fills the composer.</p>
+                              </div>
+                              <button
+                                className={`${primaryButtonClassName} h-9 justify-center text-xs`}
+                                type="button"
+                                onClick={() => useOrderFollowUpReply(renderOrderConfirmationSummaryReply(order))}
+                              >
+                                Use confirmation reply
+                              </button>
+                            </div>
+                            <div className="mt-3 grid gap-2 text-xs font-semibold text-slate-600 sm:grid-cols-2">
+                              <SummaryItem label="Order ID" value={order.orderNumber || order.id} />
+                              <SummaryItem label="Customer" value={order.customerName || "Not set"} />
+                              <SummaryItem label="Phone" value={order.customerPhone || "Not set"} />
+                              <SummaryItem label="Product/model" value={order.modelName || "Not set"} />
+                              <SummaryItem label="Size" value={order.size || "Not set"} />
+                              <SummaryItem label="Color" value={extractColorFromNotes(order.notes) || "Not set"} />
+                              <SummaryItem label="Quantity" value={order.quantity.toLocaleString()} />
+                              <SummaryItem label="Unit price" value={`BDT ${order.unitPrice.toLocaleString()}`} />
+                              <SummaryItem label="Delivery charge" value={`BDT ${order.deliveryCharge.toLocaleString()}`} />
+                              <SummaryItem label="Total amount" value={`BDT ${order.totalAmount.toLocaleString()}`} />
+                              <SummaryItem label="Payment/COD" value={formatSavedReplyOption(order.paymentStatus)} />
+                              <SummaryItem label="Order status" value={formatSavedReplyOption(order.orderStatus)} />
+                              <div className="rounded-[12px] bg-blue-50 px-3 py-2 sm:col-span-2">
+                                <span className="text-slate-400">Delivery address</span>
+                                <p className="mt-1 font-black text-ink">{order.deliveryAddress || "Not set"}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-3 rounded-[14px] border border-blue-100 bg-white p-3">
                             <p className="text-xs font-black uppercase text-slate-500">Order status update</p>
                             <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                               <select
@@ -2279,6 +2312,30 @@ function renderOrderFollowUpReply(templateId: OrderFollowUpTemplateId, order: Or
     default:
       return "";
   }
+}
+
+function renderOrderConfirmationSummaryReply(order: Order) {
+  const color = extractColorFromNotes(order.notes);
+  const parts = [
+    `Order: ${order.orderNumber || order.id}`,
+    `Model: ${order.modelName || "N/A"}`,
+    order.size ? `Size: ${order.size}` : "",
+    color ? `Color: ${color}` : "",
+    `Qty: ${order.quantity}`,
+    `Total: BDT ${order.totalAmount.toLocaleString()}`,
+    order.deliveryAddress ? `Address: ${order.deliveryAddress}` : ""
+  ].filter(Boolean);
+
+  return `\u0986\u09aa\u09a8\u09be\u09b0 order summary confirm \u0995\u09b0\u09c7 \u09a6\u09bf\u099a\u09cd\u099b\u09bf:\n${parts.join("\n")}\n\n\u09b8\u09ac \u09a0\u09bf\u0995 \u09a5\u09be\u0995\u09b2\u09c7 please confirm \u0995\u09b0\u09c1\u09a8\u0964`;
+}
+
+function SummaryItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[12px] bg-blue-50 px-3 py-2">
+      <span className="text-slate-400">{label}</span>
+      <p className="mt-1 break-words font-black text-ink">{value}</p>
+    </div>
+  );
 }
 
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {

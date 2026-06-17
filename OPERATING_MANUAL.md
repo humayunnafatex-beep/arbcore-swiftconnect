@@ -488,6 +488,8 @@ Use Saved Replies for generic reusable answers. Use Order Templates for order-sp
 
 From Inbox, staff can create or update a linked order draft after confirming details with the customer. Customer name and phone/channel ID are prefilled when available; product/model, size, color, quantity, price, delivery charge, COD/payment status, delivery address, and order note remain manually editable. Saving an order never sends a customer message. Color is saved inside the order note because the current order schema does not have a separate color field.
 
+Linked Inbox orders show an Order Summary card with order ID, customer, phone, product/model, size, color from note, quantity, pricing, delivery charge, total, payment/COD status, delivery address, and current status. Use confirmation reply inserts a short customer-friendly confirmation message into the composer only; staff must review it and click Send Reply manually.
+
 After an order is linked, staff can update its status from Inbox as Draft, Confirmed, Processing, Shipped, Delivered, or Cancelled. ARBCore shows short customer follow-up reply templates such as order confirmation, address confirmation, Payment/COD confirmation, shipped update, delivery follow-up, and cancelled order note. These templates only insert text into the composer after the operator clicks Use follow-up reply; they never send automatically.
 
 Phase 1 remains manual. Media saved replies, AI-generated replies, shortcut auto-insert behavior, scheduled sends, and send-on-status-change behavior can be considered later.
