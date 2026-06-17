@@ -56,15 +56,14 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
       return NextResponse.json({ success: false, error: "Knowledge base fact was not found." }, { status: 404 });
     }
 
-    const fact = await prisma.businessKnowledgeFact.update({
-      where: { id: existing.id },
-      data: { isActive: false }
+    const fact = await prisma.businessKnowledgeFact.delete({
+      where: { id: existing.id }
     });
 
     return NextResponse.json({ success: true, data: { fact } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
     console.error("Knowledge base DELETE error:", error);
-    return NextResponse.json({ success: false, error: "Unable to deactivate knowledge base fact." }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Unable to delete knowledge base fact." }, { status: 500 });
   }
 }

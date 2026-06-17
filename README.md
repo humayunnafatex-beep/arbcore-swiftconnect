@@ -22,7 +22,7 @@ Major active modules:
 - Follow-up Queue for overdue, today, upcoming, and completed conversation/order follow-ups.
 - WhatsApp customer profile name capture and Click-to-WhatsApp referral context when Meta includes safe webhook fields.
 - Inbox conversation quality controls for read/unread, starred, priority, and quick labels.
-- Saved Replies / Quick Replies for inserting reusable text into the Inbox composer.
+- Saved Replies / Quick Replies for inserting reusable text into the Inbox composer, with footwear support starter replies seeded for new companies.
 - Staff Activity Logs for internal-only audit summaries of manual operator actions.
 - Team Member Management for clear create, role update, deactivate/reactivate, and last-owner protection.
 - Role-based staff guidance in navigation, account menu, and Settings while hard enforcement remains off.
@@ -34,11 +34,11 @@ WhatsApp Cloud API can provide customer profile name in webhook contact data, bu
 
 Conversation quality controls are internal CRM states only. They do not send messages or change WhatsApp/Messenger provider behavior.
 
-Saved Replies are text-only in Phase 1. They insert into the composer only; staff must review and click Send manually.
+Saved Replies are text-only in Phase 1. New companies receive default Welzz Stride footwear support replies for greeting, price/size, COD/delivery, exchange, stock, and human handoff when no saved replies exist yet. They insert into the composer only; staff can edit, activate/deactivate, or archive them, and must review and click Send manually.
 
 AI reply suggestions are also draft-only. They do not auto-send, do not schedule messages, and do not change WhatsApp or Messenger provider behavior.
 
-Business Knowledge Base facts are company-scoped admin settings. Active facts are included in AI Reply Assistant prompts to improve draft accuracy; inactive facts stay saved but are not used.
+Business Knowledge Base facts are company-scoped admin settings with Bangla + English category labels and helper examples for delivery, COD, exchange, refund, support hours, sizing, and reply tone. Active facts are included in AI Reply Assistant prompts to improve draft accuracy; inactive facts stay saved but are not used.
 
 Staff Activity Logs are internal only. They store safe summaries for manual CRM, order, product, saved reply, auto-reply, and inbox state changes. Logging never stores access tokens, cookies, raw webhook payloads, provider secrets, or full raw request bodies, and logging failure should not block the main business action.
 

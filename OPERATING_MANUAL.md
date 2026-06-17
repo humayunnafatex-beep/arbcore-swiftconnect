@@ -38,9 +38,9 @@ Channel Center at `/channels` gives a safe status view for WhatsApp and Messenge
 
 Unified Inbox at `/inbox` gives the team a business-friendly conversation view across WhatsApp and Messenger. It supports contact linking, safe replies, conversation status, team assignment, internal notes, and follow-up reminders from the selected conversation when the relevant Meta channel is configured. The app still does not fake provider success; check Message Logs for `SENT` or `FAILED` verification.
 
-AI Reply Assistant v1 appears in the Inbox reply workspace when AI configuration is available. It uses the latest customer message, conversation context, and saved replies to prepare a short Bangla + English draft. The draft is inserted into the composer only; staff must review, edit if needed, and click Send Reply manually.
+AI Reply Assistant v1 appears in the Inbox reply workspace when AI configuration is available. It uses the latest customer message, conversation context, saved replies, and active Business Knowledge Base facts to prepare a short Bangla + English draft. The draft is inserted into the composer only; staff must review, edit if needed, and click Send Reply manually.
 
-Business Knowledge Base in Settings lets admins maintain active business facts for AI reply grounding, such as delivery policy, COD policy, exchange policy, refund policy, support hours, product sizing notes, and brand tone instructions. Active facts are included in AI prompts; inactive facts are saved but ignored.
+Business Knowledge Base in Settings lets admins maintain active business facts for AI reply grounding, such as ডেলিভারি নীতি, ক্যাশ অন ডেলিভারি নীতি, এক্সচেঞ্জ নীতি, রিফান্ড নীতি, সাপোর্ট সময়সূচি, সাইজ/ফিটিং নোট, and রিপ্লাই টোন নির্দেশনা. Each category includes a Bangla helper example. Active facts are included in AI prompts; inactive facts are saved but ignored.
 
 ## 1. Dashboard
 

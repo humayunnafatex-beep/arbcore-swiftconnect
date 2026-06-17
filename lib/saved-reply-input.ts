@@ -1,4 +1,10 @@
 export const savedReplyCategories = [
+  "GREETING",
+  "PRICE_SIZE",
+  "COD_DELIVERY",
+  "EXCHANGE_POLICY",
+  "STOCK",
+  "HUMAN_HANDOFF",
   "GENERAL",
   "PRICE",
   "SIZE",

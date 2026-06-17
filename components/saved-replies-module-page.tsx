@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Archive, Edit3, MessageSquareQuote, Plus, RefreshCw, Search } from "lucide-react";
+import { Archive, Edit3, MessageSquareQuote, Plus, RefreshCw, Search, X } from "lucide-react";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { AppShell } from "./app-shell";
 import {
@@ -43,7 +43,7 @@ type SavedReplyForm = {
   status: string;
 };
 
-const categories = ["GENERAL", "PRICE", "SIZE", "DELIVERY", "COD", "ORDER", "PAYMENT", "SUPPORT", "COMPLAINT", "FOLLOW_UP"];
+const categories = ["GREETING", "PRICE_SIZE", "COD_DELIVERY", "EXCHANGE_POLICY", "STOCK", "HUMAN_HANDOFF", "GENERAL", "PRICE", "SIZE", "DELIVERY", "COD", "ORDER", "PAYMENT", "SUPPORT", "COMPLAINT", "FOLLOW_UP"];
 const channels = ["ALL", "WHATSAPP", "MESSENGER"];
 const statuses = ["ACTIVE", "ARCHIVED"];
 
@@ -58,68 +58,68 @@ const emptyForm: SavedReplyForm = {
 
 const suggestions: SavedReplyForm[] = [
   {
-    title: "Price details",
-    category: "PRICE",
+    title: "Greeting",
+    category: "GREETING",
+    shortcut: "greeting",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "আসসালামু আলাইকুম। Welzz Stride-এ আপনাকে স্বাগতম। আপনি কোন মডেল/সাইজ সম্পর্কে জানতে চান?"
+  },
+  {
+    title: "Price Ask",
+    category: "PRICE_SIZE",
     shortcut: "price",
     channel: "ALL",
     status: "ACTIVE",
-    body: "Thanks for your message. Please share the model name or product screenshot, and our team will confirm the latest price shortly."
+    body: "জুতার দাম মডেল অনুযায়ী ভিন্ন হয়। আপনি কোন মডেলের দাম জানতে চান? চাইলে আমরা available models with price share করতে পারি।"
   },
   {
-    title: "Size guide",
-    category: "SIZE",
+    title: "Size Ask",
+    category: "PRICE_SIZE",
     shortcut: "size",
     channel: "ALL",
     status: "ACTIVE",
-    body: "Please share your usual shoe size or foot length. We will help you choose the right size before confirming the order."
+    body: "সাইজ সাধারণত 40-44 পর্যন্ত available থাকে, stock অনুযায়ী। আপনার regular shoe size কত?"
   },
   {
-    title: "Delivery charge",
-    category: "DELIVERY",
-    shortcut: "delivery",
-    channel: "ALL",
-    status: "ACTIVE",
-    body: "Delivery charge depends on your location. Please share your full delivery area so we can confirm the delivery cost."
-  },
-  {
-    title: "COD available",
-    category: "COD",
+    title: "COD",
+    category: "COD_DELIVERY",
     shortcut: "cod",
     channel: "ALL",
     status: "ACTIVE",
-    body: "Cash on Delivery is available for selected areas. Please share your delivery location so our team can confirm COD availability."
+    body: "Cash on Delivery available আছে eligible location-এ। Order confirm করতে নাম, ফোন নম্বর, ঠিকানা, মডেল, সাইজ এবং কালার দিতে হবে।"
   },
   {
-    title: "Order confirmation",
-    category: "ORDER",
-    shortcut: "confirm",
+    title: "Delivery",
+    category: "COD_DELIVERY",
+    shortcut: "delivery",
     channel: "ALL",
     status: "ACTIVE",
-    body: "Thanks. We have received your order details. Our team will review availability and confirm the order shortly."
+    body: "ঢাকার ভিতরে সাধারণত 1-2 working days এবং ঢাকার বাইরে 2-4 working days সময় লাগে। Delivery charge location অনুযায়ী confirm করা হবে।"
   },
   {
-    title: "Payment request",
-    category: "PAYMENT",
-    shortcut: "payment",
+    title: "Exchange",
+    category: "EXCHANGE_POLICY",
+    shortcut: "exchange",
     channel: "ALL",
     status: "ACTIVE",
-    body: "Please complete the payment using the approved business payment method and share the transaction reference for confirmation."
+    body: "15 days exchange facility আছে, তবে product unused, clean এবং original condition-এ থাকতে হবে। Used বা damaged product exchange করা যাবে না।"
   },
   {
-    title: "Human support",
-    category: "SUPPORT",
-    shortcut: "support",
+    title: "Out of Stock",
+    category: "STOCK",
+    shortcut: "stock",
     channel: "ALL",
     status: "ACTIVE",
-    body: "Thanks for reaching out. A team member will review your message and reply shortly."
+    body: "দুঃখিত, এই মডেল/সাইজটি এখন stock out হতে পারে। চাইলে আমরা similar available option suggest করতে পারি।"
   },
   {
-    title: "Complaint received",
-    category: "COMPLAINT",
-    shortcut: "complaint",
+    title: "Human Handoff",
+    category: "HUMAN_HANDOFF",
+    shortcut: "handoff",
     channel: "ALL",
     status: "ACTIVE",
-    body: "We are sorry for the inconvenience. Please share your order ID, phone number, and issue details so our support team can review it."
+    body: "এই বিষয়টি আমাদের support team manually check করবে। অনুগ্রহ করে order details/সমস্যার ছবি দিলে আমরা দ্রুত সাহায্য করতে পারব।"
   }
 ];
 
@@ -213,7 +213,7 @@ export function SavedRepliesModulePage() {
   }
 
   async function archiveReply(reply: SavedReply) {
-    if (!window.confirm(`Archive "${reply.title}"?`)) return;
+    if (!window.confirm(`Deactivate "${reply.title}"? It will stay saved but leave active quick replies.`)) return;
 
     try {
       const response = await fetch(`/api/saved-replies/${reply.id}`, { method: "DELETE" });
@@ -223,7 +223,27 @@ export function SavedRepliesModulePage() {
         throw new Error(result.success ? "Failed to archive reply." : result.error);
       }
 
-      showToast("Saved reply archived.");
+      showToast("Saved reply deactivated.");
+      await loadReplies();
+    } catch (requestError) {
+      showToast(getApiErrorMessage(requestError), "error");
+    }
+  }
+
+  async function updateReplyStatus(reply: SavedReply, status: "ACTIVE" | "ARCHIVED") {
+    try {
+      const response = await fetch(`/api/saved-replies/${reply.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      const result = (await response.json()) as SavedReplyResponse;
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.success ? "Failed to update reply status." : result.error);
+      }
+
+      showToast(status === "ACTIVE" ? "Saved reply activated." : "Saved reply deactivated.");
       await loadReplies();
     } catch (requestError) {
       showToast(getApiErrorMessage(requestError), "error");
@@ -241,7 +261,7 @@ export function SavedRepliesModulePage() {
             <div>
               <p className="text-xs font-black uppercase text-royal">Inbox Productivity</p>
               <h1 className="mt-2 text-2xl font-black text-ink sm:text-3xl">Saved Replies</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Create reusable text replies for Inbox operators. Saved replies insert into the composer only; staff must review and click Send.</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Create reusable text replies for Inbox operators. Saved replies insert into the composer only; staff must review and click Send. New companies receive footwear support starter replies when no saved replies exist yet.</p>
             </div>
           </div>
           <button className={secondaryButtonClassName} onClick={() => void loadReplies()} disabled={loading}>
@@ -279,7 +299,8 @@ export function SavedRepliesModulePage() {
             </div>
             {editingReply ? (
               <button className={secondaryButtonClassName} type="button" onClick={resetForm}>
-                New
+                <X className="h-4 w-4" />
+                Cancel edit
               </button>
             ) : null}
           </div>
@@ -300,7 +321,7 @@ export function SavedRepliesModulePage() {
             <textarea className={`${inputClassName} min-h-44 py-3`} value={form.body} onChange={(event) => setForm({ ...form, body: event.target.value })} placeholder="Reply body" />
             <button className={primaryButtonClassName} type="submit" disabled={saving}>
               <Plus className="h-4 w-4" />
-              {saving ? "Saving..." : editingReply ? "Save Changes" : "Save Reply"}
+              {saving ? "Saving..." : editingReply ? "Update Reply" : "Save Reply"}
             </button>
           </div>
         </form>
@@ -342,17 +363,22 @@ export function SavedRepliesModulePage() {
                           <Badge text={formatOption(reply.status)} muted={reply.status === "ARCHIVED"} />
                         </div>
                         <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-slate-600">{reply.body}</p>
-                        <p className="mt-2 text-xs font-semibold text-slate-400">Shortcut: {reply.shortcut || "-"} · Updated {formatDate(reply.updatedAt)}</p>
+                        <p className="mt-2 text-xs font-semibold text-slate-400">Shortcut: {reply.shortcut || "-"} - Updated {formatDate(reply.updatedAt)}</p>
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <button className="grid h-10 w-10 place-items-center rounded-[12px] border border-blue-100 text-royal hover:bg-blue-50" type="button" onClick={() => editReply(reply)} aria-label="Edit saved reply">
                           <Edit3 className="h-4 w-4" />
                         </button>
                         {reply.status !== "ARCHIVED" ? (
-                          <button className="grid h-10 w-10 place-items-center rounded-[12px] border border-rose-100 text-rose-600 hover:bg-rose-50" type="button" onClick={() => void archiveReply(reply)} aria-label="Archive saved reply">
+                          <button className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-rose-100 px-3 text-xs font-black text-rose-600 hover:bg-rose-50" type="button" onClick={() => void archiveReply(reply)} aria-label="Deactivate saved reply">
                             <Archive className="h-4 w-4" />
+                            Deactivate
                           </button>
-                        ) : null}
+                        ) : (
+                          <button className="rounded-[12px] border border-emerald-100 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-50" type="button" onClick={() => void updateReplyStatus(reply, "ACTIVE")}>
+                            Activate
+                          </button>
+                        )}
                       </div>
                     </div>
                   </article>

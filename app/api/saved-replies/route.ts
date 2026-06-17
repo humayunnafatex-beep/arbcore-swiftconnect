@@ -32,6 +32,8 @@ export async function GET(request: Request) {
       search
     });
 
+    await seedDefaultSavedRepliesIfEmpty(company.id);
+
     const replies = await prisma.savedReply.findMany({
       where,
       take: limit,
@@ -126,3 +128,82 @@ function parseLimit(value: string | null) {
   if (!Number.isFinite(parsed)) return 100;
   return Math.min(Math.max(Math.floor(parsed), 1), 500);
 }
+
+async function seedDefaultSavedRepliesIfEmpty(companyId: string) {
+  const existingCount = await prisma.savedReply.count({ where: { companyId } });
+  if (existingCount > 0) return;
+
+  await prisma.savedReply.createMany({
+    data: defaultFootwearSavedReplies.map((reply) => ({
+      companyId,
+      ...reply
+    }))
+  });
+}
+
+const defaultFootwearSavedReplies = [
+  {
+    title: "Greeting",
+    category: "GREETING",
+    shortcut: "greeting",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "আসসালামু আলাইকুম। Welzz Stride-এ আপনাকে স্বাগতম। আপনি কোন মডেল/সাইজ সম্পর্কে জানতে চান?"
+  },
+  {
+    title: "Price Ask",
+    category: "PRICE_SIZE",
+    shortcut: "price",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "জুতার দাম মডেল অনুযায়ী ভিন্ন হয়। আপনি কোন মডেলের দাম জানতে চান? চাইলে আমরা available models with price share করতে পারি।"
+  },
+  {
+    title: "Size Ask",
+    category: "PRICE_SIZE",
+    shortcut: "size",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "সাইজ সাধারণত 40-44 পর্যন্ত available থাকে, stock অনুযায়ী। আপনার regular shoe size কত?"
+  },
+  {
+    title: "COD",
+    category: "COD_DELIVERY",
+    shortcut: "cod",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "Cash on Delivery available আছে eligible location-এ। Order confirm করতে নাম, ফোন নম্বর, ঠিকানা, মডেল, সাইজ এবং কালার দিতে হবে।"
+  },
+  {
+    title: "Delivery",
+    category: "COD_DELIVERY",
+    shortcut: "delivery",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "ঢাকার ভিতরে সাধারণত 1-2 working days এবং ঢাকার বাইরে 2-4 working days সময় লাগে। Delivery charge location অনুযায়ী confirm করা হবে।"
+  },
+  {
+    title: "Exchange",
+    category: "EXCHANGE_POLICY",
+    shortcut: "exchange",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "15 days exchange facility আছে, তবে product unused, clean এবং original condition-এ থাকতে হবে। Used বা damaged product exchange করা যাবে না।"
+  },
+  {
+    title: "Out of Stock",
+    category: "STOCK",
+    shortcut: "stock",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "দুঃখিত, এই মডেল/সাইজটি এখন stock out হতে পারে। চাইলে আমরা similar available option suggest করতে পারি।"
+  },
+  {
+    title: "Human Handoff",
+    category: "HUMAN_HANDOFF",
+    shortcut: "handoff",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "এই বিষয়টি আমাদের support team manually check করবে। অনুগ্রহ করে order details/সমস্যার ছবি দিলে আমরা দ্রুত সাহায্য করতে পারব।"
+  }
+];

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, BookOpenText, Building2, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, UserCheck, UserMinus, UserRound, Users } from "lucide-react";
+import { Bell, BookOpenText, Building2, Edit3, Facebook, Globe2, KeyRound, Lock, Plus, RefreshCw, Save, ShieldCheck, Smartphone, Trash2, UserCheck, UserMinus, UserRound, Users, X } from "lucide-react";
 import { AppShell } from "./app-shell";
 import { Toast, inputClassName, primaryButtonClassName, secondaryButtonClassName, useToast } from "./saas-page-utils";
 import { ApiClientError, apiRequest, getApiErrorMessage } from "@/lib/api-client";
@@ -79,14 +79,42 @@ type KnowledgeFact = {
   updatedAt: string;
 };
 
-const knowledgeCategories = [
-  "Delivery policy",
-  "COD policy",
-  "Exchange policy",
-  "Refund policy",
-  "Support hours",
-  "Product sizing notes",
-  "Brand tone instructions"
+const knowledgeCategoryOptions = [
+  {
+    value: "Delivery policy",
+    label: "ডেলিভারি নীতি",
+    helper: "উদাহরণ: ঢাকার ভিতরে 1-2 working days, ঢাকার বাইরে 2-4 working days সময় লাগে।"
+  },
+  {
+    value: "COD policy",
+    label: "ক্যাশ অন ডেলিভারি নীতি",
+    helper: "উদাহরণ: Cash on Delivery eligible location-এ available; order confirm করতে customer details লাগবে।"
+  },
+  {
+    value: "Exchange policy",
+    label: "এক্সচেঞ্জ নীতি",
+    helper: "উদাহরণ: 15 days exchange facility আছে, product unused এবং original condition-এ থাকতে হবে।"
+  },
+  {
+    value: "Refund policy",
+    label: "রিফান্ড নীতি",
+    helper: "উদাহরণ: Refund শুধু approved case-এ business review শেষে process করা হবে।"
+  },
+  {
+    value: "Support hours",
+    label: "সাপোর্ট সময়সূচি",
+    helper: "উদাহরণ: Support team প্রতিদিন সকাল 10টা থেকে রাত 9টা পর্যন্ত reply করে।"
+  },
+  {
+    value: "Product sizing notes",
+    label: "সাইজ/ফিটিং নোট",
+    helper: "উদাহরণ: সাইজ 40-44 stock অনুযায়ী available; customer-এর regular shoe size জিজ্ঞেস করুন।"
+  },
+  {
+    value: "Brand tone instructions",
+    label: "রিপ্লাই টোন নির্দেশনা",
+    helper: "উদাহরণ: Reply polite, short, helpful এবং Bangla + English mix হবে।"
+  }
 ];
 
 const emptyKnowledgeForm = {
@@ -96,6 +124,14 @@ const emptyKnowledgeForm = {
   isActive: true,
   sortOrder: 0
 };
+
+function getKnowledgeCategoryOption(value: string) {
+  return knowledgeCategoryOptions.find((option) => option.value === value) ?? {
+    value,
+    label: value,
+    helper: "এই business fact AI draft suggestion-এর সময় context হিসেবে ব্যবহার হবে।"
+  };
+}
 
 export function SettingsModulePage() {
   const { toast, showToast } = useToast();
@@ -138,6 +174,8 @@ export function SettingsModulePage() {
   const [knowledgeLoading, setKnowledgeLoading] = useState(true);
   const [knowledgeSaving, setKnowledgeSaving] = useState<string | null>(null);
   const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledgeForm);
+  const [editingKnowledgeId, setEditingKnowledgeId] = useState<string | null>(null);
+  const [knowledgeEditForm, setKnowledgeEditForm] = useState(emptyKnowledgeForm);
 
   async function loadAccountProfile() {
     setAccountLoading(true);
@@ -294,6 +332,58 @@ useEffect(() => {
 
       await loadKnowledgeBase();
       showToast("Knowledge base fact updated.");
+      return true;
+    } catch (error) {
+      showToast(getApiErrorMessage(error), "error");
+      return false;
+    } finally {
+      setKnowledgeSaving(null);
+    }
+  }
+
+  function startKnowledgeEdit(fact: KnowledgeFact) {
+    setEditingKnowledgeId(fact.id);
+    setKnowledgeEditForm({
+      category: fact.category,
+      title: fact.title,
+      content: fact.content,
+      isActive: fact.isActive,
+      sortOrder: fact.sortOrder
+    });
+  }
+
+  function cancelKnowledgeEdit() {
+    setEditingKnowledgeId(null);
+    setKnowledgeEditForm(emptyKnowledgeForm);
+  }
+
+  async function saveKnowledgeEdit(fact: KnowledgeFact) {
+    if (!knowledgeEditForm.title.trim() || !knowledgeEditForm.content.trim()) {
+      showToast("Knowledge title and content are required.", "error");
+      return;
+    }
+
+    const updated = await updateKnowledgeFact(fact, knowledgeEditForm);
+    if (updated) cancelKnowledgeEdit();
+  }
+
+  async function deleteKnowledgeFact(fact: KnowledgeFact) {
+    if (!window.confirm(`Delete "${fact.title}" from active AI knowledge?`)) return;
+
+    setKnowledgeSaving(fact.id);
+    try {
+      const response = await fetch(`/api/settings/knowledge-base/${fact.id}`, { method: "DELETE" });
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Unable to delete knowledge fact.");
+      }
+
+      if (editingKnowledgeId === fact.id) {
+        cancelKnowledgeEdit();
+      }
+      await loadKnowledgeBase();
+      showToast("Knowledge base fact deleted from AI suggestions.");
     } catch (error) {
       showToast(getApiErrorMessage(error), "error");
     } finally {
@@ -527,11 +617,12 @@ async function save(section: string) {
             <div className="grid gap-3 rounded-[18px] border border-blue-100 bg-white p-4">
               <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
                 <select className={inputClassName} value={knowledgeForm.category} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, category: event.target.value })}>
-                  {knowledgeCategories.map((category) => <option key={category} value={category}>{category}</option>)}
+                  {knowledgeCategoryOptions.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
                 </select>
-                <input className={inputClassName} value={knowledgeForm.title} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, title: event.target.value })} placeholder="Short title, for example Delivery inside Dhaka" />
+                <input className={inputClassName} value={knowledgeForm.title} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, title: event.target.value })} placeholder="Short title, for example ঢাকার ভিতরে delivery" />
               </div>
-              <textarea className="min-h-24 rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100" value={knowledgeForm.content} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, content: event.target.value })} placeholder="Business fact or policy. Example: Delivery inside Dhaka usually takes 1-2 business days after order confirmation." />
+              <p className="rounded-[14px] bg-blue-50 px-3 py-2 text-xs font-bold leading-5 text-slate-600">{getKnowledgeCategoryOption(knowledgeForm.category).helper}</p>
+              <textarea className="min-h-24 rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100" value={knowledgeForm.content} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, content: event.target.value })} placeholder="Business fact লিখুন, যেমন: ঢাকার ভিতরে 1-2 working days সময় লাগে।" />
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <label className="flex items-center gap-2 text-sm font-bold text-slate-600">
                   <input type="checkbox" checked={knowledgeForm.isActive} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, isActive: event.target.checked })} />
@@ -550,31 +641,61 @@ async function save(section: string) {
               <div className="grid gap-3">
                 {knowledgeFacts.map((fact) => (
                   <article key={fact.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
-                    <div className="flex flex-col gap-3">
-                      <div className="grid gap-3 sm:grid-cols-[180px_1fr_auto]">
-                        <select className={inputClassName} value={fact.category} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, category: event.target.value } : item))}>
-                          {knowledgeCategories.map((category) => <option key={category} value={category}>{category}</option>)}
-                        </select>
-                        <input className={inputClassName} value={fact.title} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, title: event.target.value } : item))} />
-                        <label className="flex h-11 items-center gap-2 rounded-[14px] border border-blue-100 bg-blue-50 px-3 text-sm font-bold text-slate-600">
-                          <input type="checkbox" checked={fact.isActive} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, isActive: event.target.checked } : item))} />
-                          Active
-                        </label>
-                      </div>
-                      <textarea className="min-h-20 rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-royal focus:ring-4 focus:ring-blue-100" value={fact.content} onChange={(event) => setKnowledgeFacts((current) => current.map((item) => item.id === fact.id ? { ...item, content: event.target.value } : item))} />
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-xs font-semibold text-slate-500">Inactive facts stay saved but are not included in AI prompts.</p>
-                        <div className="flex flex-wrap gap-2">
-                          <button className={secondaryButtonClassName} onClick={() => void updateKnowledgeFact(fact, { isActive: false })} disabled={knowledgeSaving === fact.id || !fact.isActive}>
-                            Deactivate
-                          </button>
-                          <button className={primaryButtonClassName} onClick={() => void updateKnowledgeFact(fact, {})} disabled={knowledgeSaving === fact.id}>
-                            <Save className="h-4 w-4" />
-                            {knowledgeSaving === fact.id ? "Saving..." : "Save Fact"}
-                          </button>
+                    {editingKnowledgeId === fact.id ? (
+                      <div className="flex flex-col gap-3">
+                        <div className="grid gap-3 sm:grid-cols-[180px_1fr_auto]">
+                          <select className={inputClassName} value={knowledgeEditForm.category} onChange={(event) => setKnowledgeEditForm({ ...knowledgeEditForm, category: event.target.value })}>
+                            {knowledgeCategoryOptions.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+                          </select>
+                          <input className={inputClassName} value={knowledgeEditForm.title} onChange={(event) => setKnowledgeEditForm({ ...knowledgeEditForm, title: event.target.value })} />
+                          <label className="flex h-11 items-center gap-2 rounded-[14px] border border-blue-100 bg-blue-50 px-3 text-sm font-bold text-slate-600">
+                            <input type="checkbox" checked={knowledgeEditForm.isActive} onChange={(event) => setKnowledgeEditForm({ ...knowledgeEditForm, isActive: event.target.checked })} />
+                            Active for AI
+                          </label>
+                        </div>
+                        <p className="rounded-[14px] bg-blue-50 px-3 py-2 text-xs font-bold leading-5 text-slate-600">{getKnowledgeCategoryOption(knowledgeEditForm.category).helper}</p>
+                        <textarea className="min-h-20 rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-royal focus:ring-4 focus:ring-blue-100" value={knowledgeEditForm.content} onChange={(event) => setKnowledgeEditForm({ ...knowledgeEditForm, content: event.target.value })} />
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-xs font-semibold text-slate-500">Inactive facts stay saved but are not included in AI prompts.</p>
+                          <div className="flex flex-wrap gap-2">
+                            <button className={secondaryButtonClassName} type="button" onClick={cancelKnowledgeEdit} disabled={knowledgeSaving === fact.id}>
+                              <X className="h-4 w-4" />
+                              Cancel edit
+                            </button>
+                            <button className={primaryButtonClassName} type="button" onClick={() => void saveKnowledgeEdit(fact)} disabled={knowledgeSaving === fact.id}>
+                              <Save className="h-4 w-4" />
+                              {knowledgeSaving === fact.id ? "Updating..." : "Update Fact"}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-royal">{getKnowledgeCategoryOption(fact.category).label}</span>
+                              <span className={`rounded-full px-3 py-1 text-xs font-black ${fact.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{fact.isActive ? "Active for AI" : "Inactive"}</span>
+                            </div>
+                            <h3 className="mt-2 text-base font-black text-ink">{fact.title}</h3>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button className={secondaryButtonClassName} type="button" onClick={() => startKnowledgeEdit(fact)} disabled={knowledgeSaving === fact.id}>
+                              <Edit3 className="h-4 w-4" />
+                              Edit
+                            </button>
+                            <button className={secondaryButtonClassName} type="button" onClick={() => void updateKnowledgeFact(fact, { isActive: !fact.isActive })} disabled={knowledgeSaving === fact.id}>
+                              {fact.isActive ? "Deactivate" : "Activate"}
+                            </button>
+                            <button className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-100 bg-white px-4 py-2 text-sm font-black text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60" type="button" onClick={() => void deleteKnowledgeFact(fact)} disabled={knowledgeSaving === fact.id}>
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                        <p className="rounded-[14px] border border-blue-100 bg-blue-50 px-3 py-3 text-sm font-semibold leading-6 text-slate-700">{fact.content}</p>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
