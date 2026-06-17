@@ -13,6 +13,7 @@ export async function GET() {
   try {
     const { context } = await requirePermission("settings.view");
     const { company } = context;
+    const warnings: Array<{ module: string; message: string }> = [];
 
     const whatsappMissing = [
       !company.whatsappPhoneNumberId ? "whatsappPhoneNumberId" : null,
@@ -29,8 +30,8 @@ export async function GET() {
     ].filter(Boolean) as string[];
     const strictProviderRouting = isStrictProviderWebhookRouting();
     const [duplicateWhatsappProviderIds, duplicateMessengerProviderIds] = await Promise.all([
-      hasDuplicateProviderId("whatsappPhoneNumberId"),
-      hasDuplicateProviderId("messengerPageId")
+      safeHasDuplicateProviderId("whatsappPhoneNumberId", warnings),
+      safeHasDuplicateProviderId("messengerPageId", warnings)
     ]);
     const duplicateProviderIdsDetected = duplicateWhatsappProviderIds || duplicateMessengerProviderIds;
 
@@ -62,9 +63,41 @@ export async function GET() {
         warning: duplicateProviderIdsDetected
           ? "Provider ID duplicate detected. Check Admin Provider Diagnostics before enabling strict routing."
           : null
-      }
+      },
+      warnings
     });
   } catch (error) {
+    console.error("Channel diagnostics route failed:", sanitizeDiagnosticsError(error));
     return handleApiError(error);
   }
+}
+
+async function safeHasDuplicateProviderId(
+  field: "whatsappPhoneNumberId" | "messengerPageId",
+  warnings: Array<{ module: string; message: string }>
+) {
+  try {
+    return await hasDuplicateProviderId(field);
+  } catch (error) {
+    console.error("Channel diagnostics duplicate provider check failed:", {
+      field,
+      error: sanitizeDiagnosticsError(error)
+    });
+    warnings.push({
+      module: "providerRouting",
+      message: "Provider duplicate ID check is temporarily unavailable. Review production migrations before enabling strict provider routing."
+    });
+    return false;
+  }
+}
+
+function sanitizeDiagnosticsError(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message
+    };
+  }
+
+  return { message: "Unknown diagnostics error." };
 }
