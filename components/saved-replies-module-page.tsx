@@ -123,6 +123,41 @@ const suggestions: SavedReplyForm[] = [
   }
 ];
 
+const safeFootwearSuggestions: SavedReplyForm[] = [
+  {
+    title: "Greeting",
+    category: "GREETING",
+    shortcut: "greeting",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u0986\u09b8\u09b8\u09be\u09b2\u09be\u09ae\u09c1 \u0986\u09b2\u09be\u0987\u0995\u09c1\u09ae\u0964 Welzz Stride-\u098f \u0986\u09aa\u09a8\u09be\u0995\u09c7 \u09b8\u09cd\u09ac\u09be\u0997\u09a4\u09ae\u0964 \u0986\u09aa\u09a8\u09bf \u0995\u09cb\u09a8 \u09ae\u09a1\u09c7\u09b2/\u09b8\u09be\u0987\u099c \u09b8\u09ae\u09cd\u09aa\u09b0\u09cd\u0995\u09c7 \u099c\u09be\u09a8\u09a4\u09c7 \u099a\u09be\u09a8?"
+  },
+  {
+    title: "Price Ask",
+    category: "PRICE_SIZE",
+    shortcut: "price",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u099c\u09c1\u09a4\u09be\u09b0 \u09a6\u09be\u09ae \u09ae\u09a1\u09c7\u09b2 \u0985\u09a8\u09c1\u09af\u09be\u09df\u09c0 \u09ad\u09bf\u09a8\u09cd\u09a8 \u09b9\u09df\u0964 \u0986\u09aa\u09a8\u09bf \u0995\u09cb\u09a8 \u09ae\u09a1\u09c7\u09b2\u09c7\u09b0 \u09a6\u09be\u09ae \u099c\u09be\u09a8\u09a4\u09c7 \u099a\u09be\u09a8? \u099a\u09be\u0987\u09b2\u09c7 \u0986\u09ae\u09b0\u09be available models with price share \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf\u0964"
+  },
+  {
+    title: "Size Ask",
+    category: "PRICE_SIZE",
+    shortcut: "size",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u09b8\u09be\u0987\u099c \u09b8\u09be\u09a7\u09be\u09b0\u09a3\u09a4 40-44 \u09aa\u09b0\u09cd\u09af\u09a8\u09cd\u09a4 available \u09a5\u09be\u0995\u09c7, stock \u0985\u09a8\u09c1\u09af\u09be\u09df\u09c0\u0964 \u0986\u09aa\u09a8\u09be\u09b0 regular shoe size \u0995\u09a4?"
+  },
+  {
+    title: "COD",
+    category: "COD_DELIVERY",
+    shortcut: "cod",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "Cash on Delivery available \u0986\u099b\u09c7 eligible location-\u098f\u0964 Order confirm \u0995\u09b0\u09a4\u09c7 \u09a8\u09be\u09ae, \u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0, \u09a0\u09bf\u0995\u09be\u09a8\u09be, \u09ae\u09a1\u09c7\u09b2, \u09b8\u09be\u0987\u099c \u098f\u09ac\u0982 \u0995\u09be\u09b2\u09be\u09b0 \u09a6\u09bf\u09a4\u09c7 \u09b9\u09ac\u09c7\u0964"
+  }
+];
+
 export function SavedRepliesModulePage() {
   const { toast, showToast } = useToast();
   const [replies, setReplies] = useState<SavedReply[]>([]);
@@ -275,7 +310,7 @@ export function SavedRepliesModulePage() {
         <h2 className="text-base font-black text-ink">Suggested Replies</h2>
         <p className="mt-1 text-xs font-semibold text-slate-500">Click a suggestion to pre-fill the form. Nothing is saved until you click Save.</p>
         <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          {suggestions.map((suggestion) => (
+          {safeFootwearSuggestions.map((suggestion) => (
             <button
               key={suggestion.shortcut}
               className="rounded-[16px] border border-blue-100 bg-blue-50 p-3 text-left text-sm font-bold text-royal hover:bg-blue-100"
@@ -350,7 +385,7 @@ export function SavedRepliesModulePage() {
           </div>
 
           <div className="mt-5">
-            <DataState loading={loading} error={error} empty={!replies.length} emptyText="No saved replies match this view.">
+            <DataState loading={loading} error={error} empty={!replies.length} emptyText={getSavedReplyEmptyText(filters)}>
               <div className="space-y-3">
                 {replies.map((reply) => (
                   <article key={reply.id} className="rounded-[18px] border border-blue-100 bg-white p-4">
@@ -413,9 +448,28 @@ function Badge({ text, muted }: { text: string; muted?: boolean }) {
 }
 
 function formatOption(value: string) {
+  const labels: Record<string, string> = {
+    GREETING: "Greeting",
+    PRICE_SIZE: "Price & Size",
+    COD_DELIVERY: "COD & Delivery",
+    EXCHANGE_POLICY: "Exchange Policy",
+    STOCK: "Stock / Out of Stock",
+    HUMAN_HANDOFF: "Complaint / Human Handoff"
+  };
+
+  if (labels[value]) return labels[value];
+
   return value
     .toLowerCase()
     .split("_")
     .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
     .join(" ");
+}
+
+function getSavedReplyEmptyText(filters: { category: string; channel: string; status: string; search: string }) {
+  if (filters.search.trim() || filters.category !== "ALL" || filters.channel !== "ALL" || filters.status !== "ACTIVE") {
+    return "No saved replies match these filters. Clear search or switch category/status to see more replies.";
+  }
+
+  return "No active saved replies are available yet. New companies are seeded automatically on load; you can also create greeting, price/size, COD/delivery, exchange, stock, and handoff replies here.";
 }

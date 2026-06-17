@@ -444,6 +444,13 @@ export function InboxModulePage() {
       return matchesCategory && matchesSearch;
     });
   }, [savedReplies, savedReplyCategory, savedReplySearch]);
+  const savedReplyEmptyText = useMemo(() => {
+    if (savedReplies.length === 0) {
+      return "No active saved replies are available for this channel yet. Open Saved Replies to create or review starter replies.";
+    }
+
+    return "No quick replies match these filters. Clear the search or choose All categories.";
+  }, [savedReplies.length]);
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
@@ -1936,7 +1943,7 @@ export function InboxModulePage() {
                         </div>
                       </div>
                     ) : null}
-                    <DataState loading={savedReplyLoading} error={savedReplyError} empty={!filteredSavedReplies.length} emptyText="No active saved replies for this channel yet.">
+                    <DataState loading={savedReplyLoading} error={savedReplyError} empty={!filteredSavedReplies.length} emptyText={savedReplyEmptyText}>
                       <div className="mt-3 grid gap-2 lg:grid-cols-2">
                         {filteredSavedReplies.slice(0, 8).map((reply) => (
                           <button key={reply.id} className="rounded-[14px] border border-blue-100 bg-white p-3 text-left hover:bg-blue-50" type="button" onClick={() => insertSavedReply(reply)}>
@@ -2052,6 +2059,17 @@ function formatQuickLabel(value: QuickLabelValue) {
 }
 
 function formatSavedReplyOption(value: string) {
+  const labels: Record<string, string> = {
+    GREETING: "Greeting",
+    PRICE_SIZE: "Price & Size",
+    COD_DELIVERY: "COD & Delivery",
+    EXCHANGE_POLICY: "Exchange Policy",
+    STOCK: "Stock / Out of Stock",
+    HUMAN_HANDOFF: "Complaint / Human Handoff"
+  };
+
+  if (labels[value]) return labels[value];
+
   return value
     .toLowerCase()
     .split("_")

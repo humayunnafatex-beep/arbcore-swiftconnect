@@ -130,15 +130,24 @@ function parseLimit(value: string | null) {
 }
 
 async function seedDefaultSavedRepliesIfEmpty(companyId: string) {
-  const existingCount = await prisma.savedReply.count({ where: { companyId } });
-  if (existingCount > 0) return;
+  try {
+    await prisma.$transaction(async (tx) => {
+      const existingCount = await tx.savedReply.count({ where: { companyId } });
+      if (existingCount > 0) return;
 
-  await prisma.savedReply.createMany({
-    data: defaultFootwearSavedReplies.map((reply) => ({
-      companyId,
-      ...reply
-    }))
-  });
+      await tx.savedReply.createMany({
+        data: safeDefaultFootwearSavedReplies.map((reply) => ({
+          companyId,
+          ...reply
+        }))
+      });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+      return;
+    }
+    throw error;
+  }
 }
 
 const defaultFootwearSavedReplies = [
@@ -205,5 +214,72 @@ const defaultFootwearSavedReplies = [
     channel: "ALL",
     status: "ACTIVE",
     body: "এই বিষয়টি আমাদের support team manually check করবে। অনুগ্রহ করে order details/সমস্যার ছবি দিলে আমরা দ্রুত সাহায্য করতে পারব।"
+  }
+];
+
+const safeDefaultFootwearSavedReplies = [
+  {
+    title: "Greeting",
+    category: "GREETING",
+    shortcut: "greeting",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u0986\u09b8\u09b8\u09be\u09b2\u09be\u09ae\u09c1 \u0986\u09b2\u09be\u0987\u0995\u09c1\u09ae\u0964 Welzz Stride-\u098f \u0986\u09aa\u09a8\u09be\u0995\u09c7 \u09b8\u09cd\u09ac\u09be\u0997\u09a4\u09ae\u0964 \u0986\u09aa\u09a8\u09bf \u0995\u09cb\u09a8 \u09ae\u09a1\u09c7\u09b2/\u09b8\u09be\u0987\u099c \u09b8\u09ae\u09cd\u09aa\u09b0\u09cd\u0995\u09c7 \u099c\u09be\u09a8\u09a4\u09c7 \u099a\u09be\u09a8?"
+  },
+  {
+    title: "Price Ask",
+    category: "PRICE_SIZE",
+    shortcut: "price",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u099c\u09c1\u09a4\u09be\u09b0 \u09a6\u09be\u09ae \u09ae\u09a1\u09c7\u09b2 \u0985\u09a8\u09c1\u09af\u09be\u09df\u09c0 \u09ad\u09bf\u09a8\u09cd\u09a8 \u09b9\u09df\u0964 \u0986\u09aa\u09a8\u09bf \u0995\u09cb\u09a8 \u09ae\u09a1\u09c7\u09b2\u09c7\u09b0 \u09a6\u09be\u09ae \u099c\u09be\u09a8\u09a4\u09c7 \u099a\u09be\u09a8? \u099a\u09be\u0987\u09b2\u09c7 \u0986\u09ae\u09b0\u09be available models with price share \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf\u0964"
+  },
+  {
+    title: "Size Ask",
+    category: "PRICE_SIZE",
+    shortcut: "size",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u09b8\u09be\u0987\u099c \u09b8\u09be\u09a7\u09be\u09b0\u09a3\u09a4 40-44 \u09aa\u09b0\u09cd\u09af\u09a8\u09cd\u09a4 available \u09a5\u09be\u0995\u09c7, stock \u0985\u09a8\u09c1\u09af\u09be\u09df\u09c0\u0964 \u0986\u09aa\u09a8\u09be\u09b0 regular shoe size \u0995\u09a4?"
+  },
+  {
+    title: "COD",
+    category: "COD_DELIVERY",
+    shortcut: "cod",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "Cash on Delivery available \u0986\u099b\u09c7 eligible location-\u098f\u0964 Order confirm \u0995\u09b0\u09a4\u09c7 \u09a8\u09be\u09ae, \u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0, \u09a0\u09bf\u0995\u09be\u09a8\u09be, \u09ae\u09a1\u09c7\u09b2, \u09b8\u09be\u0987\u099c \u098f\u09ac\u0982 \u0995\u09be\u09b2\u09be\u09b0 \u09a6\u09bf\u09a4\u09c7 \u09b9\u09ac\u09c7\u0964"
+  },
+  {
+    title: "Delivery",
+    category: "COD_DELIVERY",
+    shortcut: "delivery",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u09a2\u09be\u0995\u09be\u09b0 \u09ad\u09bf\u09a4\u09b0\u09c7 \u09b8\u09be\u09a7\u09be\u09b0\u09a3\u09a4 1-2 working days \u098f\u09ac\u0982 \u09a2\u09be\u0995\u09be\u09b0 \u09ac\u09be\u0987\u09b0\u09c7 2-4 working days \u09b8\u09ae\u09df \u09b2\u09be\u0997\u09c7\u0964 Delivery charge location \u0985\u09a8\u09c1\u09af\u09be\u09df\u09c0 confirm \u0995\u09b0\u09be \u09b9\u09ac\u09c7\u0964"
+  },
+  {
+    title: "Exchange",
+    category: "EXCHANGE_POLICY",
+    shortcut: "exchange",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "15 days exchange facility \u0986\u099b\u09c7, \u09a4\u09ac\u09c7 product unused, clean \u098f\u09ac\u0982 original condition-\u098f \u09a5\u09be\u0995\u09a4\u09c7 \u09b9\u09ac\u09c7\u0964 Used \u09ac\u09be damaged product exchange \u0995\u09b0\u09be \u09af\u09be\u09ac\u09c7 \u09a8\u09be\u0964"
+  },
+  {
+    title: "Out of Stock",
+    category: "STOCK",
+    shortcut: "stock",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u09a6\u09c1\u0983\u0996\u09bf\u09a4, \u098f\u0987 \u09ae\u09a1\u09c7\u09b2/\u09b8\u09be\u0987\u099c\u099f\u09bf \u098f\u0996\u09a8 stock out \u09b9\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u0964 \u099a\u09be\u0987\u09b2\u09c7 \u0986\u09ae\u09b0\u09be similar available option suggest \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf\u0964"
+  },
+  {
+    title: "Human Handoff",
+    category: "HUMAN_HANDOFF",
+    shortcut: "handoff",
+    channel: "ALL",
+    status: "ACTIVE",
+    body: "\u098f\u0987 \u09ac\u09bf\u09b7\u09df\u099f\u09bf \u0986\u09ae\u09be\u09a6\u09c7\u09b0 support team manually check \u0995\u09b0\u09ac\u09c7\u0964 \u0985\u09a8\u09c1\u0997\u09cd\u09b0\u09b9 \u0995\u09b0\u09c7 order details/\u09b8\u09ae\u09b8\u09cd\u09af\u09be\u09b0 \u099b\u09ac\u09bf \u09a6\u09bf\u09b2\u09c7 \u0986\u09ae\u09b0\u09be \u09a6\u09cd\u09b0\u09c1\u09a4 \u09b8\u09be\u09b9\u09be\u09af\u09cd\u09af \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09ac\u0964"
   }
 ];
