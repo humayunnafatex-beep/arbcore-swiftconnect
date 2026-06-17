@@ -14,7 +14,7 @@ Major active modules:
 - Unified Inbox CRM, Contacts, Auto Reply, Message Logs, Campaign Drafts, Billing, License, Settings, and workspace readiness tools.
 - Auto Reply Analytics for rule trigger attempts, sent replies, failed replies, and safe failure previews.
 - Customer lead statuses and tags for Contacts and Inbox CRM follow-up.
-- Manual Order Tracking linked to Contacts and Inbox conversations.
+- Manual Order Tracking linked to Contacts and Inbox conversations, including create/update order drafts directly from Inbox after customer chat.
 - Manual order message templates generated from order data for staff review before sending.
 - Order follow-up alerts, filters, and quick status/payment updates for manual order operations.
 - Product Catalog for manual product/model setup and faster Inbox order entry.
@@ -56,7 +56,7 @@ Product images use public HTTPS image URLs in this phase. No upload/storage infr
 
 Follow-up Queue is manual only. It helps staff review conversation and order follow-ups, mark them done, update dates, and jump back to Inbox or Orders. It does not send automatic follow-up messages.
 
-Order follow-up messaging is manual only. Order follow-up links can open Inbox with the related customer and order context, where order-specific templates insert text into the composer for staff review before sending.
+Order creation and follow-up messaging are manual only. Agents can create or update an order draft from Inbox with customer prefill, product/model, size, color, quantity, price, delivery charge, COD/payment status, address, and notes. Color is stored in the order note in this schema. Order templates insert text into the composer for staff review before sending.
 
 Safe production-beta defaults remain:
 

@@ -299,6 +299,7 @@ const emptyContactForm: ContactForm = {
 const emptyOrderForm = {
   modelName: "",
   size: "",
+  color: "",
   quantity: "1",
   unitPrice: "0",
   deliveryCharge: "0",
@@ -402,6 +403,7 @@ export function InboxModulePage() {
   const [contactMessage, setContactMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderForm, setOrderForm] = useState(emptyOrderForm);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [orderSaving, setOrderSaving] = useState(false);
@@ -676,7 +678,8 @@ export function InboxModulePage() {
   useEffect(() => {
     if (!selectedId) {
       setOrders([]);
-      setOrderForm(emptyOrderForm);
+      setOrderForm(prefillOrderFormFromConversation(detail));
+      setEditingOrderId(null);
       setSelectedProductId("");
       return;
     }
@@ -685,11 +688,10 @@ export function InboxModulePage() {
   }, [selectedId]);
 
   useEffect(() => {
-    const contact = detail?.conversation.contact;
     setOrderForm((current) => ({
       ...current,
-      customerName: current.customerName || contact?.name || detail?.conversation.displayName || "",
-      customerPhone: current.customerPhone || contact?.phone || detail?.conversation.contactKey || ""
+      customerName: current.customerName || prefillOrderFormFromConversation(detail).customerName,
+      customerPhone: current.customerPhone || prefillOrderFormFromConversation(detail).customerPhone
     }));
   }, [detail]);
 
@@ -1067,13 +1069,15 @@ export function InboxModulePage() {
 
     setOrderSaving(true);
     setOrderMessage(null);
+    const notes = withColorNote(orderForm.notes, orderForm.color);
 
     try {
-      const response = await fetch(`/api/inbox/conversations/${encodeURIComponent(selectedId)}/orders`, {
-        method: "POST",
+      const response = await fetch(editingOrderId ? `/api/orders/${encodeURIComponent(editingOrderId)}` : `/api/inbox/conversations/${encodeURIComponent(selectedId)}/orders`, {
+        method: editingOrderId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...orderForm,
+          notes,
           quantity: Number(orderForm.quantity),
           unitPrice: Number(orderForm.unitPrice),
           deliveryCharge: Number(orderForm.deliveryCharge)
@@ -1081,8 +1085,9 @@ export function InboxModulePage() {
       });
       const result = (await response.json()) as { success: boolean; error?: string };
       if (!response.ok || !result.success) throw new Error(result.error || "Failed to save order.");
-      setOrderMessage({ tone: "success", text: "Order saved." });
+      setOrderMessage({ tone: "success", text: editingOrderId ? "Order updated. No message was sent." : "Order draft created and linked to this conversation. No message was sent." });
       setOrderForm(emptyOrderForm);
+      setEditingOrderId(null);
       setSelectedProductId("");
       await loadConversationOrders(selectedId);
       await loadConversations();
@@ -1105,6 +1110,32 @@ export function InboxModulePage() {
       unitPrice: String(product.price),
       size: current.size || sizes[0] || ""
     }));
+  }
+
+  function editOrderDraft(order: Order) {
+    setEditingOrderId(order.id);
+    setSelectedProductId("");
+    setOrderMessage(null);
+    setOrderForm({
+      modelName: order.modelName,
+      size: order.size,
+      color: extractColorFromNotes(order.notes),
+      quantity: String(order.quantity),
+      unitPrice: String(order.unitPrice),
+      deliveryCharge: String(order.deliveryCharge),
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      deliveryAddress: order.deliveryAddress,
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.orderStatus,
+      notes: stripColorFromNotes(order.notes)
+    });
+  }
+
+  function cancelOrderEdit() {
+    setEditingOrderId(null);
+    setOrderForm(prefillOrderFormFromConversation(detail));
+    setSelectedProductId("");
   }
 
   async function prepareOrderMessage(orderId: string) {
@@ -1520,7 +1551,7 @@ export function InboxModulePage() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Orders</h3>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">Manual order records only. Preparing a message inserts text into the composer; staff must click Send Reply manually.</p>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">Create or update an order draft from this conversation. Order records save only when staff click the button; no customer message is sent automatically.</p>
                     </div>
                     <Link className="text-xs font-black text-royal hover:underline" href="/orders">
                       Open Orders
@@ -1558,6 +1589,13 @@ export function InboxModulePage() {
                             <OrderFollowUpBadge order={order} />
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              className={`${secondaryButtonClassName} h-9 text-xs`}
+                              type="button"
+                              onClick={() => editOrderDraft(order)}
+                            >
+                              Edit order
+                            </button>
                             <button
                               className={`${secondaryButtonClassName} h-9 text-xs`}
                               type="button"
@@ -1647,6 +1685,16 @@ export function InboxModulePage() {
                         </div>
                       </div>
                     ) : null}
+                    {editingOrderId ? (
+                      <div className="rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-800 lg:col-span-3">
+                        Editing linked order draft. Update saves order details only and does not send a customer message.
+                        <button className="ml-2 font-black underline" type="button" onClick={cancelOrderEdit}>Cancel edit</button>
+                      </div>
+                    ) : (
+                      <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-bold leading-5 text-slate-600 lg:col-span-3">
+                        Create Order Draft: customer name and phone are prefilled from the selected conversation/contact where available. Address and product details stay manual for agent confirmation.
+                      </div>
+                    )}
                     <input className={`${inputClassName} w-full`} value={orderForm.modelName} onChange={(event) => setOrderForm((current) => ({ ...current, modelName: event.target.value }))} placeholder="Model name" />
                     {selectedProductSizes.length ? (
                       <select className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))}>
@@ -1656,6 +1704,7 @@ export function InboxModulePage() {
                     ) : (
                       <input className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))} placeholder="Size" />
                     )}
+                    <input className={`${inputClassName} w-full`} value={orderForm.color} onChange={(event) => setOrderForm((current) => ({ ...current, color: event.target.value }))} placeholder="Color" />
                     <input className={`${inputClassName} w-full`} type="number" min="1" value={orderForm.quantity} onChange={(event) => setOrderForm((current) => ({ ...current, quantity: event.target.value }))} placeholder="Quantity" />
                     <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.unitPrice} onChange={(event) => setOrderForm((current) => ({ ...current, unitPrice: event.target.value }))} placeholder="Unit price" />
                     <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.deliveryCharge} onChange={(event) => setOrderForm((current) => ({ ...current, deliveryCharge: event.target.value }))} placeholder="Delivery charge" />
@@ -1686,9 +1735,9 @@ export function InboxModulePage() {
                     </div>
                   ) : null}
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs font-semibold text-slate-500">Total is calculated server-side as quantity x unit price + delivery charge.</p>
+                    <p className="text-xs font-semibold text-slate-500">Total is calculated server-side as quantity x unit price + delivery charge. Color is saved inside the order note because the current order schema has no separate color field.</p>
                     <button className={`${primaryButtonClassName} w-full sm:w-auto`} onClick={() => void saveOrderFromConversation()} disabled={orderSaving}>
-                      {orderSaving ? "Saving..." : "Save Order"}
+                      {orderSaving ? "Saving..." : editingOrderId ? "Update Order" : "Create Order Draft"}
                     </button>
                   </div>
                 </div>
@@ -2075,6 +2124,34 @@ function formatSavedReplyOption(value: string) {
     .split("_")
     .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
     .join(" ");
+}
+
+function withColorNote(notes: string, color: string) {
+  const cleanNotes = stripColorFromNotes(notes).trim();
+  const cleanColor = color.trim();
+  if (!cleanColor) return cleanNotes;
+  return [`Color: ${cleanColor}`, cleanNotes].filter(Boolean).join("\n");
+}
+
+function extractColorFromNotes(notes: string) {
+  return notes.split(/\r?\n/).find((line) => line.toLowerCase().startsWith("color:"))?.slice(6).trim() ?? "";
+}
+
+function stripColorFromNotes(notes: string) {
+  return notes
+    .split(/\r?\n/)
+    .filter((line) => !line.toLowerCase().startsWith("color:"))
+    .join("\n")
+    .trim();
+}
+
+function prefillOrderFormFromConversation(detail: ConversationDetailResponse["data"] | null) {
+  const contact = detail?.conversation.contact;
+  return {
+    ...emptyOrderForm,
+    customerName: contact?.name || detail?.conversation.displayName || "",
+    customerPhone: contact?.phone || detail?.conversation.contactKey || ""
+  };
 }
 
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {

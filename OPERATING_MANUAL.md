@@ -486,6 +486,8 @@ Order follow-up links can open Inbox with the customer search and related order 
 
 Use Saved Replies for generic reusable answers. Use Order Templates for order-specific customer messages such as confirmation, payment reminder, packed, shipped, delivered follow-up, and cancellation notice. Order Templates insert text into the Inbox composer only; staff must review or edit the text and click Send Reply manually.
 
+From Inbox, staff can create or update a linked order draft after confirming details with the customer. Customer name and phone/channel ID are prefilled when available; product/model, size, color, quantity, price, delivery charge, COD/payment status, delivery address, and order note remain manually editable. Saving an order never sends a customer message. Color is saved inside the order note because the current order schema does not have a separate color field.
+
 Phase 1 remains manual. Media saved replies, AI-generated replies, shortcut auto-insert behavior, scheduled sends, and send-on-status-change behavior can be considered later.
 
 ## 13. Support And Maintenance
