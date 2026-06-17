@@ -1,4 +1,4 @@
-export const ORDER_STATUSES = ["DRAFT", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
+export const ORDER_STATUSES = ["DRAFT", "CONFIRMED", "PROCESSING", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
 export const PAYMENT_STATUSES = ["UNPAID", "PARTIAL", "PAID", "COD"] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -7,6 +7,7 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 const orderLabels: Record<OrderStatus, string> = {
   DRAFT: "Draft",
   CONFIRMED: "Confirmed",
+  PROCESSING: "Processing",
   PACKED: "Packed",
   SHIPPED: "Shipped",
   DELIVERED: "Delivered",

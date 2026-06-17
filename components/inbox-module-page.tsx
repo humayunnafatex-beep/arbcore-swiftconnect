@@ -282,6 +282,14 @@ type OrderMessagePreviewResponse = {
   error?: string;
 };
 
+type OrderFollowUpTemplateId =
+  | "ORDER_CONFIRMATION"
+  | "ADDRESS_CONFIRMATION"
+  | "PAYMENT_COD_CONFIRMATION"
+  | "SHIPPED_UPDATE"
+  | "DELIVERY_FOLLOW_UP"
+  | "CANCELLED_ORDER_NOTE";
+
 type ContactForm = {
   name: string;
   email: string;
@@ -313,6 +321,15 @@ const emptyOrderForm = {
 
 const contactStages = getContactStatusOptions();
 const orderMessageTemplates = getOrderMessageTemplates();
+const orderStatusOptions = ["DRAFT", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
+const orderFollowUpTemplates: Array<{ id: OrderFollowUpTemplateId; label: string }> = [
+  { id: "ORDER_CONFIRMATION", label: "Order confirmation" },
+  { id: "ADDRESS_CONFIRMATION", label: "Address confirmation" },
+  { id: "PAYMENT_COD_CONFIRMATION", label: "Payment/COD confirmation" },
+  { id: "SHIPPED_UPDATE", label: "Shipped update" },
+  { id: "DELIVERY_FOLLOW_UP", label: "Delivery follow-up" },
+  { id: "CANCELLED_ORDER_NOTE", label: "Cancelled order note" }
+];
 const priorityOptions: Array<{ value: PriorityValue; label: string }> = [
   { value: "LOW", label: "Low" },
   { value: "NORMAL", label: "Normal" },
@@ -409,6 +426,8 @@ export function InboxModulePage() {
   const [orderSaving, setOrderSaving] = useState(false);
   const [orderMessage, setOrderMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
   const [orderTemplateById, setOrderTemplateById] = useState<Record<string, OrderMessageTemplateId>>({});
+  const [orderStatusDrafts, setOrderStatusDrafts] = useState<Record<string, string>>({});
+  const [orderFollowUpSuggestion, setOrderFollowUpSuggestion] = useState<{ orderId: string; templateId: OrderFollowUpTemplateId; message: string } | null>(null);
   const [preparingOrderMessageId, setPreparingOrderMessageId] = useState<string | null>(null);
   const replyFileInputRef = useRef<HTMLInputElement | null>(null);
   const focusOrderId = initialFilters.orderId;
@@ -1162,6 +1181,41 @@ export function InboxModulePage() {
     }
   }
 
+  async function updateOrderStatusFromInbox(order: Order) {
+    const nextStatus = orderStatusDrafts[order.id] || order.orderStatus;
+    setOrderMessage(null);
+
+    try {
+      const response = await fetch(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderStatus: nextStatus })
+      });
+      const result = (await response.json()) as { success: boolean; error?: string; data?: { order?: Order } };
+      if (!response.ok || !result.success) throw new Error(result.error || "Failed to update order status.");
+
+      const updatedOrder = result.data?.order ?? { ...order, orderStatus: nextStatus };
+      const templateId = getSuggestedFollowUpTemplate(nextStatus, updatedOrder.paymentStatus);
+      setOrderFollowUpSuggestion({
+        orderId: order.id,
+        templateId,
+        message: renderOrderFollowUpReply(templateId, updatedOrder)
+      });
+      setOrderMessage({ tone: "success", text: "Order status updated. Suggested customer follow-up is ready below; it will not send unless you use it and click Send Reply." });
+      if (selectedId) await loadConversationOrders(selectedId);
+    } catch (error) {
+      setOrderMessage({ tone: "error", text: getApiErrorMessage(error) });
+    }
+  }
+
+  function useOrderFollowUpReply(message: string) {
+    setReplyStatus(null);
+    setReplyError(null);
+    setReplyProviderError(null);
+    setReplyBody((current) => current.trim() ? `${current.trimEnd()}\n\n${message}` : message);
+    setOrderMessage({ tone: "success", text: "Follow-up reply inserted into composer. Review it, then click Send Reply manually." });
+  }
+
   async function updateOrderFollowUp(order: Order, patch: { followUpAt: string | null; followUpDone: boolean }) {
     setOrderMessage(null);
 
@@ -1588,6 +1642,47 @@ export function InboxModulePage() {
                             <StatusPill label={order.orderStatus} tone={order.orderStatus === "CANCELLED" ? "red" : order.orderStatus === "DELIVERED" ? "green" : "blue"} />
                             <OrderFollowUpBadge order={order} />
                           </div>
+                          <div className="mt-3 rounded-[14px] border border-blue-100 bg-white p-3">
+                            <p className="text-xs font-black uppercase text-slate-500">Order status update</p>
+                            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+                              <select
+                                className={`${inputClassName} h-10 w-full text-xs`}
+                                value={orderStatusDrafts[order.id] ?? order.orderStatus}
+                                onChange={(event) => setOrderStatusDrafts((current) => ({ ...current, [order.id]: event.target.value }))}
+                              >
+                                {orderStatusOptions.map((status) => <option key={status} value={status}>{formatSavedReplyOption(status)}</option>)}
+                              </select>
+                              <button
+                                className={`${secondaryButtonClassName} h-10 justify-center text-xs`}
+                                type="button"
+                                onClick={() => void updateOrderStatusFromInbox(order)}
+                              >
+                                Update status
+                              </button>
+                            </div>
+                            <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">Status update saves the order only. Suggested replies are draft-only and never auto-send.</p>
+                            {orderFollowUpSuggestion?.orderId === order.id ? (
+                              <div className="mt-3 rounded-[14px] border border-emerald-100 bg-emerald-50 p-3 text-xs font-bold leading-5 text-emerald-800">
+                                <p className="font-black">Suggested follow-up reply</p>
+                                <p className="mt-1 whitespace-pre-wrap">{orderFollowUpSuggestion.message}</p>
+                                <button className={`${primaryButtonClassName} mt-3 h-9 text-xs`} type="button" onClick={() => useOrderFollowUpReply(orderFollowUpSuggestion.message)}>
+                                  Use follow-up reply
+                                </button>
+                              </div>
+                            ) : null}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {orderFollowUpTemplates.map((template) => (
+                                <button
+                                  key={template.id}
+                                  className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-black text-royal hover:bg-blue-100"
+                                  type="button"
+                                  onClick={() => setOrderFollowUpSuggestion({ orderId: order.id, templateId: template.id, message: renderOrderFollowUpReply(template.id, order) })}
+                                >
+                                  {template.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                           <div className="mt-3 flex flex-wrap gap-2">
                             <button
                               className={`${secondaryButtonClassName} h-9 text-xs`}
@@ -1714,7 +1809,7 @@ export function InboxModulePage() {
                       {["UNPAID", "PARTIAL", "PAID", "COD"].map((status) => <option key={status} value={status}>{status}</option>)}
                     </select>
                     <select className={`${inputClassName} w-full`} value={orderForm.orderStatus} onChange={(event) => setOrderForm((current) => ({ ...current, orderStatus: event.target.value }))}>
-                      {["DRAFT", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED"].map((status) => <option key={status} value={status}>{status}</option>)}
+                      {orderStatusOptions.map((status) => <option key={status} value={status}>{formatSavedReplyOption(status)}</option>)}
                     </select>
                   </div>
                   <textarea
@@ -2152,6 +2247,38 @@ function prefillOrderFormFromConversation(detail: ConversationDetailResponse["da
     customerName: contact?.name || detail?.conversation.displayName || "",
     customerPhone: contact?.phone || detail?.conversation.contactKey || ""
   };
+}
+
+function getSuggestedFollowUpTemplate(status: string, paymentStatus: string): OrderFollowUpTemplateId {
+  if (status === "CONFIRMED") return paymentStatus === "COD" ? "PAYMENT_COD_CONFIRMATION" : "ORDER_CONFIRMATION";
+  if (status === "PROCESSING") return "ADDRESS_CONFIRMATION";
+  if (status === "SHIPPED") return "SHIPPED_UPDATE";
+  if (status === "DELIVERED") return "DELIVERY_FOLLOW_UP";
+  if (status === "CANCELLED") return "CANCELLED_ORDER_NOTE";
+  return "ADDRESS_CONFIRMATION";
+}
+
+function renderOrderFollowUpReply(templateId: OrderFollowUpTemplateId, order: Order) {
+  const model = order.modelName || "selected model";
+  const size = order.size ? `, Size: ${order.size}` : "";
+  const orderNumber = order.orderNumber || "your order";
+
+  switch (templateId) {
+    case "ORDER_CONFIRMATION":
+      return `\u0986\u09aa\u09a8\u09be\u09b0 order confirm \u0995\u09b0\u09be \u09b9\u09df\u09c7\u099b\u09c7\u0964 Order: ${orderNumber}, Model: ${model}${size}. \u0986\u09ae\u09b0\u09be next update \u09b6\u09c0\u0998\u09cd\u09b0\u0987 share \u0995\u09b0\u09ac\u0964`;
+    case "ADDRESS_CONFIRMATION":
+      return `Order process \u0995\u09b0\u09be\u09b0 \u0986\u0997\u09c7 delivery address \u0986\u09b0 phone number \u098f\u0995\u09ac\u09be\u09b0 confirm \u0995\u09b0\u09c7 \u09a6\u09bf\u09a8\u0964 Model: ${model}${size}.`;
+    case "PAYMENT_COD_CONFIRMATION":
+      return `\u0986\u09aa\u09a8\u09be\u09b0 order confirm \u0995\u09b0\u09a4\u09c7 COD/payment details final \u0995\u09b0\u09be \u09b2\u09be\u0997\u09ac\u09c7\u0964 Delivery location confirm \u0995\u09b0\u09b2\u09c7 charge \u099c\u09be\u09a8\u09bf\u09df\u09c7 \u09a6\u09bf\u09a4\u09c7 \u09aa\u09be\u09b0\u09ac\u0964`;
+    case "SHIPPED_UPDATE":
+      return `\u0986\u09aa\u09a8\u09be\u09b0 order shipped \u09b9\u09df\u09c7\u099b\u09c7\u0964 Order: ${orderNumber}. Delivery \u09b8\u09ae\u09df\u09c7 phone reachable \u09b0\u09be\u0996\u09ac\u09c7\u09a8, please.`;
+    case "DELIVERY_FOLLOW_UP":
+      return `\u0986\u09b6\u09be \u0995\u09b0\u09bf order \u09aa\u09c7\u09df\u09c7\u099b\u09c7\u09a8\u0964 Product \u09a0\u09bf\u0995\u09a0\u09be\u0995 \u0986\u099b\u09c7 \u0995\u09bf? \u0995\u09cb\u09a8 help \u09b2\u09be\u0997\u09b2\u09c7 \u0986\u09ae\u09be\u09a6\u09c7\u09b0 \u099c\u09be\u09a8\u09be\u09ac\u09c7\u09a8\u0964`;
+    case "CANCELLED_ORDER_NOTE":
+      return `\u0986\u09aa\u09a8\u09be\u09b0 order cancel \u0995\u09b0\u09be \u09b9\u09df\u09c7\u099b\u09c7\u0964 \u09aa\u09b0\u09c7 \u0986\u09ac\u09be\u09b0 order \u0995\u09b0\u09a4\u09c7 \u099a\u09be\u0987\u09b2\u09c7 \u0986\u09ae\u09b0\u09be help \u0995\u09b0\u09ac\u0964`;
+    default:
+      return "";
+  }
 }
 
 function StatusPill({ label, tone }: { label: string; tone: "blue" | "green" | "gray" | "purple" | "red" }) {

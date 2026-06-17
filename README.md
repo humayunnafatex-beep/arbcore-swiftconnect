@@ -56,7 +56,7 @@ Product images use public HTTPS image URLs in this phase. No upload/storage infr
 
 Follow-up Queue is manual only. It helps staff review conversation and order follow-ups, mark them done, update dates, and jump back to Inbox or Orders. It does not send automatic follow-up messages.
 
-Order creation and follow-up messaging are manual only. Agents can create or update an order draft from Inbox with customer prefill, product/model, size, color, quantity, price, delivery charge, COD/payment status, address, and notes. Color is stored in the order note in this schema. Order templates insert text into the composer for staff review before sending.
+Order creation, status updates, and follow-up messaging are manual only. Agents can create or update an order draft from Inbox with customer prefill, product/model, size, color, quantity, price, delivery charge, COD/payment status, address, and notes. Linked Inbox orders support Draft, Confirmed, Processing, Shipped, Delivered, and Cancelled status updates. Customer follow-up templates insert text into the composer for staff review before sending.
 
 Safe production-beta defaults remain:
 
