@@ -1348,7 +1348,7 @@ export function InboxModulePage() {
         </p>
       </section>
 
-      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,390px)_minmax(0,1fr)]">
         <section className={cn("rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel", mobileDetailOpen ? "hidden xl:block" : "block")}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
@@ -1417,10 +1417,10 @@ export function InboxModulePage() {
           </DataState>
         </section>
 
-        <section className={cn("rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel", mobileDetailOpen ? "block" : "hidden xl:block")}>
+        <section className={cn("w-full max-w-[1180px] rounded-[24px] border border-blue-100 bg-white/95 p-4 shadow-panel", mobileDetailOpen ? "block" : "hidden xl:block")}>
           <DataState loading={detailLoading} error={detailError} empty={!selectedId || !detail} emptyText="Select a conversation to view recent messages.">
             {detail ? (
-              <div className="flex min-h-0 flex-col xl:min-h-[680px]">
+              <div className="mx-auto flex min-h-0 w-full max-w-[1080px] flex-col xl:min-h-[680px]">
                 <button
                   className={`${secondaryButtonClassName} mb-4 w-full justify-center xl:hidden`}
                   type="button"
@@ -1769,7 +1769,7 @@ export function InboxModulePage() {
                   ) : (
                     <p className="mt-4 rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-sm font-semibold text-slate-500">No orders linked to this conversation yet.</p>
                   )}
-                  <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                  <div className="mt-4 grid gap-3 lg:grid-cols-6">
                     <select className={`${inputClassName} w-full lg:col-span-3`} value={selectedProductId} onChange={(event) => applyProductToOrder(event.target.value)}>
                       <option value="">Select product/model</option>
                       {products.map((product) => (
@@ -1779,7 +1779,7 @@ export function InboxModulePage() {
                       ))}
                     </select>
                     {selectedProduct ? (
-                      <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-semibold leading-5 text-slate-600 lg:col-span-3">
+                      <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-semibold leading-5 text-slate-600 lg:col-span-6">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="flex min-w-0 gap-3">
                             {selectedProduct.imageUrl ? (
@@ -1814,16 +1814,16 @@ export function InboxModulePage() {
                       </div>
                     ) : null}
                     {editingOrderId ? (
-                      <div className="rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-800 lg:col-span-3">
+                      <div className="rounded-[14px] border border-amber-100 bg-amber-50 p-3 text-xs font-bold leading-5 text-amber-800 lg:col-span-6">
                         Editing linked order draft. Update saves order details only and does not send a customer message.
                         <button className="ml-2 font-black underline" type="button" onClick={cancelOrderEdit}>Cancel edit</button>
                       </div>
                     ) : (
-                      <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-bold leading-5 text-slate-600 lg:col-span-3">
+                      <div className="rounded-[14px] border border-blue-100 bg-blue-50 p-3 text-xs font-bold leading-5 text-slate-600 lg:col-span-6">
                         Create Order Draft: customer name and phone are prefilled from the selected conversation/contact where available. Address and product details stay manual for agent confirmation.
                       </div>
                     )}
-                    <input className={`${inputClassName} w-full`} value={orderForm.modelName} onChange={(event) => setOrderForm((current) => ({ ...current, modelName: event.target.value }))} placeholder="Model name" />
+                    <input className={`${inputClassName} w-full lg:col-span-2`} value={orderForm.modelName} onChange={(event) => setOrderForm((current) => ({ ...current, modelName: event.target.value }))} placeholder="Model name" />
                     {selectedProductSizes.length ? (
                       <select className={`${inputClassName} w-full`} value={orderForm.size} onChange={(event) => setOrderForm((current) => ({ ...current, size: event.target.value }))}>
                         <option value="">Select size</option>
@@ -1836,8 +1836,8 @@ export function InboxModulePage() {
                     <input className={`${inputClassName} w-full`} type="number" min="1" value={orderForm.quantity} onChange={(event) => setOrderForm((current) => ({ ...current, quantity: event.target.value }))} placeholder="Quantity" />
                     <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.unitPrice} onChange={(event) => setOrderForm((current) => ({ ...current, unitPrice: event.target.value }))} placeholder="Unit price" />
                     <input className={`${inputClassName} w-full`} type="number" min="0" value={orderForm.deliveryCharge} onChange={(event) => setOrderForm((current) => ({ ...current, deliveryCharge: event.target.value }))} placeholder="Delivery charge" />
-                    <input className={`${inputClassName} w-full`} value={orderForm.customerName} onChange={(event) => setOrderForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Customer name" />
-                    <input className={`${inputClassName} w-full`} value={orderForm.customerPhone} onChange={(event) => setOrderForm((current) => ({ ...current, customerPhone: event.target.value }))} placeholder="Customer phone" />
+                    <input className={`${inputClassName} w-full lg:col-span-2`} value={orderForm.customerName} onChange={(event) => setOrderForm((current) => ({ ...current, customerName: event.target.value }))} placeholder="Customer name" />
+                    <input className={`${inputClassName} w-full lg:col-span-2`} value={orderForm.customerPhone} onChange={(event) => setOrderForm((current) => ({ ...current, customerPhone: event.target.value }))} placeholder="Customer phone" />
                     <select className={`${inputClassName} w-full`} value={orderForm.paymentStatus} onChange={(event) => setOrderForm((current) => ({ ...current, paymentStatus: event.target.value }))}>
                       {["UNPAID", "PARTIAL", "PAID", "COD"].map((status) => <option key={status} value={status}>{status}</option>)}
                     </select>
@@ -1964,7 +1964,7 @@ export function InboxModulePage() {
                   </div>
                   {latestInboundMessage ? (
                     <div className="mt-3 rounded-[18px] border border-blue-100 bg-blue-50 p-4">
-                      <p className="whitespace-pre-wrap text-sm font-bold leading-6 text-slate-700">
+                      <p className="whitespace-pre-wrap text-[15px] font-bold leading-7 text-slate-700">
                         {latestInboundMessage.body || latestInboundMessage.bodyPreview || "No readable message body."}
                       </p>
                       <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-black uppercase text-royal">
@@ -2121,22 +2121,22 @@ export function InboxModulePage() {
                       </div>
                     ) : null}
                     <DataState loading={savedReplyLoading} error={savedReplyError} empty={!filteredSavedReplies.length} emptyText={savedReplyEmptyText}>
-                      <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
                         {filteredSavedReplies.slice(0, 8).map((reply) => (
-                          <button key={reply.id} className="rounded-[12px] border border-blue-100 bg-white px-2.5 py-2 text-left hover:bg-blue-50" type="button" onClick={() => insertSavedReply(reply)}>
+                          <button key={reply.id} className="rounded-[12px] border border-blue-100 bg-white px-3 py-2.5 text-left hover:bg-blue-50" type="button" onClick={() => insertSavedReply(reply)}>
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-xs font-black text-ink">{reply.title}</span>
+                              <span className="text-[13px] font-black text-ink">{reply.title}</span>
                               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase text-royal">{formatSavedReplyOption(reply.category)}</span>
                               {reply.shortcut ? <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[9px] font-black text-slate-500">/{reply.shortcut}</span> : null}
                             </div>
-                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold leading-4 text-slate-500">{reply.body}</p>
+                            <p className="mt-1 line-clamp-2 text-[12px] font-semibold leading-5 text-slate-500">{reply.body}</p>
                           </button>
                         ))}
                       </div>
                     </DataState>
                   </div>
                   <textarea
-                    className="mt-3 min-h-20 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
+                    className="mt-3 min-h-24 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-[15px] font-semibold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
                     value={replyBody}
                     onChange={(event) => setReplyBody(event.target.value)}
                     placeholder="Write a reply"
