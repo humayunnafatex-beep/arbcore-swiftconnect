@@ -1601,7 +1601,7 @@ export function InboxModulePage() {
                   )}
                 </div>
 
-                <div className="order-[40] mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-[4] mb-3 rounded-[18px] border border-blue-100 bg-white p-3 sm:p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Orders</h3>
@@ -1627,7 +1627,7 @@ export function InboxModulePage() {
                     </div>
                   ) : null}
                   {orders.length ? (
-                    <div className="mt-4 grid gap-2 lg:grid-cols-2">
+                    <div className="mt-3 grid gap-2 xl:grid-cols-2">
                       {orders.slice(0, 4).map((order) => (
                         <article key={order.id} className={cn("rounded-[14px] border p-3", focusOrderId === order.id ? "border-amber-200 bg-amber-50 ring-2 ring-amber-100" : "border-blue-100 bg-blue-50")}>
                           <div className="flex items-start justify-between gap-3">
@@ -1656,7 +1656,7 @@ export function InboxModulePage() {
                                 Use confirmation reply
                               </button>
                             </div>
-                            <div className="mt-3 grid gap-2 text-xs font-semibold text-slate-600 sm:grid-cols-2">
+                            <div className="mt-3 grid gap-1.5 text-xs font-semibold text-slate-600 sm:grid-cols-2">
                               <SummaryItem label="Order ID" value={order.orderNumber || order.id} />
                               <SummaryItem label="Customer" value={order.customerName || "Not set"} />
                               <SummaryItem label="Phone" value={order.customerPhone || "Not set"} />
@@ -1675,7 +1675,7 @@ export function InboxModulePage() {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 rounded-[14px] border border-blue-100 bg-white p-3">
+                          <div className="mt-2 rounded-[14px] border border-blue-100 bg-white p-3">
                             <p className="text-xs font-black uppercase text-slate-500">Order status update</p>
                             <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                               <select
@@ -1716,7 +1716,7 @@ export function InboxModulePage() {
                               ))}
                             </div>
                           </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="mt-2 flex flex-wrap gap-2">
                             <button
                               className={`${secondaryButtonClassName} h-9 text-xs`}
                               type="button"
@@ -1741,7 +1741,7 @@ export function InboxModulePage() {
                               </button>
                             ) : null}
                           </div>
-                          <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                          <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                             <p className="text-xs font-bold leading-5 text-slate-500 sm:col-span-2">
                               Order Templates are order-specific. They insert text into the reply composer and never auto-send.
                             </p>
@@ -1980,7 +1980,7 @@ export function InboxModulePage() {
                   )}
                 </div>
 
-                <div className="soft-scrollbar order-4 mb-4 max-h-[38vh] space-y-3 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 sm:p-4 xl:max-h-[420px]">
+                <div className="soft-scrollbar order-[5] mb-3 max-h-[30vh] space-y-2 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 xl:max-h-[320px]">
                   {detail.messages.length ? (
                     detail.messages.map((message) => (
                       <div key={message.id} className={cn("flex", message.direction === "OUTBOUND" ? "justify-end" : "justify-start")}>
@@ -2047,7 +2047,7 @@ export function InboxModulePage() {
                   )}
                 </div>
 
-                <div className="order-3 mb-4 rounded-[18px] border border-blue-100 bg-white p-4">
+                <div className="order-3 mb-3 rounded-[18px] border border-blue-100 bg-white p-3 sm:p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h3 className="text-sm font-black text-ink">Reply from Inbox</h3>
@@ -2091,8 +2091,8 @@ export function InboxModulePage() {
                   <p className="mt-3 text-xs font-semibold text-slate-500">
                     AI suggestions are draft-only. Review or edit the composer text, then click Send Reply manually.
                   </p>
-                  <div className="mt-4 rounded-[16px] border border-blue-100 bg-blue-50 p-3">
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="mt-3 rounded-[16px] border border-blue-100 bg-blue-50 p-2.5 sm:p-3">
+                    <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <p className="text-xs font-black uppercase text-royal">Quick Replies</p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">Insert saved text only. Review before sending.</p>
@@ -2101,7 +2101,7 @@ export function InboxModulePage() {
                         Manage Saved Replies
                       </Link>
                     </div>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-[150px_1fr]">
+                    <div className="mt-2 grid gap-2 sm:grid-cols-[150px_1fr]">
                       <select className={inputClassName} value={savedReplyCategory} onChange={(event) => setSavedReplyCategory(event.target.value)}>
                         <option value="ALL">All categories</option>
                         {savedReplyCategories.map((category) => (
@@ -2121,22 +2121,22 @@ export function InboxModulePage() {
                       </div>
                     ) : null}
                     <DataState loading={savedReplyLoading} error={savedReplyError} empty={!filteredSavedReplies.length} emptyText={savedReplyEmptyText}>
-                      <div className="mt-3 grid gap-2 lg:grid-cols-2">
+                      <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
                         {filteredSavedReplies.slice(0, 8).map((reply) => (
-                          <button key={reply.id} className="rounded-[14px] border border-blue-100 bg-white p-3 text-left hover:bg-blue-50" type="button" onClick={() => insertSavedReply(reply)}>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-sm font-black text-ink">{reply.title}</span>
-                              <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black uppercase text-royal">{formatSavedReplyOption(reply.category)}</span>
-                              {reply.shortcut ? <span className="rounded-full bg-slate-50 px-2 py-1 text-[10px] font-black text-slate-500">/{reply.shortcut}</span> : null}
+                          <button key={reply.id} className="rounded-[12px] border border-blue-100 bg-white px-2.5 py-2 text-left hover:bg-blue-50" type="button" onClick={() => insertSavedReply(reply)}>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-xs font-black text-ink">{reply.title}</span>
+                              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase text-royal">{formatSavedReplyOption(reply.category)}</span>
+                              {reply.shortcut ? <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[9px] font-black text-slate-500">/{reply.shortcut}</span> : null}
                             </div>
-                            <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-slate-500">{reply.body}</p>
+                            <p className="mt-1 line-clamp-1 text-[11px] font-semibold leading-4 text-slate-500">{reply.body}</p>
                           </button>
                         ))}
                       </div>
                     </DataState>
                   </div>
                   <textarea
-                    className="mt-4 min-h-24 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
+                    className="mt-3 min-h-20 w-full rounded-[14px] border border-blue-100 bg-white px-3 py-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-royal focus:ring-4 focus:ring-blue-100"
                     value={replyBody}
                     onChange={(event) => setReplyBody(event.target.value)}
                     placeholder="Write a reply"
