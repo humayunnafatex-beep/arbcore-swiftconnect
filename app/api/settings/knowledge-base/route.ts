@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export async function GET() {
     return NextResponse.json({ success: true, data: { facts } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Knowledge base GET error:", error);
+    console.error("Knowledge base GET error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Unable to load knowledge base." }, { status: 500 });
   }
 }
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: { fact } }, { status: 201 });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Knowledge base POST error:", error);
+    console.error("Knowledge base POST error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Unable to save knowledge base fact." }, { status: 500 });
   }
 }

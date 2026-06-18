@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, data: { logs } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Activity logs GET error:", error);
+    console.error("Activity logs GET error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Failed to load activity logs." }, { status: 500 });
   }
 }

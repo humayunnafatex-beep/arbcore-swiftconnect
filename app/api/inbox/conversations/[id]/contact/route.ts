@@ -5,6 +5,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { normalizeContactStatus } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 import { normalizeTags } from "@/lib/validators";
 
 export const runtime = "nodejs";
@@ -132,7 +133,7 @@ export async function POST(
       );
     }
 
-    console.error("Inbox conversation contact POST error:", error);
+    console.error("Inbox conversation contact POST error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Failed to create contact from conversation." },

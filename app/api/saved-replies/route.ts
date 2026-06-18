@@ -4,6 +4,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 import {
   normalizeSavedReplyCategory,
   normalizeSavedReplyChannel,
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, data: { replies } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Saved replies GET error:", error);
+    console.error("Saved replies GET error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Failed to load saved replies." }, { status: 500 });
   }
 }
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: { reply } }, { status: 201 });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Saved replies POST error:", error);
+    console.error("Saved replies POST error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Failed to create saved reply." }, { status: 500 });
   }
 }

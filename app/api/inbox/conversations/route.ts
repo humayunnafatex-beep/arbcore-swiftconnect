@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/api-guard";
 import { normalizeContactStatus } from "@/lib/contact-status";
 import { tagsMatchSearch } from "@/lib/contact-tags";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -187,7 +188,7 @@ export async function GET(request: Request) {
       return handleApiError(error);
     }
 
-    console.error("Inbox conversations GET error:", error);
+    console.error("Inbox conversations GET error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Failed to load inbox conversations." },

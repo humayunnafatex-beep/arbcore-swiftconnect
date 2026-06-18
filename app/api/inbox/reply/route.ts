@@ -5,6 +5,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { getSafeMessengerProviderErrorSummary, sendMessengerTextMessage, type SafeMessengerProviderError } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 import {
   getSafeWhatsAppProviderErrorSummary,
   sendWhatsAppMediaMessage,
@@ -252,7 +253,7 @@ export async function POST(request: Request) {
       }).catch(() => undefined);
     }
 
-    console.error("Inbox reply POST error:", error);
+    console.error("Inbox reply POST error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, status: "provider_error", error: "Unable to process inbox reply." },

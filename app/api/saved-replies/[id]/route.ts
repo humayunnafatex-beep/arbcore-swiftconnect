@@ -3,6 +3,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 import { validateSavedReplyInput } from "@/lib/saved-reply-input";
 
 export const runtime = "nodejs";
@@ -26,7 +27,7 @@ export async function GET(_request: Request, { params }: Context) {
     return NextResponse.json({ success: true, data: { reply } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Saved reply GET error:", error);
+    console.error("Saved reply GET error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Failed to load saved reply." }, { status: 500 });
   }
 }
@@ -67,7 +68,7 @@ export async function PATCH(request: Request, { params }: Context) {
     return NextResponse.json({ success: true, data: { reply } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Saved reply PATCH error:", error);
+    console.error("Saved reply PATCH error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Failed to update saved reply." }, { status: 500 });
   }
 }
@@ -102,7 +103,7 @@ export async function DELETE(_request: Request, { params }: Context) {
     return NextResponse.json({ success: true, data: { reply } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Saved reply DELETE error:", error);
+    console.error("Saved reply DELETE error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Failed to archive saved reply." }, { status: 500 });
   }
 }

@@ -53,9 +53,17 @@ async function main() {
 main()
   .catch((error) => {
     console.error("Production seed failed.");
-    console.error(error);
+    console.error(sanitizeSeedError(error));
     process.exitCode = 1;
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+function sanitizeSeedError(error) {
+  const message = error instanceof Error ? error.message : String(error ?? "Unknown seed error.");
+  return message
+    .replace(/postgres(?:ql)?:\/\/[^\s"'<>]+/gi, "[REDACTED]")
+    .replace(/(password|secret|token|database[_-]?url|direct[_-]?url)\s*[:=]\s*["']?[^"',}\]\s]+/gi, "$1=[REDACTED]")
+    .slice(0, 500);
+}

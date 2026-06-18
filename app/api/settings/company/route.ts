@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/api-guard";
 import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
 import { normalizeProviderId, validateUniqueProviderIdsForCompany } from "@/lib/provider-id-validation";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 async function getCompany() {
   return getCurrentCompany();
@@ -53,7 +54,7 @@ export async function GET() {
       return handleApiError(error);
     }
 
-    console.error("Company settings GET error:", error);
+    console.error("Company settings GET error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Unable to load company settings" },
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
       return handleApiError(error);
     }
 
-    console.error("Company settings PUT error:", error);
+    console.error("Company settings PUT error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Unable to save company settings" },

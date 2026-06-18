@@ -7,6 +7,7 @@ import { getCompanyForProviderWebhook, type ProviderRoutingResult } from "@/lib/
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const ACTIVE_AUTO_REPLY_RULE_LIMIT = 250;
 
 type MessengerPayload = {
   object?: string;
@@ -251,7 +252,8 @@ async function findMatchedAutoReplyRule(companyId: string, inboundText: string) 
 
   const rules = await prisma.autoReplyRule.findMany({
     where: { companyId, isActive: true },
-    orderBy: [{ priority: "asc" }, { createdAt: "asc" }]
+    orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
+    take: ACTIVE_AUTO_REPLY_RULE_LIMIT
   });
 
   return rules.find((rule) => {

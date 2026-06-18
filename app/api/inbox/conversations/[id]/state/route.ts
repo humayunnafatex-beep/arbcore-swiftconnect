@@ -4,6 +4,7 @@ import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -168,7 +169,7 @@ export async function PATCH(
       return handleApiError(error);
     }
 
-    console.error("Inbox conversation state PATCH error:", error);
+    console.error("Inbox conversation state PATCH error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Failed to update inbox conversation state." },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export async function GET() {
       return handleApiError(error);
     }
 
-    console.error("Inbox assignees GET error:", error);
+    console.error("Inbox assignees GET error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Failed to load inbox assignees." },

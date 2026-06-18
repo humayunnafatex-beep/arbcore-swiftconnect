@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json({ success: true, data: { fact } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Knowledge base PATCH error:", error);
+    console.error("Knowledge base PATCH error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Unable to update knowledge base fact." }, { status: 500 });
   }
 }
@@ -63,7 +64,7 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     return NextResponse.json({ success: true, data: { fact } });
   } catch (error) {
     if (error instanceof ApiError) return handleApiError(error);
-    console.error("Knowledge base DELETE error:", error);
+    console.error("Knowledge base DELETE error:", sanitizeLogMetadata(error));
     return NextResponse.json({ success: false, error: "Unable to delete knowledge base fact." }, { status: 500 });
   }
 }

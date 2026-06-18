@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogMetadata } from "@/lib/safe-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,7 +95,7 @@ export async function GET(request: Request) {
       return handleApiError(error);
     }
 
-    console.error("WhatsApp logs GET error:", error);
+    console.error("WhatsApp logs GET error:", sanitizeLogMetadata(error));
 
     return NextResponse.json(
       { success: false, error: "Failed to load WhatsApp logs." },
