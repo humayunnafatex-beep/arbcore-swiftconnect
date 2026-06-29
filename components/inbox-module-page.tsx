@@ -383,6 +383,7 @@ export function InboxModulePage() {
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replyProviderError, setReplyProviderError] = useState<string | null>(null);
   const [replySending, setReplySending] = useState(false);
+  const [retryingMessageId, setRetryingMessageId] = useState<string | null>(null);
   const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
   const [aiSuggesting, setAiSuggesting] = useState(false);
   const [aiSuggestionError, setAiSuggestionError] = useState<string | null>(null);
@@ -446,6 +447,9 @@ export function InboxModulePage() {
   );
   const latestInboundMessage = useMemo(() => {
     return [...(detail?.messages ?? [])].reverse().find((message) => message.direction === "INBOUND") ?? null;
+  }, [detail?.messages]);
+  const latestFailedOutboundMessage = useMemo(() => {
+    return [...(detail?.messages ?? [])].reverse().find((message) => isRetryableFailedOutbound(message)) ?? null;
   }, [detail?.messages]);
   const focusedOrder = useMemo(
     () => orders.find((order) => order.id === focusOrderId) ?? null,
@@ -776,6 +780,55 @@ export function InboxModulePage() {
       setReplyProviderError(null);
     } finally {
       setReplySending(false);
+    }
+  }
+
+  async function retryFailedMessage(message: InboxMessage) {
+    if (!detail || !isRetryableFailedOutbound(message)) return;
+
+    const body = (message.body || message.bodyPreview || "").trim();
+    if (!body) {
+      setReplyStatus("validation_failed");
+      setReplyError("This failed message has no retryable text body.");
+      setReplyProviderError(null);
+      return;
+    }
+
+    setReplyStatus(null);
+    setReplyError(null);
+    setReplyProviderError(null);
+    setRetryingMessageId(message.id);
+
+    try {
+      const response = await fetch("/api/inbox/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: detail.conversation.channel,
+          contactKey: detail.conversation.contactKey,
+          body
+        })
+      });
+      const result = (await response.json()) as ReplyResponse;
+      setReplyStatus(result.status);
+      setReplyProviderError(formatProviderError(result.providerError));
+
+      if (!response.ok || !result.success || result.status !== "sent_successfully") {
+        setReplyError(result.error || replyStatusText[result.status] || "Retry was not sent.");
+      } else {
+        setReplyError(null);
+      }
+
+      if (selectedId && result.status !== "validation_failed") {
+        await loadConversationDetail(selectedId).catch(() => undefined);
+        await loadConversations().catch(() => undefined);
+      }
+    } catch (requestError) {
+      setReplyStatus("provider_error");
+      setReplyError(getApiErrorMessage(requestError));
+      setReplyProviderError(null);
+    } finally {
+      setRetryingMessageId(null);
     }
   }
 
@@ -1978,6 +2031,37 @@ export function InboxModulePage() {
                       No inbound customer message was found yet. You can still review the thread below.
                     </div>
                   )}
+                  {latestFailedOutboundMessage ? (
+                    <div className="mt-3 rounded-[18px] border border-rose-100 bg-rose-50 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-xs font-black uppercase text-rose-700">Latest outbound failed</p>
+                          <p className="mt-1 line-clamp-2 text-sm font-bold leading-6 text-rose-900">
+                            {latestFailedOutboundMessage.body || latestFailedOutboundMessage.bodyPreview || "Failed message body unavailable."}
+                          </p>
+                          {latestFailedOutboundMessage.errorMessage ? (
+                            <p className="mt-2 text-xs font-bold leading-5 text-rose-700">
+                              Safe provider error: {latestFailedOutboundMessage.errorMessage}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <button
+                            className={secondaryButtonClassName}
+                            type="button"
+                            onClick={() => void retryFailedMessage(latestFailedOutboundMessage)}
+                            disabled={retryingMessageId === latestFailedOutboundMessage.id}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                            {retryingMessageId === latestFailedOutboundMessage.id ? "Retrying..." : "Retry Send"}
+                          </button>
+                          <Link className={secondaryButtonClassName} href={failedLogHref(detail.conversation.channel, detail.conversation.contactKey)}>
+                            Message Logs
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="soft-scrollbar order-[5] mb-3 max-h-[30vh] space-y-2 overflow-y-auto rounded-[18px] border border-blue-100 bg-slate-50 p-3 xl:max-h-[320px]">
@@ -2037,6 +2121,29 @@ export function InboxModulePage() {
                           {message.errorMessage ? (
                             <p className="mt-2 rounded-[12px] bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
                               {message.errorMessage}
+                            </p>
+                          ) : null}
+                          {isRetryableFailedOutbound(message) && detail ? (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <button
+                                className="inline-flex min-h-9 items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-black text-rose-700 ring-1 ring-rose-100 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                type="button"
+                                onClick={() => void retryFailedMessage(message)}
+                                disabled={retryingMessageId === message.id}
+                              >
+                                <RefreshCw className="h-3.5 w-3.5" />
+                                {retryingMessageId === message.id ? "Retrying..." : "Retry Send"}
+                              </button>
+                              <Link
+                                className="inline-flex min-h-9 items-center rounded-full bg-white px-3 py-1.5 text-xs font-black text-rose-700 ring-1 ring-rose-100 hover:bg-rose-50"
+                                href={failedLogHref(detail.conversation.channel, detail.conversation.contactKey)}
+                              >
+                                Message Logs
+                              </Link>
+                            </div>
+                          ) : message.direction === "OUTBOUND" && message.status === "FAILED" ? (
+                            <p className="mt-2 text-[11px] font-bold text-rose-100">
+                              Retry unavailable for this failed media/system log. Review Message Logs and send manually.
                             </p>
                           ) : null}
                         </div>
@@ -2202,6 +2309,27 @@ export function InboxModulePage() {
 
 function isUnsupportedWhatsAppMessage(message: InboxMessage) {
   return message.direction === "INBOUND" && message.body.startsWith("[unsupported:");
+}
+
+function isRetryableFailedOutbound(message: InboxMessage) {
+  const body = (message.body || message.bodyPreview || "").trim();
+  return message.direction === "OUTBOUND" &&
+    message.status === "FAILED" &&
+    Boolean(body) &&
+    !message.mediaType &&
+    !body.startsWith("[image]") &&
+    !body.startsWith("[document]");
+}
+
+function failedLogHref(channel: "WHATSAPP" | "MESSENGER", contactKey: string) {
+  const params = new URLSearchParams({
+    channel,
+    direction: "OUTBOUND",
+    status: "FAILED",
+    search: contactKey
+  });
+
+  return `/message-logs?${params.toString()}`;
 }
 
 function hasReferralContext(referral: ReferralContext | null | undefined) {
