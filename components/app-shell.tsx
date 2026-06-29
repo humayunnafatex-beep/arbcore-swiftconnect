@@ -1,7 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { MobileNav, Sidebar } from "./sidebar";
-import { Topbar } from "./topbar";
+
+const Topbar = dynamic(() => import("./topbar").then((mod) => mod.Topbar), {
+  ssr: false
+});
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
