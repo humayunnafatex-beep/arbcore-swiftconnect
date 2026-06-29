@@ -48,7 +48,9 @@ Role-based staff guidance is UI/readiness only in this beta pass. Owner/Admin, M
 
 Topbar role badges and the profile menu help staff find Account/Profile, Team Members, Role & Access guidance, Help, and Logout. Account/Profile edits the current display name. Team role changes are managed in Settings -> Team Members, and Remove Access deactivates a user instead of hard-deleting audit history.
 
-Topbar attention badges refresh safely every 5 minutes without reloading the full app. The bell opens Follow-up Queue for overdue/today follow-ups, and the message icon opens Inbox or filtered Message Logs for unread conversations and failed sends. These are attention indicators only; they do not send automatic replies.
+Topbar attention badges refresh safely every 5 minutes without reloading the full app. They use the lightweight `/api/dashboard/attention` endpoint for overdue/today follow-ups, unread conversations, and failed messages instead of polling the full dashboard statistics bundle. The bell opens Follow-up Queue for overdue/today follow-ups, and the message icon opens Inbox or filtered Message Logs for unread conversations and failed sends. These are attention indicators only; they do not send automatic replies.
+
+Dashboard statistics remain non-blocking: optional metric groups return guarded fallback values and API warnings when a slow local or migration-pending query cannot finish in time.
 
 Topbar search opens `/search`, a safe workspace search view backed by existing read-only module APIs. It returns quick links for Inbox, Contacts, Orders, Products, Campaigns, Saved Replies, and Message Logs without exposing provider secrets or raw webhook payloads.
 

@@ -13,6 +13,7 @@ type DashboardWarning = {
 };
 
 const optionalMetricMessage = "Metrics are temporarily unavailable. Production migrations may be pending.";
+const metricTimeoutMs = process.env.NODE_ENV === "development" ? 12000 : 5000;
 
 export async function GET() {
   try {
@@ -527,7 +528,9 @@ async function safeMetricGroup<T>(
   try {
     return await withMetricTimeout(load(), module);
   } catch (error) {
-    console.error(`Dashboard ${module} metrics failed:`, sanitizeLogMetadata(error));
+    if (!isMetricTimeout(error)) {
+      console.error(`Dashboard ${module} metrics failed:`, sanitizeLogMetadata(error));
+    }
     warnings.push({
       module,
       message: optionalMetricMessage
@@ -537,12 +540,18 @@ async function safeMetricGroup<T>(
 }
 
 function withMetricTimeout<T>(promise: Promise<T>, module: string) {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => {
-      setTimeout(() => reject(new Error(`${module} metrics timed out`)), 5000);
-    })
-  ]);
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(`${module} metrics timed out`)), metricTimeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeout) clearTimeout(timeout);
+  });
+}
+
+function isMetricTimeout(error: unknown) {
+  return error instanceof Error && error.message.endsWith("metrics timed out");
 }
 
 function audienceCriteriaWhere() {

@@ -38,7 +38,7 @@ type AuthMe = {
   };
 };
 
-type DashboardStats = {
+type DashboardAttention = {
   unreadConversations?: number;
   failedMessages?: number;
   overdueFollowUps?: number;
@@ -48,7 +48,7 @@ type DashboardStats = {
 export function Topbar() {
   const router = useRouter();
   const [auth, setAuth] = useState<AuthMe | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({});
+  const [stats, setStats] = useState<DashboardAttention>({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -93,7 +93,7 @@ export function Topbar() {
 
     async function loadStats() {
       try {
-        const data = await apiRequest<DashboardStats>("/api/dashboard/statistics");
+        const data = await apiRequest<DashboardAttention>("/api/dashboard/attention");
         if (active) setStats(data);
       } catch {
         // Keep the last known badge counts if a background refresh fails.
