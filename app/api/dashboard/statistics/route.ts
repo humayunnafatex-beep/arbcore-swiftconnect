@@ -103,51 +103,42 @@ export async function GET() {
     });
 
     const loadInbox = () => safeMetricGroup("inbox", warnings, async () => {
-      const [
-        stateGroups,
-        unassignedConversations,
-        dueFollowUps,
-        upcomingFollowUps,
-        doneFollowUps,
-        unreadConversations,
-        starredConversations,
-        highPriorityConversations,
-        urgentConversations,
-        paymentPendingConversations,
-        hotLeadConversations
-      ] = await Promise.all([
-        prisma.conversationState.groupBy({
-          by: ["status"],
-          where: { companyId },
-          _count: { _all: true }
-        }),
-        prisma.conversationState.count({ where: { companyId, assignedToId: null } }),
-        prisma.conversationState.count({ where: { companyId, followUpAt: { lte: new Date() }, followUpDone: false } }),
-        prisma.conversationState.count({ where: { companyId, followUpAt: { gt: new Date() }, followUpDone: false } }),
-        prisma.conversationState.count({ where: { companyId, followUpDone: true } }),
-        prisma.conversationState.count({ where: { companyId, isRead: false } }),
-        prisma.conversationState.count({ where: { companyId, isStarred: true } }),
-        prisma.conversationState.count({ where: { companyId, priority: "HIGH" } }),
-        prisma.conversationState.count({ where: { companyId, priority: "URGENT" } }),
-        prisma.conversationState.count({ where: { companyId, quickLabel: "PAYMENT_PENDING" } }),
-        prisma.conversationState.count({ where: { companyId, quickLabel: "HOT_LEAD" } })
-      ]);
-      const countByStatus = new Map(stateGroups.map((group) => [group.status, group._count._all]));
+      const now = new Date();
+      const [metrics] = await prisma.$queryRaw<Array<{
+        openConversations: number;
+        pendingConversations: number;
+        closedConversations: number;
+        unassignedConversations: number;
+        dueFollowUps: number;
+        upcomingFollowUps: number;
+        doneFollowUps: number;
+        unreadConversations: number;
+        starredConversations: number;
+        highPriorityConversations: number;
+        urgentConversations: number;
+        paymentPendingConversations: number;
+        hotLeadConversations: number;
+      }>>`
+        SELECT
+          COUNT(*) FILTER (WHERE "status" = 'OPEN')::int AS "openConversations",
+          COUNT(*) FILTER (WHERE "status" = 'PENDING')::int AS "pendingConversations",
+          COUNT(*) FILTER (WHERE "status" = 'CLOSED')::int AS "closedConversations",
+          COUNT(*) FILTER (WHERE "assignedToId" IS NULL)::int AS "unassignedConversations",
+          COUNT(*) FILTER (WHERE "followUpAt" <= ${now} AND "followUpDone" = false)::int AS "dueFollowUps",
+          COUNT(*) FILTER (WHERE "followUpAt" > ${now} AND "followUpDone" = false)::int AS "upcomingFollowUps",
+          COUNT(*) FILTER (WHERE "followUpDone" = true)::int AS "doneFollowUps",
+          COUNT(*) FILTER (WHERE "isRead" = false)::int AS "unreadConversations",
+          COUNT(*) FILTER (WHERE "isStarred" = true)::int AS "starredConversations",
+          COUNT(*) FILTER (WHERE "priority" = 'HIGH')::int AS "highPriorityConversations",
+          COUNT(*) FILTER (WHERE "priority" = 'URGENT')::int AS "urgentConversations",
+          COUNT(*) FILTER (WHERE "quickLabel" = 'PAYMENT_PENDING')::int AS "paymentPendingConversations",
+          COUNT(*) FILTER (WHERE "quickLabel" = 'HOT_LEAD')::int AS "hotLeadConversations"
+        FROM "ConversationState"
+        WHERE "companyId" = ${companyId}
+      `;
 
       return {
-        openConversations: countByStatus.get("OPEN") ?? 0,
-        pendingConversations: countByStatus.get("PENDING") ?? 0,
-        closedConversations: countByStatus.get("CLOSED") ?? 0,
-        unassignedConversations,
-        dueFollowUps,
-        upcomingFollowUps,
-        doneFollowUps,
-        unreadConversations,
-        starredConversations,
-        highPriorityConversations,
-        urgentConversations,
-        paymentPendingConversations,
-        hotLeadConversations
+        ...metrics
       };
     }, {
       openConversations: 0,
@@ -166,30 +157,32 @@ export async function GET() {
     });
 
     const loadCampaigns = () => safeMetricGroup("campaigns", warnings, async () => {
-      const [
-        activeCampaigns,
-        draftCampaigns,
-        readyCampaigns,
-        campaignsWithAudienceCriteria,
-        readyCampaignsWithAudience,
-        totalCampaigns
-      ] = await Promise.all([
-        prisma.campaign.count({ where: { companyId, status: { in: ["READY", "PAUSED"] } } }),
-        prisma.campaign.count({ where: { companyId, status: "DRAFT" } }),
-        prisma.campaign.count({ where: { companyId, status: "READY" } }),
-        prisma.campaign.count({ where: { companyId, OR: audienceCriteriaWhere() } }),
-        prisma.campaign.count({ where: { companyId, status: "READY", OR: audienceCriteriaWhere() } }),
-        prisma.campaign.count({ where: { companyId } })
-      ]);
+      const [metrics] = await prisma.$queryRaw<Array<{
+        activeCampaigns: number;
+        draftCampaigns: number;
+        readyCampaigns: number;
+        campaignsWithAudienceCriteria: number;
+        readyCampaignsWithAudience: number;
+        totalCampaigns: number;
+      }>>`
+        SELECT
+          COUNT(*) FILTER (WHERE "status" IN ('READY', 'PAUSED'))::int AS "activeCampaigns",
+          COUNT(*) FILTER (WHERE "status" = 'DRAFT')::int AS "draftCampaigns",
+          COUNT(*) FILTER (WHERE "status" = 'READY')::int AS "readyCampaigns",
+          COUNT(*) FILTER (WHERE
+            "audienceStatus" <> '' OR "audienceTags" <> '' OR "audienceSearch" <> '' OR
+            "audienceChannel" <> '' OR "audienceLimit" IS NOT NULL
+          )::int AS "campaignsWithAudienceCriteria",
+          COUNT(*) FILTER (WHERE "status" = 'READY' AND (
+            "audienceStatus" <> '' OR "audienceTags" <> '' OR "audienceSearch" <> '' OR
+            "audienceChannel" <> '' OR "audienceLimit" IS NOT NULL
+          ))::int AS "readyCampaignsWithAudience",
+          COUNT(*)::int AS "totalCampaigns"
+        FROM "Campaign"
+        WHERE "companyId" = ${companyId}
+      `;
 
-      return {
-        activeCampaigns,
-        draftCampaigns,
-        readyCampaigns,
-        campaignsWithAudienceCriteria,
-        readyCampaignsWithAudience,
-        totalCampaigns
-      };
+      return metrics;
     }, {
       activeCampaigns: 0,
       draftCampaigns: 0,
@@ -240,12 +233,20 @@ export async function GET() {
     });
 
     const loadAutoReply = () => safeMetricGroup("autoReplyAnalytics", warnings, async () => {
-      const [activeAutoReplyRules, autoReplyAttempted30d, autoReplySent30d, autoReplyFailed30d] = await Promise.all([
+      const [activeAutoReplyRules, [eventMetrics]] = await Promise.all([
         prisma.autoReplyRule.count({ where: { companyId, isActive: true } }),
-        prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo } } }),
-        prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "SENT" } }),
-        prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo }, status: "FAILED" } })
+        prisma.$queryRaw<Array<{ attempted: number; sent: number; failed: number }>>`
+          SELECT
+            COUNT(*)::int AS "attempted",
+            COUNT(*) FILTER (WHERE "status" = 'SENT')::int AS "sent",
+            COUNT(*) FILTER (WHERE "status" = 'FAILED')::int AS "failed"
+          FROM "AutoReplyEvent"
+          WHERE "companyId" = ${companyId} AND "createdAt" >= ${thirtyDaysAgo}
+        `
       ]);
+      const autoReplyAttempted30d = eventMetrics.attempted;
+      const autoReplySent30d = eventMetrics.sent;
+      const autoReplyFailed30d = eventMetrics.failed;
 
       return {
         activeAutoReplyRules,
@@ -322,14 +323,22 @@ export async function GET() {
     });
 
     const loadProducts = () => safeMetricGroup("products", warnings, async () => {
-      const [activeProducts, draftProducts, archivedProducts, productsWithStockNote] = await Promise.all([
-        prisma.product.count({ where: { companyId, status: "ACTIVE" } }),
-        prisma.product.count({ where: { companyId, status: "DRAFT" } }),
-        prisma.product.count({ where: { companyId, status: "ARCHIVED" } }),
-        prisma.product.count({ where: { companyId, stockNote: { not: "" } } })
-      ]);
+      const [metrics] = await prisma.$queryRaw<Array<{
+        activeProducts: number;
+        draftProducts: number;
+        archivedProducts: number;
+        productsWithStockNote: number;
+      }>>`
+        SELECT
+          COUNT(*) FILTER (WHERE "status" = 'ACTIVE')::int AS "activeProducts",
+          COUNT(*) FILTER (WHERE "status" = 'DRAFT')::int AS "draftProducts",
+          COUNT(*) FILTER (WHERE "status" = 'ARCHIVED')::int AS "archivedProducts",
+          COUNT(*) FILTER (WHERE "stockNote" <> '')::int AS "productsWithStockNote"
+        FROM "Product"
+        WHERE "companyId" = ${companyId}
+      `;
 
-      return { activeProducts, draftProducts, archivedProducts, productsWithStockNote };
+      return metrics;
     }, {
       activeProducts: 0,
       draftProducts: 0,
@@ -560,14 +569,4 @@ function withMetricTimeout<T>(promise: Promise<T>, module: string) {
 
 function isMetricTimeout(error: unknown) {
   return error instanceof Error && error.message.endsWith("metrics timed out");
-}
-
-function audienceCriteriaWhere() {
-  return [
-    { audienceStatus: { not: "" } },
-    { audienceTags: { not: "" } },
-    { audienceSearch: { not: "" } },
-    { audienceChannel: { not: "" } },
-    { audienceLimit: { not: null } }
-  ];
 }
