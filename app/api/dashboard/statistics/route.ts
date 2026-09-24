@@ -460,24 +460,20 @@ export async function GET() {
       totalUpcomingFollowUps: 0
     });
 
-    // Keep database pressure bounded. Each batch runs concurrently, while batches
-    // run sequentially so the Supabase transaction pool is not flooded at once.
-    const [channels, messageHealth, inbox] = await Promise.all([
+    // Keep database pressure bounded without adding four sequential network
+    // round-trip waves between Vercel and Supabase.
+    const [channels, messageHealth, inbox, campaigns, contacts, autoReply, products] = await Promise.all([
       loadChannels(),
       loadMessageHealth(),
-      loadInbox()
-    ]);
-    const [campaigns, contacts, autoReply] = await Promise.all([
+      loadInbox(),
       loadCampaigns(),
       loadContacts(),
-      loadAutoReply()
+      loadAutoReply(),
+      loadProducts()
     ]);
-    const [orders, products, billing] = await Promise.all([
+    const [orders, billing, workspace, savedReplies, activity, followUpQueue] = await Promise.all([
       loadOrders(),
-      loadProducts(),
-      loadBilling()
-    ]);
-    const [workspace, savedReplies, activity, followUpQueue] = await Promise.all([
+      loadBilling(),
       loadWorkspace(),
       loadSavedReplies(),
       loadActivity(),
@@ -521,7 +517,12 @@ async function safeMetricGroup<T>(
 ) {
   const startedAt = Date.now();
   try {
-    return await withMetricTimeout(load(), module);
+    const result = await withMetricTimeout(load(), module);
+    const elapsedMs = Date.now() - startedAt;
+    if (elapsedMs >= 3000) {
+      console.warn(`Dashboard ${module} metrics slow:`, { elapsedMs });
+    }
+    return result;
   } catch (error) {
     console.error(`Dashboard ${module} metrics failed:`, {
       elapsedMs: Date.now() - startedAt,
