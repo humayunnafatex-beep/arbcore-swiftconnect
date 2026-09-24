@@ -73,6 +73,23 @@ export async function requireCurrentUser() {
 }
 
 export async function ensureDefaultWorkspace() {
+  const [existingCompany, existingUser] = await Promise.all([
+    prisma.company.findUnique({ where: { id: DEFAULT_COMPANY_ID } }),
+    prisma.user.findUnique({ where: { email: DEMO_EMAIL } })
+  ]);
+
+  if (
+    existingCompany &&
+    existingUser &&
+    existingUser.id === DEFAULT_USER_ID &&
+    existingUser.companyId === existingCompany.id &&
+    existingUser.role === "OWNER" &&
+    existingUser.isActive &&
+    existingUser.passwordHash?.startsWith("$2")
+  ) {
+    return { company: existingCompany, user: existingUser };
+  }
+
   const company = await prisma.company.upsert({
     where: { id: DEFAULT_COMPANY_ID },
     update: {

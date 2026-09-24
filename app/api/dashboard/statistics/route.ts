@@ -17,10 +17,15 @@ const metricTimeoutMs = process.env.NODE_ENV === "development" ? 12000 : 15000;
 
 export async function GET() {
   try {
+    const requestStartedAt = Date.now();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const { context } = await requirePermission("dashboard.view");
+    const authElapsedMs = Date.now() - requestStartedAt;
+    if (authElapsedMs >= 2000) {
+      console.warn("Dashboard auth context slow:", { elapsedMs: authElapsedMs });
+    }
     const { company } = context;
     const companyId = company.id;
     const warnings: DashboardWarning[] = [];
@@ -487,7 +492,7 @@ export async function GET() {
       }
     };
 
-    return ok({
+    const response = ok({
       ...channels,
       ...messageHealth,
       ...inbox,
@@ -504,6 +509,11 @@ export async function GET() {
       warnings,
       apiStatus: warnings.length ? "Degraded" : "Operational"
     });
+    const totalElapsedMs = Date.now() - requestStartedAt;
+    if (totalElapsedMs >= 5000) {
+      console.warn("Dashboard statistics request slow:", { elapsedMs: totalElapsedMs });
+    }
+    return response;
   } catch (error) {
     return handleApiError(error);
   }
