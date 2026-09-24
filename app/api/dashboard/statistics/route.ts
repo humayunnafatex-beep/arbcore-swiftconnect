@@ -13,7 +13,7 @@ type DashboardWarning = {
 };
 
 const optionalMetricMessage = "Metrics are temporarily unavailable. Production migrations may be pending.";
-const metricTimeoutMs = process.env.NODE_ENV === "development" ? 12000 : 5000;
+const metricTimeoutMs = process.env.NODE_ENV === "development" ? 12000 : 15000;
 
 export async function GET() {
   try {
@@ -25,7 +25,7 @@ export async function GET() {
     const companyId = company.id;
     const warnings: DashboardWarning[] = [];
 
-    const channelsPromise = safeMetricGroup("channels", warnings, async () => {
+    const loadChannels = () => safeMetricGroup("channels", warnings, async () => {
       const [connectedNumbers] = await Promise.all([
         prisma.whatsAppAccount.count({ where: { companyId, status: "CONNECTED" } })
       ]);
@@ -41,7 +41,7 @@ export async function GET() {
       messengerConfigured: Boolean(company.messengerPageAccessToken)
     });
 
-    const messageHealthPromise = safeMetricGroup("messageHealth", warnings, async () => {
+    const loadMessageHealth = () => safeMetricGroup("messageHealth", warnings, async () => {
       const [messagesSentToday, totalMessages, statusGroups, channelGroups, directionGroups] = await Promise.all([
         prisma.messageLog.count({
           where: {
@@ -97,7 +97,7 @@ export async function GET() {
       outboundMessages: 0
     });
 
-    const inboxPromise = safeMetricGroup("inbox", warnings, async () => {
+    const loadInbox = () => safeMetricGroup("inbox", warnings, async () => {
       const [
         stateGroups,
         unassignedConversations,
@@ -160,7 +160,7 @@ export async function GET() {
       hotLeadConversations: 0
     });
 
-    const campaignsPromise = safeMetricGroup("campaigns", warnings, async () => {
+    const loadCampaigns = () => safeMetricGroup("campaigns", warnings, async () => {
       const [
         activeCampaigns,
         draftCampaigns,
@@ -194,7 +194,7 @@ export async function GET() {
       totalCampaigns: 0
     });
 
-    const contactsPromise = safeMetricGroup("contacts", warnings, async () => {
+    const loadContacts = () => safeMetricGroup("contacts", warnings, async () => {
       const [contactCount, activeContacts, stageGroups] = await Promise.all([
         prisma.contact.count({ where: { companyId } }),
         prisma.contact.count({ where: { companyId, doNotContact: false, optedIn: true } }),
@@ -234,7 +234,7 @@ export async function GET() {
       followUpContacts: 0
     });
 
-    const autoReplyPromise = safeMetricGroup("autoReplyAnalytics", warnings, async () => {
+    const loadAutoReply = () => safeMetricGroup("autoReplyAnalytics", warnings, async () => {
       const [activeAutoReplyRules, autoReplyAttempted30d, autoReplySent30d, autoReplyFailed30d] = await Promise.all([
         prisma.autoReplyRule.count({ where: { companyId, isActive: true } }),
         prisma.autoReplyEvent.count({ where: { companyId, createdAt: { gte: thirtyDaysAgo } } }),
@@ -257,7 +257,7 @@ export async function GET() {
       autoReplySuccessRate30d: 0
     });
 
-    const ordersPromise = safeMetricGroup("orders", warnings, async () => {
+    const loadOrders = () => safeMetricGroup("orders", warnings, async () => {
       const [
         orderStatusGroups,
         paymentStatusGroups,
@@ -316,7 +316,7 @@ export async function GET() {
       totalOrderValue: 0
     });
 
-    const productsPromise = safeMetricGroup("products", warnings, async () => {
+    const loadProducts = () => safeMetricGroup("products", warnings, async () => {
       const [activeProducts, draftProducts, archivedProducts, productsWithStockNote] = await Promise.all([
         prisma.product.count({ where: { companyId, status: "ACTIVE" } }),
         prisma.product.count({ where: { companyId, status: "DRAFT" } }),
@@ -332,7 +332,7 @@ export async function GET() {
       productsWithStockNote: 0
     });
 
-    const billingPromise = safeMetricGroup("billing", warnings, async () => {
+    const loadBilling = () => safeMetricGroup("billing", warnings, async () => {
       const [subscription, paymentGroups, lastPayment, monthlyMessagesForPlan] = await Promise.all([
         prisma.subscription.findFirst({ where: { companyId }, orderBy: { createdAt: "desc" } }),
         prisma.paymentRecord.groupBy({
@@ -394,7 +394,7 @@ export async function GET() {
       }
     });
 
-    const workspacePromise = safeMetricGroup("workspace", warnings, async () => {
+    const loadWorkspace = () => safeMetricGroup("workspace", warnings, async () => {
       const [teamMembers, aiCreditsUsed] = await Promise.all([
         prisma.user.count({ where: { companyId, isActive: true } }),
         prisma.aiGeneration.count({ where: { companyId } })
@@ -406,7 +406,7 @@ export async function GET() {
       aiCreditsUsed: 0
     });
 
-    const savedRepliesPromise = safeMetricGroup("savedReplies", warnings, async () => {
+    const loadSavedReplies = () => safeMetricGroup("savedReplies", warnings, async () => {
       const activeSavedReplies = await prisma.savedReply.count({ where: { companyId, status: "ACTIVE" } });
 
       return { activeSavedReplies };
@@ -414,7 +414,7 @@ export async function GET() {
       activeSavedReplies: 0
     });
 
-    const activityPromise = safeMetricGroup("activity", warnings, async () => {
+    const loadActivity = () => safeMetricGroup("activity", warnings, async () => {
       const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const last7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const [recentActivityCount24h, recentActivityCount7d] = await Promise.all([
@@ -428,7 +428,7 @@ export async function GET() {
       recentActivityCount7d: 0
     });
 
-    const followUpQueuePromise = safeMetricGroup("followUpQueue", warnings, async () => {
+    const loadFollowUpQueue = () => safeMetricGroup("followUpQueue", warnings, async () => {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const tomorrowStart = new Date(todayStart);
@@ -460,34 +460,28 @@ export async function GET() {
       totalUpcomingFollowUps: 0
     });
 
-    const [
-      channels,
-      messageHealth,
-      inbox,
-      campaigns,
-      contacts,
-      autoReply,
-      orders,
-      products,
-      billing,
-      workspace,
-      savedReplies,
-      activity,
-      followUpQueue
-    ] = await Promise.all([
-      channelsPromise,
-      messageHealthPromise,
-      inboxPromise,
-      campaignsPromise,
-      contactsPromise,
-      autoReplyPromise,
-      ordersPromise,
-      productsPromise,
-      billingPromise,
-      workspacePromise,
-      savedRepliesPromise,
-      activityPromise,
-      followUpQueuePromise
+    // Keep database pressure bounded. Each batch runs concurrently, while batches
+    // run sequentially so the Supabase transaction pool is not flooded at once.
+    const [channels, messageHealth, inbox] = await Promise.all([
+      loadChannels(),
+      loadMessageHealth(),
+      loadInbox()
+    ]);
+    const [campaigns, contacts, autoReply] = await Promise.all([
+      loadCampaigns(),
+      loadContacts(),
+      loadAutoReply()
+    ]);
+    const [orders, products, billing] = await Promise.all([
+      loadOrders(),
+      loadProducts(),
+      loadBilling()
+    ]);
+    const [workspace, savedReplies, activity, followUpQueue] = await Promise.all([
+      loadWorkspace(),
+      loadSavedReplies(),
+      loadActivity(),
+      loadFollowUpQueue()
     ]);
     const dashboardBilling = {
       ...billing.billing,
@@ -525,12 +519,15 @@ async function safeMetricGroup<T>(
   load: () => Promise<T>,
   fallback: T
 ) {
+  const startedAt = Date.now();
   try {
     return await withMetricTimeout(load(), module);
   } catch (error) {
-    if (!isMetricTimeout(error)) {
-      console.error(`Dashboard ${module} metrics failed:`, sanitizeLogMetadata(error));
-    }
+    console.error(`Dashboard ${module} metrics failed:`, {
+      elapsedMs: Date.now() - startedAt,
+      timeout: isMetricTimeout(error),
+      error: sanitizeLogMetadata(error)
+    });
     warnings.push({
       module,
       message: optionalMetricMessage
