@@ -47,48 +47,35 @@ export async function GET() {
     });
 
     const loadMessageHealth = () => safeMetricGroup("messageHealth", warnings, async () => {
-      const [messagesSentToday, totalMessages, statusGroups, channelGroups, directionGroups] = await Promise.all([
-        prisma.messageLog.count({
-          where: {
-            companyId,
-            direction: "OUTBOUND",
-            createdAt: { gte: today },
-            status: { in: ["SENT", "DELIVERED", "READ"] }
-          }
-        }),
-        prisma.messageLog.count({ where: { companyId } }),
-        prisma.messageLog.groupBy({
-          by: ["status"],
-          where: { companyId },
-          _count: { _all: true }
-        }),
-        prisma.messageLog.groupBy({
-          by: ["channel"],
-          where: { companyId },
-          _count: { _all: true }
-        }),
-        prisma.messageLog.groupBy({
-          by: ["direction"],
-          where: { companyId },
-          _count: { _all: true }
-        })
-      ]);
-      const countByStatus = new Map(statusGroups.map((group) => [group.status, group._count._all]));
-      const countByChannel = new Map(channelGroups.map((group) => [group.channel, group._count._all]));
-      const countByDirection = new Map(directionGroups.map((group) => [group.direction, group._count._all]));
+      const [metrics] = await prisma.$queryRaw<Array<{
+        messagesSentToday: number;
+        totalMessages: number;
+        failedMessages: number;
+        sentMessages: number;
+        receivedMessages: number;
+        attemptedMessages: number;
+        whatsappMessages: number;
+        messengerMessages: number;
+        inboundMessages: number;
+        outboundMessages: number;
+      }>>`
+        SELECT
+          COUNT(*) FILTER (WHERE "direction" = 'OUTBOUND' AND "createdAt" >= ${today}
+            AND "status" IN ('SENT', 'DELIVERED', 'READ'))::int AS "messagesSentToday",
+          COUNT(*)::int AS "totalMessages",
+          COUNT(*) FILTER (WHERE "status" = 'FAILED')::int AS "failedMessages",
+          COUNT(*) FILTER (WHERE "status" IN ('SENT', 'DELIVERED', 'READ'))::int AS "sentMessages",
+          COUNT(*) FILTER (WHERE "status" = 'RECEIVED')::int AS "receivedMessages",
+          COUNT(*) FILTER (WHERE "status" = 'QUEUED')::int AS "attemptedMessages",
+          COUNT(*) FILTER (WHERE "channel" = 'WHATSAPP')::int AS "whatsappMessages",
+          COUNT(*) FILTER (WHERE "channel" = 'MESSENGER')::int AS "messengerMessages",
+          COUNT(*) FILTER (WHERE "direction" = 'INBOUND')::int AS "inboundMessages",
+          COUNT(*) FILTER (WHERE "direction" = 'OUTBOUND')::int AS "outboundMessages"
+        FROM "MessageLog"
+        WHERE "companyId" = ${companyId}
+      `;
 
-      return {
-        messagesSentToday,
-        totalMessages,
-        failedMessages: countByStatus.get("FAILED") ?? 0,
-        sentMessages: (countByStatus.get("SENT") ?? 0) + (countByStatus.get("DELIVERED") ?? 0) + (countByStatus.get("READ") ?? 0),
-        receivedMessages: countByStatus.get("RECEIVED") ?? 0,
-        attemptedMessages: countByStatus.get("QUEUED") ?? 0,
-        whatsappMessages: countByChannel.get("WHATSAPP") ?? 0,
-        messengerMessages: countByChannel.get("MESSENGER") ?? 0,
-        inboundMessages: countByDirection.get("INBOUND") ?? 0,
-        outboundMessages: countByDirection.get("OUTBOUND") ?? 0
-      };
+      return metrics;
     }, {
       messagesSentToday: 0,
       totalMessages: 0,
@@ -193,33 +180,29 @@ export async function GET() {
     });
 
     const loadContacts = () => safeMetricGroup("contacts", warnings, async () => {
-      const [contactCount, activeContacts, stageGroups] = await Promise.all([
-        prisma.contact.count({ where: { companyId } }),
-        prisma.contact.count({ where: { companyId, doNotContact: false, optedIn: true } }),
-        prisma.contact.groupBy({
-          by: ["stage"],
-          where: { companyId },
-          _count: { _all: true }
-        })
-      ]);
-      const countByStage = new Map(stageGroups.map((group) => [group.stage, group._count._all]));
-      const newLeads = countByStage.get("NEW_LEAD") ?? 0;
-      const interestedLeads = countByStage.get("INTERESTED") ?? 0;
-      const followUpContacts = countByStage.get("FOLLOW_UP") ?? 0;
-      const orderedContacts =
-        (countByStage.get("ORDERED") ?? 0) +
-        (countByStage.get("DELIVERED") ?? 0) +
-        (countByStage.get("WON") ?? 0);
+      const [metrics] = await prisma.$queryRaw<Array<{
+        contacts: number;
+        activeContacts: number;
+        newLeads: number;
+        interestedLeads: number;
+        orderedContacts: number;
+        followUpContacts: number;
+      }>>`
+        SELECT
+          COUNT(*)::int AS "contacts",
+          COUNT(*) FILTER (WHERE "doNotContact" = false AND "optedIn" = true)::int AS "activeContacts",
+          COUNT(*) FILTER (WHERE "stage" = 'NEW_LEAD')::int AS "newLeads",
+          COUNT(*) FILTER (WHERE "stage" = 'INTERESTED')::int AS "interestedLeads",
+          COUNT(*) FILTER (WHERE "stage" IN ('ORDERED', 'DELIVERED', 'WON'))::int AS "orderedContacts",
+          COUNT(*) FILTER (WHERE "stage" = 'FOLLOW_UP')::int AS "followUpContacts"
+        FROM "Contact"
+        WHERE "companyId" = ${companyId}
+      `;
 
       return {
-        contacts: contactCount,
-        totalContacts: contactCount,
-        hotLeads: newLeads + interestedLeads + followUpContacts,
-        activeContacts,
-        newLeads,
-        interestedLeads,
-        orderedContacts,
-        followUpContacts
+        ...metrics,
+        totalContacts: metrics.contacts,
+        hotLeads: metrics.newLeads + metrics.interestedLeads + metrics.followUpContacts
       };
     }, {
       contacts: 0,
@@ -264,49 +247,31 @@ export async function GET() {
     });
 
     const loadOrders = () => safeMetricGroup("orders", warnings, async () => {
-      const [
-        orderStatusGroups,
-        paymentStatusGroups,
-        dueOrderFollowUps,
-        upcomingOrderFollowUps,
-        doneOrderFollowUps,
-        totalOrderValue
-      ] = await Promise.all([
-        prisma.order.groupBy({
-          by: ["orderStatus"],
-          where: { companyId },
-          _count: { _all: true }
-        }),
-        prisma.order.groupBy({
-          by: ["paymentStatus"],
-          where: { companyId },
-          _count: { _all: true }
-        }),
-        prisma.order.count({ where: { companyId, followUpAt: { lte: new Date() }, followUpDone: false } }),
-        prisma.order.count({ where: { companyId, followUpAt: { gt: new Date() }, followUpDone: false } }),
-        prisma.order.count({ where: { companyId, followUpDone: true } }),
-        prisma.order.aggregate({
-          where: { companyId, orderStatus: { in: ["CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"] } },
-          _sum: { totalAmount: true }
-        })
-      ]);
-      const countByOrderStatus = new Map(orderStatusGroups.map((group) => [group.orderStatus, group._count._all]));
-      const countByPaymentStatus = new Map(paymentStatusGroups.map((group) => [group.paymentStatus, group._count._all]));
+      const now = new Date();
+      const [metrics] = await prisma.$queryRaw<Array<{
+        draftOrders: number; confirmedOrders: number; packedOrders: number; shippedOrders: number;
+        deliveredOrders: number; cancelledOrders: number; dueOrderFollowUps: number;
+        upcomingOrderFollowUps: number; doneOrderFollowUps: number; unpaidOrders: number;
+        codOrders: number; totalOrderValue: number;
+      }>>`
+        SELECT
+          COUNT(*) FILTER (WHERE "orderStatus" = 'DRAFT')::int AS "draftOrders",
+          COUNT(*) FILTER (WHERE "orderStatus" = 'CONFIRMED')::int AS "confirmedOrders",
+          COUNT(*) FILTER (WHERE "orderStatus" = 'PACKED')::int AS "packedOrders",
+          COUNT(*) FILTER (WHERE "orderStatus" = 'SHIPPED')::int AS "shippedOrders",
+          COUNT(*) FILTER (WHERE "orderStatus" = 'DELIVERED')::int AS "deliveredOrders",
+          COUNT(*) FILTER (WHERE "orderStatus" = 'CANCELLED')::int AS "cancelledOrders",
+          COUNT(*) FILTER (WHERE "followUpAt" <= ${now} AND "followUpDone" = false)::int AS "dueOrderFollowUps",
+          COUNT(*) FILTER (WHERE "followUpAt" > ${now} AND "followUpDone" = false)::int AS "upcomingOrderFollowUps",
+          COUNT(*) FILTER (WHERE "followUpDone" = true)::int AS "doneOrderFollowUps",
+          COUNT(*) FILTER (WHERE "paymentStatus" = 'UNPAID')::int AS "unpaidOrders",
+          COUNT(*) FILTER (WHERE "paymentStatus" = 'COD')::int AS "codOrders",
+          COALESCE(SUM("totalAmount") FILTER (WHERE "orderStatus" IN ('CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED')), 0)::int AS "totalOrderValue"
+        FROM "Order"
+        WHERE "companyId" = ${companyId}
+      `;
 
-      return {
-        draftOrders: countByOrderStatus.get("DRAFT") ?? 0,
-        confirmedOrders: countByOrderStatus.get("CONFIRMED") ?? 0,
-        packedOrders: countByOrderStatus.get("PACKED") ?? 0,
-        shippedOrders: countByOrderStatus.get("SHIPPED") ?? 0,
-        deliveredOrders: countByOrderStatus.get("DELIVERED") ?? 0,
-        cancelledOrders: countByOrderStatus.get("CANCELLED") ?? 0,
-        dueOrderFollowUps,
-        upcomingOrderFollowUps,
-        doneOrderFollowUps,
-        unpaidOrders: countByPaymentStatus.get("UNPAID") ?? 0,
-        codOrders: countByPaymentStatus.get("COD") ?? 0,
-        totalOrderValue: totalOrderValue._sum.totalAmount ?? 0
-      };
+      return metrics;
     }, {
       draftOrders: 0,
       confirmedOrders: 0,
@@ -347,23 +312,32 @@ export async function GET() {
     });
 
     const loadBilling = () => safeMetricGroup("billing", warnings, async () => {
-      const [subscription, paymentGroups, lastPayment, monthlyMessagesForPlan] = await Promise.all([
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const [subscription, [paymentMetrics], monthlyMessagesForPlan] = await Promise.all([
         prisma.subscription.findFirst({ where: { companyId }, orderBy: { createdAt: "desc" } }),
-        prisma.paymentRecord.groupBy({
-          by: ["status"],
-          where: { companyId },
-          _sum: { amount: true },
-          _count: { _all: true }
-        }),
-        prisma.paymentRecord.findFirst({
-          where: { companyId },
-          orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }]
-        }),
+        prisma.$queryRaw<Array<{
+          pendingPaymentCount: number;
+          pendingPaymentAmount: number;
+          lastPaymentDate: Date | null;
+          lastPaymentAmount: number | null;
+          currency: string | null;
+        }>>`
+          SELECT
+            COUNT(*) FILTER (WHERE "status" = 'PENDING')::int AS "pendingPaymentCount",
+            COALESCE(SUM("amount") FILTER (WHERE "status" = 'PENDING'), 0)::int AS "pendingPaymentAmount",
+            (SELECT COALESCE(p."paidAt", p."createdAt") FROM "PaymentRecord" p
+              WHERE p."companyId" = ${companyId} ORDER BY p."paidAt" DESC, p."createdAt" DESC LIMIT 1) AS "lastPaymentDate",
+            (SELECT p."amount" FROM "PaymentRecord" p
+              WHERE p."companyId" = ${companyId} ORDER BY p."paidAt" DESC, p."createdAt" DESC LIMIT 1) AS "lastPaymentAmount",
+            (SELECT p."currency" FROM "PaymentRecord" p
+              WHERE p."companyId" = ${companyId} ORDER BY p."paidAt" DESC, p."createdAt" DESC LIMIT 1) AS "currency"
+          FROM "PaymentRecord"
+          WHERE "companyId" = ${companyId}
+        `,
         prisma.messageLog.count({
-          where: { companyId, createdAt: { gte: new Date(today.getFullYear(), today.getMonth(), 1) } }
+          where: { companyId, createdAt: { gte: monthStart } }
         })
       ]);
-      const pendingPayments = paymentGroups.find((group) => group.status === "PENDING");
       const plan = normalizePlanName(subscription?.plan || company.plan);
       const limits = getPlanLimits(plan);
       const enabledChannelCount = [
@@ -375,11 +349,11 @@ export async function GET() {
         billing: {
           plan,
           status: subscription?.status || "ACTIVE",
-          pendingPaymentCount: pendingPayments?._count._all ?? 0,
-          pendingPaymentAmount: pendingPayments?._sum.amount ?? 0,
-          lastPaymentDate: (lastPayment?.paidAt ?? lastPayment?.createdAt)?.toISOString() ?? null,
-          lastPaymentAmount: lastPayment?.amount ?? null,
-          currency: lastPayment?.currency || "BDT",
+          pendingPaymentCount: paymentMetrics.pendingPaymentCount,
+          pendingPaymentAmount: paymentMetrics.pendingPaymentAmount,
+          lastPaymentDate: paymentMetrics.lastPaymentDate?.toISOString() ?? null,
+          lastPaymentAmount: paymentMetrics.lastPaymentAmount,
+          currency: paymentMetrics.currency || "BDT",
           usage: {
             contacts: 0,
             contactsLimit: limits.contacts,
@@ -409,12 +383,13 @@ export async function GET() {
     });
 
     const loadWorkspace = () => safeMetricGroup("workspace", warnings, async () => {
-      const [teamMembers, aiCreditsUsed] = await Promise.all([
-        prisma.user.count({ where: { companyId, isActive: true } }),
-        prisma.aiGeneration.count({ where: { companyId } })
-      ]);
+      const [metrics] = await prisma.$queryRaw<Array<{ teamMembers: number; aiCreditsUsed: number }>>`
+        SELECT
+          (SELECT COUNT(*)::int FROM "User" WHERE "companyId" = ${companyId} AND "isActive" = true) AS "teamMembers",
+          (SELECT COUNT(*)::int FROM "AiGeneration" WHERE "companyId" = ${companyId}) AS "aiCreditsUsed"
+      `;
 
-      return { teamMembers, aiCreditsUsed };
+      return metrics;
     }, {
       teamMembers: 0,
       aiCreditsUsed: 0
@@ -431,12 +406,18 @@ export async function GET() {
     const loadActivity = () => safeMetricGroup("activity", warnings, async () => {
       const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const last7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const [recentActivityCount24h, recentActivityCount7d] = await Promise.all([
-        prisma.activityLog.count({ where: { companyId, createdAt: { gte: last24h } } }),
-        prisma.activityLog.count({ where: { companyId, createdAt: { gte: last7d } } })
-      ]);
+      const [metrics] = await prisma.$queryRaw<Array<{
+        recentActivityCount24h: number;
+        recentActivityCount7d: number;
+      }>>`
+        SELECT
+          COUNT(*) FILTER (WHERE "createdAt" >= ${last24h})::int AS "recentActivityCount24h",
+          COUNT(*) FILTER (WHERE "createdAt" >= ${last7d})::int AS "recentActivityCount7d"
+        FROM "ActivityLog"
+        WHERE "companyId" = ${companyId}
+      `;
 
-      return { recentActivityCount24h, recentActivityCount7d };
+      return metrics;
     }, {
       recentActivityCount24h: 0,
       recentActivityCount7d: 0
@@ -447,27 +428,26 @@ export async function GET() {
       todayStart.setHours(0, 0, 0, 0);
       const tomorrowStart = new Date(todayStart);
       tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-      const [
-        overdueConversationFollowUps,
-        overdueOrderFollowUps,
-        todayConversationFollowUps,
-        todayOrderFollowUps,
-        upcomingConversationFollowUps,
-        upcomingOrderFollowUpsForQueue
-      ] = await Promise.all([
-        prisma.conversationState.count({ where: { companyId, followUpAt: { lt: todayStart }, followUpDone: false } }),
-        prisma.order.count({ where: { companyId, followUpAt: { lt: todayStart }, followUpDone: false } }),
-        prisma.conversationState.count({ where: { companyId, followUpAt: { gte: todayStart, lt: tomorrowStart }, followUpDone: false } }),
-        prisma.order.count({ where: { companyId, followUpAt: { gte: todayStart, lt: tomorrowStart }, followUpDone: false } }),
-        prisma.conversationState.count({ where: { companyId, followUpAt: { gte: tomorrowStart }, followUpDone: false } }),
-        prisma.order.count({ where: { companyId, followUpAt: { gte: tomorrowStart }, followUpDone: false } })
-      ]);
+      const [metrics] = await prisma.$queryRaw<Array<{
+        overdueFollowUps: number;
+        todayFollowUps: number;
+        totalUpcomingFollowUps: number;
+      }>>`
+        WITH follow_ups AS (
+          SELECT "followUpAt" FROM "ConversationState"
+          WHERE "companyId" = ${companyId} AND "followUpDone" = false
+          UNION ALL
+          SELECT "followUpAt" FROM "Order"
+          WHERE "companyId" = ${companyId} AND "followUpDone" = false
+        )
+        SELECT
+          COUNT(*) FILTER (WHERE "followUpAt" < ${todayStart})::int AS "overdueFollowUps",
+          COUNT(*) FILTER (WHERE "followUpAt" >= ${todayStart} AND "followUpAt" < ${tomorrowStart})::int AS "todayFollowUps",
+          COUNT(*) FILTER (WHERE "followUpAt" >= ${tomorrowStart})::int AS "totalUpcomingFollowUps"
+        FROM follow_ups
+      `;
 
-      return {
-        overdueFollowUps: overdueConversationFollowUps + overdueOrderFollowUps,
-        todayFollowUps: todayConversationFollowUps + todayOrderFollowUps,
-        totalUpcomingFollowUps: upcomingConversationFollowUps + upcomingOrderFollowUpsForQueue
-      };
+      return metrics;
     }, {
       overdueFollowUps: 0,
       todayFollowUps: 0,
