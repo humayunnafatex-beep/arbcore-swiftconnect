@@ -73,10 +73,13 @@ export async function requireCurrentUser() {
 }
 
 export async function ensureDefaultWorkspace() {
-  const [existingCompany, existingUser] = await Promise.all([
-    prisma.company.findUnique({ where: { id: DEFAULT_COMPANY_ID } }),
-    prisma.user.findUnique({ where: { email: DEMO_EMAIL } })
-  ]);
+  const existingUser = await prisma.user.findUnique({
+    where: { email: DEMO_EMAIL },
+    include: { company: true }
+  });
+  const existingCompany = existingUser?.company.id === DEFAULT_COMPANY_ID
+    ? existingUser.company
+    : await prisma.company.findUnique({ where: { id: DEFAULT_COMPANY_ID } });
 
   if (
     existingCompany &&
@@ -260,6 +263,16 @@ export async function getSafeAuthStatus() {
 }
 
 async function getSupabaseAuthUser() {
+  // Supabase SSR authenticates this app from cookies. Avoid a remote auth call
+  // for beta/demo requests that do not carry a Supabase session at all.
+  const hasSupabaseSession = cookies().getAll().some(({ name }) =>
+    name.includes("auth-token") && (name.startsWith("sb-") || name.startsWith("supabase-"))
+  );
+
+  if (!hasSupabaseSession) {
+    return null;
+  }
+
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
