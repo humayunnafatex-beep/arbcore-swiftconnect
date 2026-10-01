@@ -14,6 +14,10 @@ type DashboardWarning = {
 
 const optionalMetricMessage = "Metrics are temporarily unavailable. Production migrations may be pending.";
 const metricTimeoutMs = process.env.NODE_ENV === "development" ? 12000 : 15000;
+const statisticsCacheTtlMs = 30_000;
+const statisticsCacheMaxEntries = 100;
+type CachedStatisticsPayload = Record<string, unknown>;
+const statisticsCache = new Map<string, { expiresAt: number; payload: CachedStatisticsPayload }>();
 
 export async function GET() {
   try {
@@ -28,6 +32,11 @@ export async function GET() {
     }
     const { company } = context;
     const companyId = company.id;
+    const cachedPayload = getCachedStatistics(companyId);
+    if (cachedPayload) {
+      console.info("Dashboard statistics cache hit:", { companyId });
+      return ok(cachedPayload);
+    }
     const warnings: DashboardWarning[] = [];
 
     const loadChannels = () => safeMetricGroup("channels", warnings, async () => {
@@ -481,7 +490,7 @@ export async function GET() {
       }
     };
 
-    const response = ok({
+    const payload = {
       ...channels,
       ...messageHealth,
       ...inbox,
@@ -497,7 +506,11 @@ export async function GET() {
       billing: dashboardBilling,
       warnings,
       apiStatus: warnings.length ? "Degraded" : "Operational"
-    });
+    };
+    if (warnings.length === 0) {
+      setCachedStatistics(companyId, payload);
+    }
+    const response = ok(payload);
     const totalElapsedMs = Date.now() - requestStartedAt;
     if (totalElapsedMs >= 5000) {
       console.warn("Dashboard statistics request slow:", { elapsedMs: totalElapsedMs });
@@ -506,6 +519,30 @@ export async function GET() {
   } catch (error) {
     return handleApiError(error);
   }
+}
+
+function getCachedStatistics(companyId: string) {
+  const entry = statisticsCache.get(companyId);
+  if (!entry) return null;
+
+  if (entry.expiresAt <= Date.now()) {
+    statisticsCache.delete(companyId);
+    return null;
+  }
+
+  return entry.payload;
+}
+
+function setCachedStatistics(companyId: string, payload: CachedStatisticsPayload) {
+  if (statisticsCache.size >= statisticsCacheMaxEntries && !statisticsCache.has(companyId)) {
+    const oldestKey = statisticsCache.keys().next().value;
+    if (oldestKey) statisticsCache.delete(oldestKey);
+  }
+
+  statisticsCache.set(companyId, {
+    expiresAt: Date.now() + statisticsCacheTtlMs,
+    payload
+  });
 }
 
 async function safeMetricGroup<T>(
