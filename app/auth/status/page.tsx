@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { RefreshCw, ShieldCheck } from "lucide-react";
+import { LogoutButton } from "@/components/logout-button";
 import { primaryButtonClassName, secondaryButtonClassName } from "@/components/saas-page-utils";
 
 type AuthStatus = {
@@ -148,7 +149,7 @@ export default function AuthStatusPage() {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link className={primaryButtonClassName} href="/login">Login</Link>
           <Link className={secondaryButtonClassName} href="/auth/permissions">Permissions</Link>
-          <Link className={secondaryButtonClassName} href="/auth/logout">Logout</Link>
+          <LogoutButton className={secondaryButtonClassName} />
           <Link className={secondaryButtonClassName} href="/dashboard">Dashboard</Link>
         </div>
       </section>

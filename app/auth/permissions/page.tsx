@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RefreshCw, ShieldCheck } from "lucide-react";
+import { LogoutButton } from "@/components/logout-button";
 import { primaryButtonClassName, secondaryButtonClassName } from "@/components/saas-page-utils";
 
 type PermissionStatus = {
@@ -176,7 +177,7 @@ export default function AuthPermissionsPage() {
           <Link className={secondaryButtonClassName} href="/settings">Settings</Link>
           <Link className={secondaryButtonClassName} href="/message-logs">Message Logs</Link>
           <Link className={secondaryButtonClassName} href="/login">Login</Link>
-          <Link className={secondaryButtonClassName} href="/auth/logout">Logout</Link>
+          <LogoutButton className={secondaryButtonClassName} />
         </div>
       </section>
     </main>
