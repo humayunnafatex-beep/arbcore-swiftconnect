@@ -2,7 +2,7 @@ import * as XLSX from "xlsx";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ApiError, handleApiError, ok } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { normalizeContactStatus } from "@/lib/contact-status";
 import { prisma } from "@/lib/prisma";
 import { contactCreateSchema, normalizeTags } from "@/lib/validators";
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       throw new ApiError(422, "EMPTY_IMPORT", "The import file did not contain any contact rows.");
     }
 
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("contacts.manage");
     const companyId = company.id;
     const validRows = rows.map((row) => contactCreateSchema.parse(normalizeImportRow(row)));
     const results = [];

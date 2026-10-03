@@ -1,5 +1,5 @@
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { conversationCreateSchema } from "@/lib/validators";
 
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const { page, pageSize, skip, take } = getPagination(searchParams);
     const status = searchParams.get("status") ?? "OPEN";
     const assignedTo = searchParams.get("assignedTo") ?? undefined;
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("messages.viewLogs");
 
     const where = {
       companyId: company.id,
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, conversationCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("inbox.manage");
     const now = new Date();
     const conversation = await prisma.conversation.create({
       data: {

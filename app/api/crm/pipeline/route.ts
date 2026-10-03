@@ -1,5 +1,5 @@
 import { created, getPagination, handleApiError, ok, parseDate, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { crmDealCreateSchema } from "@/lib/validators";
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const { page, pageSize, skip, take } = getPagination(searchParams);
     const owner = searchParams.get("owner") ?? undefined;
     const status = searchParams.get("status") ?? undefined;
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("contacts.view");
     const where = {
       companyId: company.id,
       ...(owner ? { owner } : {}),
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, crmDealCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("contacts.manage");
     const deal = await prisma.crmDeal.create({
       data: {
         companyId: company.id,

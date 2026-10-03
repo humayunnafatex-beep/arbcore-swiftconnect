@@ -7,7 +7,8 @@ const AUTH_ENFORCED = process.env.AUTH_ENFORCED === "true";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isLogin = pathname === "/login";
-  const isAuthenticated = request.cookies.get(AUTH_COOKIE_NAME)?.value === DEMO_SESSION_VALUE || hasSupabaseSessionCookie(request);
+  const hasDemoSession = request.cookies.get(AUTH_COOKIE_NAME)?.value === DEMO_SESSION_VALUE;
+  const isAuthenticated = hasSupabaseSessionCookie(request) || (!AUTH_ENFORCED && hasDemoSession);
   const isProtectedRoute = isFutureProtectedAppRoute(pathname);
 
   if (isLogin && isAuthenticated) {

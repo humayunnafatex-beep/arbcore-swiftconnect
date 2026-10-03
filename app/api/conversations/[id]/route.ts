@@ -1,5 +1,5 @@
 import { ApiError, created, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { conversationMessageCreateSchema } from "@/lib/validators";
 
@@ -12,7 +12,7 @@ type Context = {
 
 export async function GET(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("messages.viewLogs");
     const conversation = await prisma.conversation.findFirst({
       where: { id: params.id, companyId: company.id },
       include: {
@@ -35,7 +35,7 @@ export async function GET(_request: Request, { params }: Context) {
 export async function POST(request: Request, { params }: Context) {
   try {
     const input = await parseJson(request, conversationMessageCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("messages.send");
     const now = new Date();
     const message = await prisma.$transaction(async (tx) => {
       const conversation = await tx.conversation.findFirst({ where: { id: params.id, companyId: company.id } });

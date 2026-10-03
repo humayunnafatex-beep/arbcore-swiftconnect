@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handleApiError, ok, parseJson } from "@/lib/api";
 import { formatChangeSummary, recordActivity, safeActivityLabel } from "@/lib/activity-log";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ const profileUpdateSchema = z.object({
 
 export async function GET() {
   try {
-    const { user, company } = await getCurrentAuthContext();
+    const { context: { user, company } } = await requirePermission("dashboard.view");
 
     return ok({
       id: user.id,
@@ -34,7 +34,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const { user, company } = await getCurrentAuthContext();
+    const { context: { user, company } } = await requirePermission("dashboard.view");
     const input = await parseJson(request, profileUpdateSchema);
 
     const existing = await prisma.user.findFirst({

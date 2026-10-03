@@ -1,5 +1,5 @@
 import { handleApiError, ok } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("dashboard.view");
     const companyId = company.id;
     const [messagesTotal, sent, delivered, read, failed, replies, campaigns, contacts, wonDeals, aiGenerations] =
       await Promise.all([
