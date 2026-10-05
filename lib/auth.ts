@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import type { UserRole } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api";
-import { DEMO_EMAIL, DEMO_PASSWORD, DEFAULT_COMPANY_ID, DEFAULT_USER_ID, AUTH_COOKIE_NAME, isDemoSession } from "@/lib/auth-constants";
+import { DEMO_EMAIL, DEMO_PASSWORD, DEFAULT_COMPANY_ID, DEFAULT_USER_ID } from "@/lib/auth-constants";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getSelectedWorkspaceId } from "@/lib/workspace-selection";
@@ -151,9 +151,7 @@ export async function getCurrentAuthContext() {
     return { user: mappedUser, company: mappedUser.company };
   }
 
-  const session = cookies().get(AUTH_COOKIE_NAME)?.value;
-
-  if (!isDemoSession(session) && isAuthEnforced()) {
+  if (isAuthEnforced()) {
     throw new ApiError(401, "UNAUTHENTICATED", "You must be logged in to access this resource.");
   }
 

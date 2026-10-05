@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ApiError, created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { messageTemplateCreateSchema, normalizeVariables } from "@/lib/validators";
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const q = searchParams.get("q")?.trim();
     const status = searchParams.get("status")?.trim();
     const category = searchParams.get("category")?.trim();
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("savedReplies.view");
 
     const where: Prisma.MessageTemplateWhereInput = {
       companyId: company.id,
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, messageTemplateCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("savedReplies.manage");
     const duplicate = await prisma.messageTemplate.findFirst({
       where: { companyId: company.id, name: input.name }
     });

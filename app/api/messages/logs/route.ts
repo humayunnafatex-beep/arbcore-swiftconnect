@@ -1,5 +1,5 @@
 import { getPagination, handleApiError, ok } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const campaignId = searchParams.get("campaignId") ?? undefined;
     const direction = searchParams.get("direction") ?? undefined;
     const status = searchParams.get("status") ?? undefined;
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("messages.viewLogs");
 
     const where = {
       companyId: company.id,

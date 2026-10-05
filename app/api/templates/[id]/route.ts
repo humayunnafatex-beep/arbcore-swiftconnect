@@ -1,5 +1,5 @@
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { messageTemplateUpdateSchema, normalizeVariables } from "@/lib/validators";
 
@@ -12,7 +12,7 @@ type Context = {
 
 export async function GET(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("savedReplies.view");
     const template = await prisma.messageTemplate.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!template) {
@@ -28,7 +28,7 @@ export async function GET(_request: Request, { params }: Context) {
 export async function PUT(request: Request, { params }: Context) {
   try {
     const input = await parseJson(request, messageTemplateUpdateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("savedReplies.manage");
     const existing = await prisma.messageTemplate.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {
@@ -65,7 +65,7 @@ export async function PUT(request: Request, { params }: Context) {
 
 export async function DELETE(_request: Request, { params }: Context) {
   try {
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("savedReplies.manage");
     const existing = await prisma.messageTemplate.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {

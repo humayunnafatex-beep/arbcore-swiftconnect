@@ -1,5 +1,5 @@
 import { ApiError, handleApiError, ok, parseDate, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { crmDealUpdateSchema } from "@/lib/validators";
 
@@ -13,7 +13,7 @@ type Context = {
 export async function PUT(request: Request, { params }: Context) {
   try {
     const input = await parseJson(request, crmDealUpdateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("contacts.manage");
     const existing = await prisma.crmDeal.findFirst({ where: { id: params.id, companyId: company.id } });
 
     if (!existing) {

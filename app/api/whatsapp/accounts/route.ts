@@ -1,5 +1,5 @@
 import { created, getPagination, handleApiError, ok, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { whatsappAccountCreateSchema } from "@/lib/validators";
 
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const { page, pageSize, skip, take } = getPagination(searchParams);
     const status = searchParams.get("status") || undefined;
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("whatsapp.manage");
     const companyId = company.id;
 
     const where = {
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, whatsappAccountCreateSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("whatsapp.manage");
     const account = await prisma.whatsAppAccount.create({
       data: {
         companyId: company.id,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { ensureDefaultWorkspace } from "@/lib/auth";
+import { ensureDefaultWorkspace, isAuthEnforced } from "@/lib/auth";
 import { AUTH_COOKIE_NAME, DEMO_EMAIL, DEMO_SESSION_VALUE } from "@/lib/auth-constants";
 
 export const runtime = "nodejs";
@@ -14,6 +14,19 @@ const loginSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    if (isAuthEnforced()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "DEMO_LOGIN_DISABLED",
+            message: "Password demo login is disabled when Supabase authentication is enforced."
+          }
+        },
+        { status: 410 }
+      );
+    }
+
     const input = loginSchema.parse(await request.json());
     const context = await ensureDefaultWorkspace();
 

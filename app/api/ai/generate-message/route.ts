@@ -1,5 +1,5 @@
 import { created, handleApiError, parseJson } from "@/lib/api";
-import { getCurrentAuthContext } from "@/lib/auth";
+import { requirePermission } from "@/lib/api-guard";
 import { prisma } from "@/lib/prisma";
 import { aiGenerateMessageSchema } from "@/lib/validators";
 
@@ -41,7 +41,7 @@ const generationLabels: Record<GenerationType, string> = {
 export async function POST(request: Request) {
   try {
     const input = await parseJson(request, aiGenerateMessageSchema);
-    const { company } = await getCurrentAuthContext();
+    const { context: { company } } = await requirePermission("messages.send");
     const generationType = input.generationType ?? inferGenerationType(input.context);
     const language = input.language ?? inferLanguage(input.context);
     const tone = input.tone ?? "professional";
