@@ -9,8 +9,8 @@ import { createSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@arbcore.ai");
-  const [password, setPassword] = useState("demo1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [magicLoading, setMagicLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +65,7 @@ export default function LoginPage() {
     try {
       const supabase = createSupabaseBrowserClient();
       if (!supabase) {
-        setNotice("Supabase Auth is not configured yet. Use demo access for Enterprise Beta.");
+        setNotice("Supabase Auth is not configured for this environment.");
         return;
       }
 
@@ -102,19 +102,19 @@ export default function LoginPage() {
               <div className="mt-14 max-w-2xl">
                 <p className="inline-flex h-9 items-center gap-2 rounded-full bg-white px-4 text-xs font-black uppercase text-royal ring-1 ring-blue-100">
                   <Sparkles className="h-4 w-4" />
-                  Enterprise Beta Access
+                  Secure Workspace Access
                 </p>
                 <h1 className="mt-5 text-4xl font-black tracking-normal text-ink sm:text-5xl">
                   Sign in to your WhatsApp automation workspace
                 </h1>
                 <p className="mt-5 text-base leading-8 text-slate-600">
-                  Manage contacts, WhatsApp automation, logs, CRM pipeline, and ARBCore AI tools while SaaS authentication is prepared safely.
+                  Access contacts, WhatsApp automation, logs, CRM pipeline, and ARBCore AI tools through your authorized account.
                 </p>
               </div>
             </div>
 
             <div className="mt-12 grid gap-3 sm:grid-cols-3">
-              {["Workspace protected", "Demo admin ready", "API scoped locally"].map((item) => (
+              {["Workspace protected", "Supabase authenticated", "Role permissions enforced"].map((item) => (
                 <div key={item} className="rounded-[18px] border border-blue-100 bg-white/80 p-4">
                   <ShieldCheck className="h-5 w-5 text-emerald-600" />
                   <p className="mt-3 text-sm font-black text-ink">{item}</p>
@@ -127,7 +127,7 @@ export default function LoginPage() {
         <div className="flex flex-col justify-center p-6 sm:p-8">
           <div>
             <h2 className="text-2xl font-black text-ink">Welcome back</h2>
-            <p className="mt-2 text-sm font-medium text-slate-500">Login is being prepared for SaaS mode. Use the same email as your ARBCore team user so Supabase Auth can map you to the correct workspace. Current Enterprise Beta may still use demo access while AUTH_ENFORCED=false.</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">Use the email linked to your ARBCore team account. Supabase Auth securely maps your session to the correct workspace and role.</p>
             {supabaseAuthenticated ? (
               <button className="mt-3 text-sm font-black text-royal" onClick={() => router.push("/")}>
                 You are signed in. Go to dashboard
@@ -146,6 +146,7 @@ export default function LoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   type="email"
                   autoComplete="email"
+                  placeholder="you@company.com"
                 />
               </span>
             </label>
@@ -160,6 +161,7 @@ export default function LoginPage() {
                   onChange={(event) => setPassword(event.target.value)}
                   type="password"
                   autoComplete="current-password"
+                  placeholder="Enter your password"
                 />
               </span>
             </label>
@@ -178,17 +180,17 @@ export default function LoginPage() {
 
             <button
               className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-royal to-electric text-sm font-black text-white shadow-glow transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={loading}
+              disabled={loading || !email || !password}
             >
               <LogIn className="h-4 w-4" />
-              {loading ? "Signing in..." : supabaseConfigured ? "Sign in" : "Demo sign in"}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
 
             <button
               type="button"
               className="flex h-12 w-full items-center justify-center gap-2 rounded-[16px] border border-blue-200 bg-white text-sm font-black text-royal transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-70"
               onClick={() => void sendMagicLink()}
-              disabled={magicLoading}
+              disabled={magicLoading || !email}
             >
               <Mail className="h-4 w-4" />
               {magicLoading ? "Sending..." : "Send magic link"}
@@ -196,10 +198,9 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 rounded-[16px] bg-blue-50 p-4 text-sm font-semibold text-slate-600">
-            <p>Email: admin@arbcore.ai</p>
-            <p>Password: demo1234</p>
-            <p className="mt-2">Dashboard remains available during auth preparation. Supabase users are mapped by auth ID first, then matching email.</p>
-            <p className="mt-2">After login, open Auth Status to verify Supabase → ARBCore user mapping.</p>
+            <p>Use your authorized ARBCore account email.</p>
+            <p className="mt-2">Magic link is recommended when password sign-in is unavailable.</p>
+            <p className="mt-2">After login, Auth Status can verify your Supabase → ARBCore workspace mapping.</p>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-3">
