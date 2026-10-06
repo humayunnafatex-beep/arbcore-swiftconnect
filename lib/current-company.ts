@@ -3,29 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { getSelectedWorkspaceId } from "@/lib/workspace-selection";
 
 export async function getCurrentCompany() {
-  // Beta behavior: keep the existing single-company/default workspace flow.
-  // Phase 4: if a Supabase Auth user maps to a Prisma user, use that user's company.
-  // TODO: Make authenticated user/session company resolution the default before onboarding external clients.
-  // TODO: In production SaaS mode, workspace switching must validate user membership/role.
-  // TODO: For multi-client webhooks, route by provider account identifiers such as
-  // WhatsApp Phone Number ID and verify token instead of first/default company fallback.
+  // Production SaaS behavior: when auth is enforced, company context must come
+  // only from the authenticated mapped user. Never fall back to a selected
+  // workspace cookie or the first/default company.
   if (isAuthEnforced()) {
-    try {
-      const authenticatedCompany = await getAuthenticatedCurrentCompany();
-      if (authenticatedCompany) {
-        return authenticatedCompany;
-      }
-    } catch {
-      // Public provider webhooks do not have browser sessions. Keep beta fallback for now.
-    }
+    return getAuthenticatedCurrentCompany();
   }
 
+  // Beta/admin-only behavior while AUTH_ENFORCED=false.
   const selectedWorkspaceId = getSelectedWorkspaceId();
 
   if (selectedWorkspaceId) {
-    // Beta/admin testing only: this intentionally honors the selected workspace cookie.
-    // TODO: Future production should call tenant access validation before honoring
-    // this cookie. The selected workspace cookie is not tenant security.
     const selectedCompany = await prisma.company.findUnique({ where: { id: selectedWorkspaceId } });
 
     if (selectedCompany) {
@@ -39,17 +27,10 @@ export async function getCurrentCompany() {
       return authenticatedCompany;
     }
   } catch {
-    // Public provider webhooks do not have browser sessions. Keep beta fallback for now.
+    // Beta mode may not have an authenticated Supabase session.
   }
 
-  const company = await prisma.company.findFirst({ orderBy: { createdAt: "asc" } });
-
-  if (company) {
-    // TODO: Production SaaS should not use default fallback for untrusted clients.
-    return company;
-  }
-
-  return (await ensureDefaultWorkspace()).company;
+  return getBetaFallbackCompany();
 }
 
 export async function getCurrentCompanyId() {
@@ -57,7 +38,17 @@ export async function getCurrentCompanyId() {
 }
 
 export async function getAuthenticatedCurrentCompany() {
-  // TODO: Use this as the default path after real auth/session company binding is implemented.
-  // Future behavior should resolve company from authenticated user/session membership.
   return (await getCurrentAuthContext()).company;
+}
+
+// Explicit beta-only fallback for public provider webhook compatibility.
+// Do not use this helper for authenticated SaaS/API request company resolution.
+export async function getBetaFallbackCompany() {
+  const company = await prisma.company.findFirst({ orderBy: { createdAt: "asc" } });
+
+  if (company) {
+    return company;
+  }
+
+  return (await ensureDefaultWorkspace()).company;
 }
