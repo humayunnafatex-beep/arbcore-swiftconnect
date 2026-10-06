@@ -1,5 +1,5 @@
 import { handleApiError, ok } from "@/lib/api";
-import { requirePermission } from "@/lib/api-guard";
+import { requirePlatformAdmin } from "@/lib/platform-access";
 import { prisma } from "@/lib/prisma";
 import { findDuplicateProviderIds, hasProviderIdValue } from "@/lib/provider-id-validation";
 import { isStrictProviderWebhookRouting } from "@/lib/provider-routing";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requirePermission("settings.view");
+    await requirePlatformAdmin();
 
     const companies = await prisma.company.findMany({
       orderBy: { createdAt: "asc" },
