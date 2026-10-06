@@ -3,6 +3,8 @@ import { handleApiError, ok, parseJson } from "@/lib/api";
 import { requireAgentInternalToken } from "@/lib/agent-internal-auth";
 import { sendAgentCompletionNotification } from "@/lib/agent-notification";
 import { prisma } from "@/lib/prisma";
+import { APPROVED_AGENT_JOB_TYPES } from "@/lib/agent-job-registry";
+import { runAgentJobWithRetry } from "@/lib/agent-orchestrator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,8 +13,9 @@ const schema = z.object({
   idempotencyKey: z.string().trim().min(8).max(128),
   task: z.string().trim().min(2).max(200),
   summary: z.string().trim().max(800).optional(),
-  nextJob: z.string().trim().max(400).optional(),
-  notify: z.boolean().optional().default(true)
+  nextJob: z.enum(APPROVED_AGENT_JOB_TYPES).optional(),
+  notify: z.boolean().optional().default(true),
+  runNextJob: z.boolean().optional().default(true)
 });
 
 export async function POST(request: Request) {
@@ -93,13 +96,26 @@ export async function POST(request: Request) {
       }
     }
 
+    let nextJobResult = null;
+
+    if (input.nextJob && input.runNextJob) {
+      nextJobResult = await runAgentJobWithRetry({
+        companyId,
+        jobType: input.nextJob,
+        idempotencyKey: `${input.idempotencyKey}:next`,
+        notify: input.notify
+      });
+    }
+
     return ok({
       duplicate: false,
       completionRecorded: true,
       notificationAttempted,
       notificationSent,
       nextJobQueued: Boolean(input.nextJob),
-      nextJob: input.nextJob || null
+      nextJobStarted: Boolean(input.nextJob && input.runNextJob),
+      nextJob: input.nextJob || null,
+      nextJobResult
     });
   } catch (error) {
     return handleApiError(error);
