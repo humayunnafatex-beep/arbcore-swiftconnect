@@ -1,5 +1,5 @@
 import { handleApiError, ok } from "@/lib/api";
-import { requirePermission } from "@/lib/api-guard";
+import { requirePlatformAdmin } from "@/lib/platform-access";
 import { prisma } from "@/lib/prisma";
 import { getSelectedWorkspaceId } from "@/lib/workspace-selection";
 
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requirePermission("settings.manage");
+    await requirePlatformAdmin();
     const selectedWorkspaceId = getSelectedWorkspaceId();
     const selectedWorkspace = selectedWorkspaceId
       ? await prisma.company.findUnique({
