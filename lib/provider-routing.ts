@@ -1,5 +1,5 @@
 import type { Company } from "@prisma/client";
-import { getCurrentCompany } from "@/lib/current-company";
+import { getBetaFallbackCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
 
 export type ProviderRoutingChannel = "WHATSAPP" | "MESSENGER";
@@ -168,7 +168,7 @@ export async function getCompanyForProviderWebhook({
   // Beta-only fallback preserves the existing single-company webhook behavior.
   // Production multi-client mode should require a provider match before processing.
   return {
-    company: await getCurrentCompany(),
+    company: await getBetaFallbackCompany(),
     routedBy: "BETA_FALLBACK",
     providerIds: routed.providerIds,
     strictMode,
