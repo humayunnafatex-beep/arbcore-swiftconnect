@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
-import { requirePermission } from "@/lib/api-guard";
+import { isAuthEnforced } from "@/lib/auth";
+import { requirePlatformAdmin } from "@/lib/platform-access";
 import { prisma } from "@/lib/prisma";
 import { clearSelectedWorkspaceId, setSelectedWorkspaceId } from "@/lib/workspace-selection";
 
@@ -13,7 +14,14 @@ const workspaceSelectSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    await requirePermission("settings.manage");
+    await requirePlatformAdmin();
+    if (isAuthEnforced()) {
+      throw new ApiError(
+        409,
+        "WORKSPACE_SWITCH_DISABLED",
+        "Cross-workspace switching is disabled while production authentication is enforced."
+      );
+    }
     const input = await parseJson(request, workspaceSelectSchema);
     const company = await prisma.company.findUnique({
       where: { id: input.companyId },
@@ -41,7 +49,14 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   try {
-    await requirePermission("settings.manage");
+    await requirePlatformAdmin();
+    if (isAuthEnforced()) {
+      throw new ApiError(
+        409,
+        "WORKSPACE_SWITCH_DISABLED",
+        "Cross-workspace switching is disabled while production authentication is enforced."
+      );
+    }
     clearSelectedWorkspaceId();
 
     return ok({
