@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { ApiError, created, handleApiError, ok, parseJson } from "@/lib/api";
-import { requirePermission } from "@/lib/api-guard";
+import { requirePlatformAdmin } from "@/lib/platform-access";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -17,7 +17,7 @@ const workspaceCreateSchema = z.object({
 
 export async function GET() {
   try {
-    await requirePermission("settings.manage");
+    await requirePlatformAdmin();
 
     const companies = await prisma.company.findMany({
       orderBy: { createdAt: "asc" },
@@ -60,7 +60,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    await requirePermission("settings.manage");
+    await requirePlatformAdmin();
     const input = await parseJson(request, workspaceCreateSchema);
     const name = input.name.trim();
     const ownerEmail = (input.ownerEmail || "").trim().toLowerCase();
