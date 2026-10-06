@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 loadDotEnvFile();
 
-const defaultUrl = "https://arbcore-swiftconnect.vercel.app";
+const defaultUrl = "https://arbcore-swiftconnect-sandy.vercel.app";
 
 const baseUrl = (process.env.PRODUCTION_URL || process.env.NEXT_PUBLIC_APP_URL || defaultUrl)
   .replace(/\/+$/, "");
@@ -40,10 +40,13 @@ const pendingDeploymentPaths = new Set([
 ]);
 
 const timeoutMs = 15000;
-const safeFalseFlags = [
+const requiredTrueFlags = [
   "AUTH_ENFORCED",
   "PERMISSIONS_ENFORCED",
   "TENANT_MEMBERSHIP_ENFORCED",
+];
+
+const controlledFalseFlags = [
   "STRICT_PROVIDER_WEBHOOK_ROUTING",
 ];
 
@@ -322,13 +325,25 @@ function auditEnvironment() {
     );
   }
 
-  for (const name of safeFalseFlags) {
+  for (const name of requiredTrueFlags) {
     const value = flagValue(name);
-    const level = value === "true" ? "BLOCK" : value === "false" ? "OK" : "WARN";
+    const level = value === "true" ? "OK" : value === "false" ? "BLOCK" : "WARN";
     const message = value === "true"
-      ? `${name}=true. Keep this false for Beta v1.0 production unless staging approval is complete.`
+      ? `${name}=true production enforcement is active.`
       : value === "false"
-        ? `${name}=false safe beta default is active.`
+        ? `${name}=false. Production security enforcement is incomplete.`
+        : `${name} has non-standard value "${value}". Use exactly true or false.`;
+
+    addEnvCheck(checks, level, name, message);
+  }
+
+  for (const name of controlledFalseFlags) {
+    const value = flagValue(name);
+    const level = value === "false" ? "OK" : value === "true" ? "WARN" : "WARN";
+    const message = value === "false"
+      ? `${name}=false until provider ID uniqueness and routing diagnostics are verified.`
+      : value === "true"
+        ? `${name}=true. Confirm every production provider account maps uniquely to a company before relying on strict routing.`
         : `${name} has non-standard value "${value}". Use exactly true or false.`;
 
     addEnvCheck(checks, level, name, message);
