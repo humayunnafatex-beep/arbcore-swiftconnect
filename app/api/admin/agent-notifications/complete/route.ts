@@ -1,7 +1,9 @@
+import crypto from "node:crypto";
 import { z } from "zod";
 import { ApiError, handleApiError, ok, parseJson } from "@/lib/api";
 import { sendAgentCompletionNotification } from "@/lib/agent-notification";
 import { requirePlatformAdmin } from "@/lib/platform-access";
+import { DEFAULT_COMPANY_ID } from "@/lib/auth-constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +17,7 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const context = await requirePlatformAdmin();
+    const companyId = await resolveAuthorizedCompanyId(request);
     const input = await parseJson(request, schema);
     const recipient = (process.env.AGENT_COMPLETION_WHATSAPP_TO || "").replace(/[^\d]/g, "");
 
@@ -28,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     const result = await sendAgentCompletionNotification({
-      companyId: context.company.id,
+      companyId,
       recipient,
       task: input.task,
       status: input.status,
@@ -53,4 +55,32 @@ export async function POST(request: Request) {
   } catch (error) {
     return handleApiError(error);
   }
+}
+
+async function resolveAuthorizedCompanyId(request: Request) {
+  if (hasValidInternalToken(request)) {
+    return DEFAULT_COMPANY_ID;
+  }
+
+  const context = await requirePlatformAdmin();
+  return context.company.id;
+}
+
+function hasValidInternalToken(request: Request) {
+  const configured = process.env.AGENT_INTERNAL_TOKEN || "";
+  const header = request.headers.get("authorization") || "";
+  const supplied = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
+
+  if (!configured || !supplied) {
+    return false;
+  }
+
+  const configuredBuffer = Buffer.from(configured);
+  const suppliedBuffer = Buffer.from(supplied);
+
+  if (configuredBuffer.length !== suppliedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(configuredBuffer, suppliedBuffer);
 }
