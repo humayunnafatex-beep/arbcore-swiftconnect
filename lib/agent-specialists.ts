@@ -43,3 +43,28 @@ export function specialistForJob(jobType: ApprovedAgentJobType): SpecialistAgent
   if (jobType === "PROVIDER_ROUTING_READINESS") return "PROVIDER_SPECIALIST";
   return "SECURITY_SPECIALIST";
 }
+
+// A duplicate marker alone is never evidence of specialist success.
+export function reviewSpecialistResult(jobType: ApprovedAgentJobType, outcome: {
+  completed: boolean;
+  result: { jobType: ApprovedAgentJobType; ok: boolean; details: Record<string, string | number | boolean> } | null;
+}) {
+  const result = outcome.result;
+  const d = result?.details;
+  let passed = outcome.completed && result?.ok === true && result.jobType === jobType && Boolean(d);
+  if (passed && d) {
+    if (jobType === "PRODUCTION_HEALTH_CHECK") {
+      passed = d.databaseReachable === true && d.authEnforced === true &&
+        d.permissionsEnforced === true && d.tenantMembershipEnforced === true;
+    } else if (jobType === "TENANT_ISOLATION_READINESS") {
+      passed = d.authEnforced === true && d.permissionsEnforced === true &&
+        d.tenantMembershipEnforced === true &&
+        ["contactsWithoutCompany", "campaignsWithoutCompany", "conversationsWithoutCompany",
+          "messageLogsWithoutCompany", "crmDealsWithoutCompany", "unscopedRecords"].every((key) => d[key] === 0);
+    } else {
+      passed = d.strictProviderRouting === true && d.duplicateWhatsappIds === 0 && d.duplicateMessengerIds === 0;
+    }
+  }
+  return { specialist: "QA_SPECIALIST" as const, passed,
+    reason: passed ? "Specialist evidence passed QA." : "Missing, failed, or inconsistent specialist evidence; continuation blocked." };
+}

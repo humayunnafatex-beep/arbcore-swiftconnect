@@ -1,6 +1,6 @@
 import { runAgentJobWithRetry } from "@/lib/agent-orchestrator";
 import type { ApprovedAgentJobType } from "@/lib/agent-job-registry";
-import { specialistForJob, type SpecialistAgentId } from "@/lib/agent-specialists";
+import { specialistForJob, reviewSpecialistResult, type SpecialistAgentId } from "@/lib/agent-specialists";
 
 export type GrandfatherPlanName =
   | "SECURITY_BASELINE"
@@ -50,30 +50,39 @@ export async function runGrandfatherPlan(input: {
 
   for (let index = 0; index < plan.length; index += 1) {
     const step = plan[index];
-    const result = await runAgentJobWithRetry({
-      companyId: input.companyId,
-      jobType: step.jobType,
-      idempotencyKey: `${input.runId}:${index + 1}`,
-      notify: input.notify
-    });
+    let result;
+    try {
+      result = await runAgentJobWithRetry({
+        companyId: input.companyId,
+        jobType: step.jobType,
+        idempotencyKey: `gf:${input.plan}:${input.runId}:${index + 1}`,
+        notify: input.notify
+      });
+    } catch {
+      result = { completed: false, attempts: 0, duplicate: false, result: null,
+        error: "Specialist execution unavailable; plan stopped safely." };
+    }
+    const qa = reviewSpecialistResult(step.jobType, result);
 
     steps.push({
       step: index + 1,
       specialist: step.specialist,
       jobType: step.jobType,
       completed: result.completed,
+      qa,
       attempts: result.attempts,
       duplicate: result.duplicate,
       result: result.result,
       error: "error" in result ? result.error : undefined
     });
 
-    if (!result.completed) {
+    if (!qa.passed) {
       return {
         completed: false,
         qaPassed: false,
         stoppedAtStep: index + 1,
         steps,
+        aggregation: { passed: steps.filter((entry) => entry.qa.passed).length, failed: 1, skipped: plan.length - steps.length },
         summary: `Grandfather Agent stopped because ${step.jobType} did not pass.`
       };
     }
@@ -84,6 +93,7 @@ export async function runGrandfatherPlan(input: {
     qaPassed: true,
     stoppedAtStep: null,
     steps,
+    aggregation: { passed: steps.length, failed: 0, skipped: 0 },
     summary: "Grandfather Agent completed all approved specialist checks."
   };
 }

@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { findDuplicateProviderIds, hasProviderIdValue } from "@/lib/provider-id-validation";
 
@@ -20,19 +21,19 @@ export function isApprovedAgentJobType(value: unknown): value is ApprovedAgentJo
   return typeof value === "string" && APPROVED_AGENT_JOB_TYPES.includes(value as ApprovedAgentJobType);
 }
 
-export async function runApprovedAgentJob(jobType: ApprovedAgentJobType): Promise<AgentJobResult> {
+export async function runApprovedAgentJob(jobType: ApprovedAgentJobType, db: Prisma.TransactionClient = prisma): Promise<AgentJobResult> {
   switch (jobType) {
     case "PRODUCTION_HEALTH_CHECK":
-      return runProductionHealthCheck();
+      return runProductionHealthCheck(db);
     case "TENANT_ISOLATION_READINESS":
-      return runTenantIsolationReadiness();
+      return runTenantIsolationReadiness(db);
     case "PROVIDER_ROUTING_READINESS":
-      return runProviderRoutingReadiness();
+      return runProviderRoutingReadiness(db);
   }
 }
 
-async function runProductionHealthCheck(): Promise<AgentJobResult> {
-  await prisma.$queryRaw`SELECT 1`;
+async function runProductionHealthCheck(db: Prisma.TransactionClient): Promise<AgentJobResult> {
+  await db.$queryRaw`SELECT 1`;
 
   const authEnforced = process.env.AUTH_ENFORCED === "true";
   const permissionsEnforced = process.env.PERMISSIONS_ENFORCED === "true";
@@ -54,7 +55,7 @@ async function runProductionHealthCheck(): Promise<AgentJobResult> {
   };
 }
 
-async function runTenantIsolationReadiness(): Promise<AgentJobResult> {
+async function runTenantIsolationReadiness(db: Prisma.TransactionClient): Promise<AgentJobResult> {
   const [
     contactsWithoutCompany,
     campaignsWithoutCompany,
@@ -62,11 +63,11 @@ async function runTenantIsolationReadiness(): Promise<AgentJobResult> {
     messageLogsWithoutCompany,
     crmDealsWithoutCompany
   ] = await Promise.all([
-    prisma.contact.count({ where: { companyId: null } }),
-    prisma.campaign.count({ where: { companyId: null } }),
-    prisma.conversation.count({ where: { companyId: null } }),
-    prisma.messageLog.count({ where: { companyId: null } }),
-    prisma.crmDeal.count({ where: { companyId: null } })
+    db.contact.count({ where: { companyId: null } }),
+    db.campaign.count({ where: { companyId: null } }),
+    db.conversation.count({ where: { companyId: null } }),
+    db.messageLog.count({ where: { companyId: null } }),
+    db.crmDeal.count({ where: { companyId: null } })
   ]);
 
   const authEnforced = process.env.AUTH_ENFORCED === "true";
@@ -104,8 +105,8 @@ async function runTenantIsolationReadiness(): Promise<AgentJobResult> {
   };
 }
 
-async function runProviderRoutingReadiness(): Promise<AgentJobResult> {
-  const companies = await prisma.company.findMany({
+async function runProviderRoutingReadiness(db: Prisma.TransactionClient): Promise<AgentJobResult> {
+  const companies = await db.company.findMany({
     orderBy: { createdAt: "asc" },
     select: {
       id: true,
@@ -122,13 +123,13 @@ async function runProviderRoutingReadiness(): Promise<AgentJobResult> {
   const messengerConfigured = companies.filter((company) => hasProviderIdValue(company.messengerPageId)).length;
   const strictProviderRouting = process.env.STRICT_PROVIDER_WEBHOOK_ROUTING === "true";
   const duplicates = whatsappDuplicates.length + messengerDuplicates.length;
-  const ok = duplicates === 0;
+  const ok = strictProviderRouting && duplicates === 0;
 
   return {
     jobType: "PROVIDER_ROUTING_READINESS",
     ok,
     summary: ok
-      ? "Provider identifiers have no detected cross-workspace duplicates."
+      ? "Strict provider routing is enabled and identifiers have no detected cross-workspace duplicates."
       : "Duplicate provider identifiers must be resolved before strict webhook routing is enabled.",
     details: {
       workspaceCount: companies.length,
