@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ApiError, handleApiError } from "@/lib/api";
 import { requirePermission } from "@/lib/api-guard";
@@ -76,24 +77,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingContact = await prisma.contact.findUnique({ where: { phone: normalizedPhone } });
-    const contact = existingContact
-      ? await prisma.contact.update({
-          where: { id: existingContact.id },
+    const existingContact = await prisma.contact.findFirst({
+      where: { companyId: company.id, phone: normalizedPhone }
+    });
+
+    let contact = existingContact;
+
+    if (!contact) {
+      try {
+        contact = await prisma.contact.create({
           data: {
             companyId: company.id,
-            optedIn: existingContact.doNotContact ? false : existingContact.optedIn
-          }
-        })
-      : await prisma.contact.create({
-          data: {
-        companyId: company.id,
-        name: "WhatsApp Test Recipient",
-        phone: normalizedPhone,
-        segment: "Sandbox Test",
-        optedIn: true
+            name: "WhatsApp Test Recipient",
+            phone: normalizedPhone,
+            segment: "Sandbox Test",
+            optedIn: true
           }
         });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+          return NextResponse.json(
+            {
+              success: false,
+              status: "tenant_conflict",
+              error: "This phone number already belongs to another workspace under the current schema."
+            },
+            { status: 409 }
+          );
+        }
+
+        throw error;
+      }
+    }
     contactId = contact.id;
 
     if (contact.doNotContact || !contact.optedIn) {
