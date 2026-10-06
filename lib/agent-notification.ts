@@ -35,13 +35,38 @@ export async function sendAgentCompletionNotification(input: AgentCompletionNoti
   });
 
   if (!result.success) {
+    const safeError = getSafeWhatsAppProviderErrorSummary(result.providerError);
+
+    await prisma.messageLog.create({
+      data: {
+        companyId: company.id,
+        channel: "WHATSAPP",
+        body,
+        direction: "OUTBOUND",
+        status: "FAILED",
+        errorMessage: safeError || result.error
+      }
+    }).catch(() => undefined);
+
     return {
       success: false as const,
       reason: "provider_error" as const,
       providerStatus: result.providerStatus,
-      providerError: getSafeWhatsAppProviderErrorSummary(result.providerError)
+      providerError: safeError
     };
   }
+
+  await prisma.messageLog.create({
+    data: {
+      companyId: company.id,
+      channel: "WHATSAPP",
+      body,
+      direction: "OUTBOUND",
+      status: "SENT",
+      providerMessageId: result.providerMessageId,
+      sentAt: new Date()
+    }
+  }).catch(() => undefined);
 
   return {
     success: true as const,
