@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { findMatchedAutoReplyRule } from "@/lib/auto-reply-matcher";
 import { getCurrentCompany } from "@/lib/current-company";
 import { getSafeMessengerProviderErrorSummary, sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
@@ -7,7 +8,6 @@ import { getCompanyForProviderWebhook, type ProviderRoutingResult } from "@/lib/
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-const ACTIVE_AUTO_REPLY_RULE_LIMIT = 250;
 
 type MessengerPayload = {
   object?: string;
@@ -241,39 +241,6 @@ async function markConversationUnread({
       isRead: false
     }
   });
-}
-
-async function findMatchedAutoReplyRule(companyId: string, inboundText: string) {
-  const normalizedInbound = normalizeText(inboundText);
-
-  if (!normalizedInbound) {
-    return null;
-  }
-
-  const rules = await prisma.autoReplyRule.findMany({
-    where: { companyId, isActive: true },
-    orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
-    take: ACTIVE_AUTO_REPLY_RULE_LIMIT
-  });
-
-  return rules.find((rule) => {
-    const keyword = normalizeText(rule.keyword);
-    if (!keyword) return false;
-
-    if (rule.matchMode === "EXACT") {
-      return normalizedInbound === keyword;
-    }
-
-    if (rule.matchMode === "STARTS_WITH") {
-      return normalizedInbound.startsWith(keyword);
-    }
-
-    return normalizedInbound.includes(keyword);
-  }) ?? null;
-}
-
-function normalizeText(value: string) {
-  return value.trim().toLowerCase();
 }
 
 function previewText(value: string, maxLength = 180) {
