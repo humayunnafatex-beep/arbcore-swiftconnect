@@ -15,9 +15,11 @@ export type ProviderRoutingEvidenceSummary = {
   providerIdPresentCount: number;
   historicalMatchedCount: number;
   currentConfigurationMatchedCount: number;
+  currentConfigurationMatchEvidence: "UNAVAILABLE";
   missingCount: number;
   unmatchedCount: number;
-  ambiguousCount: number;
+  ambiguousCount: number | null;
+  ambiguityEvidence: "UNAVAILABLE";
   unknownOrUnclassifiableCount: number;
   latestTimestamp: string | null;
   evidenceSource: string;
@@ -88,7 +90,13 @@ export function summarizeProviderRoutingEvidence(events: ProviderRoutingEvidence
 
 export function evidenceActivationStatus(summary: ProviderRoutingEvidenceSummary) {
   if (summary.inspectedCount === 0) return "INSUFFICIENT_EVIDENCE";
-  if (summary.historicalMatchedCount > 0 && summary.missingCount === 0 && summary.unmatchedCount === 0 && summary.ambiguousCount === 0 && summary.unknownOrUnclassifiableCount === 0) {
+  if (
+    summary.historicalMatchedCount > 0 &&
+    summary.missingCount === 0 &&
+    summary.unmatchedCount === 0 &&
+    summary.ambiguousCount === null &&
+    summary.unknownOrUnclassifiableCount === 0
+  ) {
     return "HISTORICAL_MATCH_EVIDENCE";
   }
   return "INSUFFICIENT_EVIDENCE";
@@ -101,9 +109,11 @@ function emptySummary(provider: ProviderRoutingEvidenceProvider): ProviderRoutin
     providerIdPresentCount: 0,
     historicalMatchedCount: 0,
     currentConfigurationMatchedCount: 0,
+    currentConfigurationMatchEvidence: "UNAVAILABLE",
     missingCount: 0,
     unmatchedCount: 0,
-    ambiguousCount: 0,
+    ambiguousCount: null,
+    ambiguityEvidence: "UNAVAILABLE",
     unknownOrUnclassifiableCount: 0,
     latestTimestamp: null,
     evidenceSource: "WebhookEvent.payload.routing aggregate metadata",
@@ -111,6 +121,7 @@ function emptySummary(provider: ProviderRoutingEvidenceProvider): ProviderRoutin
       "Stored webhook evidence intentionally keeps provider identifiers redacted.",
       "Historical matched counts prove the webhook write path matched a company at event time.",
       "Current configuration exact recompare is unavailable because raw provider IDs are not stored in WebhookEvent routing metadata.",
+      "Ambiguous duplicate-match classification is unavailable from stored webhook routing metadata because raw provider IDs and candidate match counts are not stored.",
       "Zero inspected events or beta fallback events are insufficient for strict-mode activation."
     ]
   };
