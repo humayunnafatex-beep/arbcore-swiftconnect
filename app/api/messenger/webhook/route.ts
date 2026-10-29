@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { findMatchedAutoReplyRule } from "@/lib/auto-reply-matcher";
+import { runAiAutoReply } from "@/lib/ai-auto-reply-service";
 import { getCurrentCompany } from "@/lib/current-company";
 import { getSafeMessengerProviderErrorSummary, sendMessengerTextMessage } from "@/lib/messenger-service";
 import { prisma } from "@/lib/prisma";
@@ -21,6 +22,7 @@ type MessengerPayload = {
       message?: {
         mid?: string;
         text?: string;
+        is_echo?: boolean;
       };
       postback?: {
         mid?: string;
@@ -130,6 +132,28 @@ export async function POST(request: Request) {
       const matchedRule = await findMatchedAutoReplyRule(company.id, message.text);
 
       if (!matchedRule) {
+        await runAiAutoReply({
+          companyId: company.id,
+          channel: "MESSENGER",
+          customerKey: message.senderPsid,
+          contactId: contact?.id,
+          inboundText: message.text,
+          canSend: Boolean(company.messengerPageAccessToken),
+          send: async (body) => {
+            const result = await sendMessengerTextMessage({
+              pageAccessToken: company.messengerPageAccessToken,
+              recipientId: message.senderPsid,
+              body
+            });
+            if (result.success) {
+              return { success: true, providerMessageId: result.providerMessageId };
+            }
+            return {
+              success: false,
+              error: result.providerError ? getSafeMessengerProviderErrorSummary(result.providerError) : result.error
+            };
+          }
+        });
         continue;
       }
 
@@ -300,6 +324,8 @@ async function findOrCreateWebhookContact({
 function extractMessengerMessages(payload: MessengerPayload) {
   return (payload.entry ?? [])
     .flatMap((entry) => entry.messaging ?? [])
+    // Page echoes of our own replies must never be treated as customer messages.
+    .filter((event) => !event.message?.is_echo)
     .map((event) => {
       const senderPsid = event.sender?.id?.trim() ?? "";
       const text = event.message?.text?.trim() || event.postback?.title?.trim() || "[messenger event]";
