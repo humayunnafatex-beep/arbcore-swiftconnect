@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentCompany } from "@/lib/current-company";
 import { prisma } from "@/lib/prisma";
+import { runAiAutoReply } from "@/lib/ai-auto-reply-service";
 import { getCompanyForProviderWebhook, type ProviderRoutingResult } from "@/lib/provider-routing";
 import { parseWebhookEvent, sendWhatsAppTextMessage, validateSignature } from "@/lib/whatsapp-service";
 
@@ -125,6 +126,25 @@ export async function POST(request: Request) {
       const matchedRule = await findMatchedAutoReplyRule(company.id, message.text);
 
       if (!matchedRule) {
+        await runAiAutoReply({
+          companyId: company.id,
+          channel: "WHATSAPP",
+          customerKey: message.from,
+          contactId: contact?.id,
+          inboundText: message.text,
+          canSend: Boolean(company.whatsappPhoneNumberId && company.whatsappAccessToken),
+          send: async (body) => {
+            const result = await sendWhatsAppTextMessage({
+              phoneNumberId: company.whatsappPhoneNumberId,
+              accessToken: company.whatsappAccessToken,
+              to: message.from,
+              body
+            });
+            return result.success
+              ? { success: true, providerMessageId: result.providerMessageId }
+              : { success: false, error: result.error };
+          }
+        });
         continue;
       }
 
